@@ -2,8 +2,12 @@ title: Fly Scoreboard (OBS)
 description: Lightweight, hotkey-friendly scoreboard overlay for OBS.
 remote_theme: just-the-docs/just-the-docs
 
+# Canonical URLs for project pages
 url: https://mmltools.github.io
 baseurl: /fly-scoreboard
+
+color_scheme: dark
+search_enabled: true
 
 nav_external_links:
   - title: ⭐ Star on GitHub
@@ -13,31 +17,14 @@ nav_external_links:
     url: https://ko-fi.com/mmltech
     hide_icon: false
 
-color_scheme: dark
-search_enabled: true
 aux_links:
   "Support on Ko-fi":
     - "https://ko-fi.com/mmltech"
+
 footer_content: >
   Built with ❤️ for OBS. <a href="https://ko-fi.com/mmltech" target="_blank" rel="noopener">Buy me a coffee</a> ☕.
-ga_tracking:
-ga_tracking_anonymize_ip: true
 
-callouts_level: quiet
-callouts:
-  note:
-    title: Note
-    color: purple
-  important:
-    title: Important
-    color: blue
-  warning:
-    title: Warning
-    color: red
-  tip:
-    title: Tip
-    color: green
-
-plugins:
-  - jekyll-seo-tag
-  - jekyll-sitemap
+# Keep config minimal; github-pages provides plugins internally
+markdown: kramdown
+kramdown:
+  input: GFM

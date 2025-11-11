@@ -1,4 +1,5 @@
-name: Deploy GitHub Pages
+name: Deploy GitHub Pages (Jekyll from docs/)
+
 on:
   push:
     branches: [ "main" ]
@@ -20,36 +21,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll (source=docs/ -> _site/)
+        uses: actions/jekyll-build-pages@v1
         with:
-          ruby-version: '3.3'
-          bundler-cache: true
-
-      - name: Install Jekyll deps
-        run: |
-          echo 'source "https://rubygems.org"' > Gemfile
-          echo 'gem "github-pages", group: :jekyll_plugins' >> Gemfile
-          echo 'gem "just-the-docs"' >> Gemfile
-          bundle install --path vendor/bundle
-
-      - name: Build site
-        env:
-          JEKYLL_ENV: production
-        run: |
-          bundle exec jekyll build --source docs --destination _site
+          source: ./docs
+          destination: ./_site
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: ./_site
 
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
