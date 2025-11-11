@@ -1,5 +1,116 @@
+// Load Just-the-Docs base first
 @import "just-the-docs";
 
+// ---- Glassmorphism / modern accents ----
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-shadow: 0 8px 28px rgba(0,0,0,0.30);
+  --brand: #8ae9ff;
+  --brand-2: #84ffa7;
+  --warn: #ff6b6b;
+}
+
+html[data-theme="dark"] :root,
+:root {
+  --glass-bg: rgba(17, 17, 17, 0.35);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-shadow: 0 10px 34px rgba(0,0,0,0.35);
+  --brand: #6ee7ff;
+  --brand-2: #7bff9f;
+}
+
+// Page background subtle gradient
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(130, 255, 214, 0.12), transparent),
+    radial-gradient(1000px 500px at 90% 10%, rgba(130, 214, 255, 0.10), transparent);
+  backdrop-filter: saturate(110%);
+}
+
+// Glass container helper
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 16px;
+}
+
+// Hero banner
+.glass-hero {
+  @extend .glass;
+  padding: 28px;
+  margin: 8px 0 22px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-hero h1 {
+  font-size: 2.2rem;
+  margin-bottom: .5rem;
+  letter-spacing: .2px;
+}
+
+.glass-hero .subtitle {
+  opacity: .85;
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  font-weight: 700;
+  font-size: .9rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  margin-bottom: 10px;
+}
+
+.btn-ghost {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  text-decoration: none !important;
+  font-weight: 700;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.btn-ghost:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+}
+
+.btn-brand { color: #0b0; border-color: rgba(123,255,159,0.35); }
+.btn-brand:hover { color: #0d0; }
+
+.btn-outline {
+  border: 1px dashed var(--glass-border);
+}
+
+// Card grid
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  @extend .glass;
+  padding: 16px;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.card:hover { transform: translateY(-1px); box-shadow: 0 16px 38px rgba(0,0,0,0.35); }
+.card h3 { margin-top: 0; }
+
+// Kofi button restyle (sticky)
 .kofi-support {
   position: sticky;
   top: 12px;
@@ -7,28 +118,50 @@
   display: inline-block;
   margin: 0 0 12px 0;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%);
   color: #111 !important;
   text-decoration: none !important;
-  font-weight: 700;
+  font-weight: 800;
   box-shadow: 0 6px 16px rgba(0,0,0,0.25);
 }
-.kofi-support:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.28);
-}
+.kofi-support:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,0.28); }
 
-.hero-badge {
-  display: inline-block;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #2ea043;
-  color: #fff;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
+// Code blocks / kbd polish
+pre, code { border-radius: 10px !important; }
 kbd {
   background:#222; border:1px solid #444; border-bottom-width:2px; border-radius:6px; padding:2px 6px;
+}
+
+// Reduce transparency preference
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .glass-hero, .card {
+    background: #111;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* --- Brand logo & hero layout --- */
+.hero-with-logo {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 18px;
+  align-items: center;
+}
+.brand-logo {
+  display: block;
+  border-radius: 16px;
+  padding: 6px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+}
+.hero-body { min-width: 0; }
+@media (max-width: 560px) {
+  .hero-with-logo {
+    grid-template-columns: 64px 1fr;
+    gap: 12px;
+  }
+  .brand-logo { width: 64px; height: 64px; }
 }

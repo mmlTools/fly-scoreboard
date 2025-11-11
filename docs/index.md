@@ -5,28 +5,32 @@ nav_order: 1
 ---
 
 {% include support-button.html %}
+{% include glass-hero.html %}
 
-<span class="hero-badge">OBS Plugin</span>
+# Highlights
+<div class="card-grid">
+  <div class="card">
+    <h3>🕐 Timer</h3>
+    <p>Count up/down with pause & reset. State is persisted and the overlay updates live.</p>
+  </div>
+  <div class="card">
+    <h3>🏁 Scoreboard</h3>
+    <p>Control scores, rounds, swap sides, and toggle visibility from the dock or hotkeys.</p>
+  </div>
+  <div class="card">
+    <h3>🖼️ Hashed Logos</h3>
+    <p>Logo uploads are copied to <code>overlay/</code> with a short hash to prevent caching issues.</p>
+  </div>
+  <div class="card">
+    <h3>⚙️ Settings</h3>
+    <p>Server health, port selection, open overlay folder, and a quick hotkeys guide.</p>
+  </div>
+</div>
 
-# Fly Scoreboard
-A lightweight, hotkey-friendly scoreboard overlay for OBS with a built-in web server and an auto-managed Browser Source.
-
-- **Hotkeys everywhere** — bump scores/rounds, toggle swap/show, control the timer.
-- **Live overlay** — JSON-driven `overlay/plugin.json`, cache-busted reloads.
-- **Nice UX** — safe text editing (no flicker), hashed logo uploads to avoid stale cache.
-- **One-click reset** — clear teams, delete icons, reset `plugin.json`.
-
-[Get Started →](getting-started.html){: .btn .btn-primary }
-[Support on Ko-fi](https://ko-fi.com/mmltech){: .btn }
-
----
-
-## Features
-- Dock UI with **Timer**, **Scoreboard**, **Team** controls
-- Browser Source auto-create/update (`overlay/index.html`)
-- **Hashed** icon uploads (`home-<hash>.png`, `guest-<hash>.png`)
-- **Clear + Reset** button: wipes teams/icons, restores defaults
-- **Settings Dialog** with server health, port, hotkey help, open overlay folder
-
-> Want to help this project grow?  
-> {% include support-button.html %}
+## Quick Links
+- [Getting Started](getting-started.html)
+- [Usage](usage.html)
+- [Hotkeys](hotkeys.html)
+- [Settings](settings.html)
+- [Overlay](overlay.html)
+- [Troubleshooting](troubleshooting.html)
