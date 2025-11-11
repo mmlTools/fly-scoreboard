@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fly Scoreboard – OBS Plugin</title>
+    <meta
+      name="description"
+      content="A lightweight, hotkey-friendly scoreboard overlay for OBS Studio."
+    />
+    <link rel="icon" href="assets/img/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="container inner">
+        <a class="brand" href="#home">
+          <img src="assets/img/logo.svg" alt="Fly Scoreboard logo" />
+          <span>Fly Scoreboard</span>
+        </a>
+        <nav class="links">
+          <a href="#features">Features</a>
+          <a href="#getting-started">Getting Started</a>
+          <a href="#usage">Usage</a>
+          <a href="#hotkeys">Hotkeys</a>
+          <a href="#settings">Settings</a>
+          <a href="#overlay">Overlay</a>
+          <a href="#troubleshooting">Troubleshooting</a>
+          <a
+            class="kofi"
+            href="https://ko-fi.com/mmltech"
+            target="_blank"
+            rel="noopener"
+            >☕ Support</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main id="home">
+      <section class="hero">
+        <div class="container">
+          <div class="glass wrap">
+            <img
+              class="logo"
+              src="assets/img/logo.svg"
+              alt="Fly Scoreboard logo"
+              width="72"
+              height="72"
+              loading="eager"
+            />
+            <div>
+              <h1>Live, hotkey-friendly scoreboard overlay for OBS</h1>
+              <p>
+                Control scores, total wins, and timer with a crisp glass UI and
+                an auto-updating Browser Source.
+              </p>
+              <div class="actions">
+                <a class="btn brand" href="#getting-started">Get Started →</a>
+                <a class="btn" href="#usage">Usage</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features">
+        <div class="container">
+          <h2>✨ Features</h2>
+          <div class="grid">
+            <div class="glass card">
+              <h3>🕐 Timer</h3>
+              <p>
+                Count up/down with pause & reset. State is persisted and the
+                overlay updates live.
+              </p>
+            </div>
+            <div class="glass card">
+              <h3>🏁 Scoreboard</h3>
+              <p>
+                Control scores, total wins, swap sides, and toggle visibility
+                from the dock or hotkeys.
+              </p>
+            </div>
+            <div class="glass card">
+              <h3>🖼️ Hashed Logos</h3>
+              <p>
+                Logo uploads are copied to <code>overlay/</code> with a short
+                hash to prevent caching issues.
+              </p>
+            </div>
+            <div class="glass card">
+              <h3>⚙️ Settings</h3>
+              <p>
+                Server health, port selection, open overlay folder, and a quick
+                hotkeys guide.
+              </p>
+            </div>
+            <div class="glass card">
+              <h3>🌐 Browser Source</h3>
+              <p>
+                Auto-creates/updates a Browser Source pointing at the local
+                overlay.
+              </p>
+            </div>
+            <div class="glass card">
+              <h3>⌨️ Hotkeys</h3>
+              <p>
+                Bind +1/−1, swap teams, and show/hide in OBS → Settings →
+                Hotkeys.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="getting-started">
+        <div class="container">
+          <h2>🚀 Getting Started</h2>
+          <ol>
+            <li>Install the plugin (or build from source) and launch OBS.</li>
+            <li>Open <em>View → Docks → Fly Scoreboard</em>.</li>
+            <li>
+              The plugin ensures <code>overlay/</code> exists and configures a
+              Browser Source automatically.
+            </li>
+          </ol>
+          <div class="code">
+            <pre><code>Windows (build quickstart)
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DENABLE_FRONTEND_API=ON -DENABLE_QT=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF
+cmake --build build --config Release
+cmake --install build --config Release --prefix "E:\obs-studio"</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="usage">
+        <div class="container">
+          <h2>🧠 Usage</h2>
+          <ul>
+            <li>
+              <strong>Timer</strong>: type <code>mm:ss</code>, choose
+              <em>countdown</em> or <em>countup</em>, then start/pause/reset.
+            </li>
+            <li>
+              <strong>Scoreboard</strong>: adjust scores and total wins; toggle
+              <em>Swap</em> and <em>Show</em>.
+            </li>
+            <li>
+              <strong>Teams</strong>: set Title/Subtitle and upload logos
+              (hashed filenames avoid cache issues).
+            </li>
+            <li>
+              <strong>Apply</strong> saves to <code>overlay/plugin.json</code>;
+              <strong>Refresh</strong> busts the Browser Source cache.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="hotkeys">
+        <div class="container">
+          <h2>⌨️ Hotkeys</h2>
+          <p>
+            Bind keys in <strong>OBS → Settings → Hotkeys</strong> under
+            <em>“Fly Scoreboard:”</em>
+          </p>
+          <ul>
+            <li>Home/Guests Score +1 / −1</li>
+            <li>Home/Guests Wins +1 / −1</li>
+            <li>Swap Home ↔ Guests</li>
+            <li>Show/Hide Scoreboard</li>
+          </ul>
+          <p>
+            <em
+              >Hotkeys are stored per OBS profile; the plugin restores bindings
+              on load.</em
+            >
+          </p>
+        </div>
+      </section>
+
+      <section id="settings">
+        <div class="container">
+          <h2>⚙️ Settings</h2>
+          <ul>
+            <li>
+              Server status + port control; restart server if port changes.
+            </li>
+            <li>Open overlay folder shortcut.</li>
+            <li>Built-in hotkeys help dialog.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="overlay">
+        <div class="container">
+          <h2>🌐 Overlay</h2>
+          <p>Browser Source URL:</p>
+          <div class="code">
+            <pre><code>http://127.0.0.1:&lt;port&gt;/overlay/index.html</code></pre>
+          </div>
+          <p>State file (updated by the dock):</p>
+          <div class="code">
+            <pre><code>&lt;config_path&gt;/overlay/plugin.json</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="troubleshooting">
+        <div class="container">
+          <h2>🧯 Troubleshooting</h2>
+          <ul>
+            <li>
+              <strong>Overlay not showing?</strong> Ensure OBS Browser plugin is
+              enabled; hit <em>Refresh Overlay</em> in the dock.
+            </li>
+            <li>
+              <strong>Titles revert?</strong> Make sure the field loses focus
+              (press Enter or click outside) before switching scenes.
+            </li>
+            <li>
+              <strong>Logos stale?</strong> Hashing prevents cache, but if you
+              replace files manually, use <em>Refresh Overlay</em>.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="development">
+        <div class="container">
+          <h2>🧰 Development</h2>
+          <ul>
+            <li>OBS SDK + Qt</li>
+            <li>CMake-based build; Windows uses Visual Studio 2022.</li>
+            <li>
+              Code modules: Dock UI, State, Web Server, Browser Source manager,
+              Hotkeys, Settings dialog.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="faq">
+        <div class="container">
+          <h2>❓ FAQ</h2>
+          <p>
+            <strong>Can I re-skin the overlay?</strong> Yes customize your own
+            <code>overlay/index.html</code> while consuming
+            <code>plugin.json</code>.
+          </p>
+        </div>
+      </section>
+
+      <footer>
+        <div class="container">
+          Built with ❤️ for OBS •
+          <a href="https://ko-fi.com/mmltech" target="_blank" rel="noopener"
+            >Buy me a coffee</a
+          >
+        </div>
+      </footer>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,291 @@
+/* Fly Scoreboard — Pure HTML/CSS/JS landing page (Logo-themed) */
+:root {
+  /* Core palette (matched to logo) */
+  --bg: #08121a; /* deep navy */
+  --fg: #e9f3ff; /* crisp off-white */
+  --muted: #9db2c7; /* soft gray-blue */
+
+  --brand-cyan: #19d6ff; /* cyan wing edge */
+  --brand-blue: #0aa0ff; /* mid blue */
+  --brand-gold: #f6b10a; /* halo gold */
+  --brand-amber: #f59f0b; /* warm amber accent */
+
+  /* Surfaces / glass */
+  --card: rgba(255, 255, 255, 0.06);
+  --card-b: #ffffff1a;
+
+  /* Glows / rings */
+  --ring-cyan: rgba(25, 214, 255, 0.38);
+  --ring-gold: rgba(246, 177, 10, 0.35);
+
+  /* Shadow */
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter,
+    "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  color: var(--fg);
+  background: radial-gradient(
+      1200px 600px at 8% -12%,
+      rgba(10, 160, 255, 0.12),
+      transparent
+    ),
+    radial-gradient(900px 480px at 92% 8%, rgba(246, 177, 10, 0.1), transparent),
+    linear-gradient(180deg, #070e15, var(--bg));
+  line-height: 1.6;
+  background-attachment: fixed;
+}
+
+/* Layout */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+header.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  background: rgba(8, 15, 23, 0.55);
+  border-bottom: 1px solid #ffffff12;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.nav .inner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--fg);
+}
+.brand img {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+.brand span {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+nav.links {
+  margin-left: auto;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+nav.links a {
+  color: var(--fg);
+  text-decoration: none;
+  opacity: 0.85;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
+nav.links a.active,
+nav.links a:hover {
+  opacity: 1;
+  background: #ffffff12;
+  box-shadow: inset 0 0 0 1px #ffffff14;
+}
+.kofi {
+  background: linear-gradient(135deg, var(--brand-gold), #ffc666);
+  color: #111;
+  padding: 8px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(246, 177, 10, 0.25);
+}
+
+/* Hero */
+.hero {
+  padding: 54px 0 24px;
+}
+
+.glass {
+  background: var(--card);
+  border: 1px solid var(--card-b);
+  border-radius: 18px;
+  box-shadow: var(--shadow), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+.hero .wrap {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 26px;
+  position: relative;
+}
+.hero .wrap::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 18px;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px transparent inset,
+    0 0 80px 10px rgba(25, 214, 255, 0.08),
+    0 0 120px 18px rgba(246, 177, 10, 0.06);
+}
+
+.hero .logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  padding: 6px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid var(--card-b);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28), 0 0 0 6px var(--ring-cyan) inset;
+}
+.hero h1 {
+  margin: 0;
+  font-size: 2.1rem;
+  letter-spacing: 0.2px;
+}
+.hero p {
+  margin: 0.4rem 0 1rem;
+  color: var(--muted);
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #ffffff1a;
+  text-decoration: none;
+  color: var(--fg);
+  font-weight: 700;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease,
+    color 0.12s ease;
+}
+.btn:hover {
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
+  transform: translateY(-1px);
+}
+
+.btn.brand {
+  color: #0b0b0b;
+  background: linear-gradient(135deg, var(--brand-gold), var(--brand-cyan));
+  border-color: rgba(246, 177, 10, 0.45);
+  box-shadow: 0 0 0 4px var(--ring-gold) inset,
+    0 10px 26px rgba(246, 177, 10, 0.25);
+}
+.btn.brand:hover {
+  color: #0b0b0b;
+  box-shadow: 0 0 0 5px var(--ring-gold) inset,
+    0 16px 34px rgba(246, 177, 10, 0.33);
+}
+.btn.alt {
+  border-color: rgba(25, 214, 255, 0.35);
+  box-shadow: 0 0 0 4px var(--ring-cyan) inset;
+}
+
+/* Cards grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.card {
+  padding: 16px;
+}
+.card h3 {
+  margin: 6px 0;
+}
+.card:hover {
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  transform: translateY(-1px);
+}
+
+/* Sections */
+section {
+  scroll-margin-top: 80px;
+  padding: 34px 0;
+}
+section h2 {
+  margin: 0 0 12px;
+  font-size: 1.6rem;
+}
+.code {
+  background: #0f1318;
+  border: 1px solid #ffffff14;
+  border-radius: 12px;
+  padding: 14px;
+  overflow: auto;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+a {
+  color: var(--brand-cyan);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+kbd {
+  background: #13202b;
+  border: 1px solid #274252;
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 2px 6px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Footer */
+footer {
+  margin: 40px 0 60px;
+  text-align: center;
+  color: var(--muted);
+}
+footer a {
+  color: var(--fg);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hero .wrap {
+    grid-template-columns: 64px 1fr;
+  }
+  .hero .logo {
+    width: 58px;
+    height: 58px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.26), 0 0 0 5px var(--ring-cyan) inset;
+  }
+}
+
+/* Optional focus-visible for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--brand-cyan);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
