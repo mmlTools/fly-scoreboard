@@ -1,7 +1,6 @@
 title: Fly Scoreboard (OBS)
 description: Lightweight, hotkey-friendly scoreboard overlay for OBS.
-theme: just-the-docs
-remote_theme: just-the-docs/just-the-docs
+theme: midnight
 
 url: https://mmlTools.github.io
 baseurl: /fly-scoreboard
