@@ -769,7 +769,7 @@ void FlyScoreDock::onClearTeamsAndReset()
 	deleteLogoIfExists(st_.away.logo);
 
 	const QString ovlDir = QDir(dataDir_).filePath("overlay");
-	for (const auto base : {QStringLiteral("home"), QStringLiteral("guest")}) {
+	for (const auto &base : {QStringLiteral("home"), QStringLiteral("guest")}) {
 		QDir d(ovlDir);
 		const auto files = d.entryList(QStringList{QString("%1*.*").arg(base)}, QDir::Files);
 		for (const auto &fn : files)
