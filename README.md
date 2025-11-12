@@ -7,6 +7,17 @@ It runs a local web server that powers an **auto-updating browser overlay**, all
 
 ---
 
+## 🖼️ Preview
+
+<p align="center">
+  <picture>
+    <source srcset="docs/assets/img/preview.webp" type="image/webp">
+    <img src="docs/assets/img/preview.png" alt="Fly Scoreboard Preview" width="800">
+  </picture>
+</p>
+
+---
+
 ## ✨ Features
 
 - 🕐 **Live Timer** - Count up or down, pause, reset, and auto-syncs with overlay.
