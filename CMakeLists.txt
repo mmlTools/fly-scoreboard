@@ -27,7 +27,7 @@ if(MSVC)
   add_compile_options(/WX- /utf-8)
 endif()
 
-if(WIN32 OR APPLE)
+if (WIN32 OR APPLE)
   add_compile_definitions(HAVE_OBS_DOCK_BY_ID=1)
 endif()
 

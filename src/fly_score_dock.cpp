@@ -853,15 +853,49 @@ void fly_create_dock()
 {
 	if (g_dockContent)
 		return;
+
 	auto *panel = new FlyScoreDock(nullptr);
 	panel->init();
+
+#if defined(HAVE_OBS_DOCK_BY_ID)
 	obs_frontend_add_dock_by_id(kFlyDockId, kFlyDockTitle, panel);
+#else
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+	obs_frontend_add_dock(panel);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+#endif
+
 	g_dockContent = panel;
 }
 
 void fly_destroy_dock()
 {
+	if (!g_dockContent)
+		return;
+
+#if defined(HAVE_OBS_DOCK_BY_ID)
 	obs_frontend_remove_dock(kFlyDockId);
+#elif defined(__linux__)
+	QWidget *w = g_dockContent;
+	w->setParent(nullptr);
+	w->hide();
+	w->deleteLater();
+#else
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+	obs_frontend_remove_dock(g_dockContent);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+#endif
+
 	g_dockContent = nullptr;
 }
 
