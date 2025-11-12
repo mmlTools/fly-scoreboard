@@ -1,24 +1,19 @@
-/* Fly Scoreboard — Pure HTML/CSS/JS landing page (Logo-themed) */
 :root {
-  /* Core palette (matched to logo) */
-  --bg: #08121a; /* deep navy */
-  --fg: #e9f3ff; /* crisp off-white */
-  --muted: #9db2c7; /* soft gray-blue */
+  --bg: #08121a;
+  --fg: #e9f3ff;
+  --muted: #9db2c7;
 
-  --brand-cyan: #19d6ff; /* cyan wing edge */
-  --brand-blue: #0aa0ff; /* mid blue */
-  --brand-gold: #f6b10a; /* halo gold */
-  --brand-amber: #f59f0b; /* warm amber accent */
+  --brand-cyan: #19d6ff;
+  --brand-blue: #0aa0ff;
+  --brand-gold: #f6b10a;
+  --brand-amber: #f59f0b;
 
-  /* Surfaces / glass */
   --card: rgba(255, 255, 255, 0.06);
   --card-b: #ffffff1a;
 
-  /* Glows / rings */
   --ring-cyan: rgba(25, 214, 255, 0.38);
   --ring-gold: rgba(246, 177, 10, 0.35);
 
-  /* Shadow */
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
@@ -46,7 +41,6 @@ body {
   background-attachment: fixed;
 }
 
-/* Layout */
 .container {
   max-width: 1100px;
   margin: 0 auto;
@@ -119,7 +113,6 @@ nav.links a:hover {
   box-shadow: 0 8px 20px rgba(246, 177, 10, 0.25);
 }
 
-/* Hero */
 .hero {
   padding: 54px 0 24px;
 }
@@ -208,7 +201,6 @@ nav.links a:hover {
   box-shadow: 0 0 0 4px var(--ring-cyan) inset;
 }
 
-/* Cards grid */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -226,7 +218,6 @@ nav.links a:hover {
   transform: translateY(-1px);
 }
 
-/* Sections */
 section {
   scroll-margin-top: 80px;
   padding: 34px 0;
@@ -261,7 +252,6 @@ kbd {
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
-/* Footer */
 footer {
   margin: 40px 0 60px;
   text-align: center;
@@ -271,7 +261,6 @@ footer a {
   color: var(--fg);
 }
 
-/* Responsive */
 @media (max-width: 640px) {
   .hero .wrap {
     grid-template-columns: 64px 1fr;
@@ -283,9 +272,96 @@ footer a {
   }
 }
 
-/* Optional focus-visible for keyboard users */
 :focus-visible {
   outline: 2px solid var(--brand-cyan);
   outline-offset: 2px;
   border-radius: 10px;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1.2fr;
+  gap: 22px;
+  align-items: center;
+  padding: 26px;
+}
+
+.hero-copy .badges {
+  margin: 10px 0 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ffffff10;
+  border: 1px solid #ffffff1a;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.hero-media {
+  position: relative;
+}
+
+.preview {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--card-b);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 0 6px var(--ring-cyan) inset;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  -webkit-mask-image: radial-gradient(
+    120% 90% at 50% 0%,
+    black 70%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(120% 90% at 50% 0%, black 70%, transparent 100%);
+}
+
+.table-wrap {
+  overflow: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #ffffff14;
+  text-align: left;
+}
+.table thead th {
+  background: #0f1318;
+  color: var(--fg);
+  font-weight: 800;
+}
+.table tr:hover td {
+  background: #ffffff08;
+}
+
+@media (max-width: 960px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .hero-media {
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-copy .actions .btn {
+    display: inline-block;
+    margin-bottom: 6px;
+  }
 }
