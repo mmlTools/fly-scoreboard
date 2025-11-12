@@ -81,7 +81,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -DCMAKE_PREFIX_PATH="${{ env.CMAKE_PREFIX_PATH }}" \
             -DCMAKE_CXX_FLAGS="-Wno-error=deprecated-this-capture"
-          # If you must force arch:
+          # If needed, force arch:
           # -DCMAKE_OSX_ARCHITECTURES=arm64
 
       - name: Build (macOS)
@@ -100,11 +100,11 @@ jobs:
           sudo apt-get install -y cmake ninja-build build-essential pkg-config
           # OpenGL headers for FindOpenGL
           sudo apt-get install -y libgl1-mesa-dev
-          # OBS SDK + CURL
-          sudo apt-get install -y libobs-dev libcurl4-openssl-dev
-          # Qt5 since your CMake is looking for Qt5 (Qt5Config.cmake)
+          # OBS SDK
+          sudo apt-get install -y libobs-dev
+          # Qt5
           sudo apt-get install -y qtbase5-dev qtbase5-dev-tools
-          # Help CMake find LibObs & Qt5 immediately
+          # Help CMake find LibObs & Qt5
           if [ -f /usr/lib/x86_64-linux-gnu/cmake/LibObs/LibObsConfig.cmake ]; then
             echo "LibObs_DIR=/usr/lib/x86_64-linux-gnu/cmake/LibObs" >> $GITHUB_ENV
           fi
@@ -126,6 +126,12 @@ jobs:
         run: cmake --build build --config ${{ env.BUILD_TYPE }}
 
       # --------------------- Package per-OS ---------------------
+      - name: Show built binaries
+        shell: bash
+        run: |
+          echo "Built binaries:"
+          find build -maxdepth 4 -type f \( -name "*.dll" -o -name "*.so" -o -name "*.dylib" \) -print || true
+
       - name: Package artifact
         shell: bash
         run: |
@@ -134,7 +140,7 @@ jobs:
           PKG_DIR="package-${OS_TAG}"
           mkdir -p "$PKG_DIR"
 
-          # Copy plugin binary
+          # Copy plugin binary (OBS plugins on macOS are .so)
           if [[ "$OS_TAG" == "windows" ]]; then
             find build -type f \( -iname "*obs-fly-scoreboard*.dll" -o -iname "*obs-fly-scoreboard*.pdb" \) \
               -print -exec cp {} "$PKG_DIR"/ \; || true
@@ -146,7 +152,7 @@ jobs:
               -print -exec cp {} "$PKG_DIR"/ \; || true
           fi
 
-          # Include plugin data folder (themes, etc.) if present
+          # Include plugin data folder (if you ship it)
           if [ -d "data/obs-plugins/obs-fly-scoreboard" ]; then
             mkdir -p "$PKG_DIR/data/obs-plugins"
             cp -R "data/obs-plugins/obs-fly-scoreboard" "$PKG_DIR/data/obs-plugins/"
@@ -157,7 +163,7 @@ jobs:
 
           if ! find "$PKG_DIR" -type f | grep -q .; then
             echo "ERROR: No plugin files copied for $OS_TAG" >&2
-            find build -maxdepth 3 -type f -print >&2 || true
+            find build -maxdepth 4 -type f -print >&2 || true
             exit 1
           fi
 
@@ -179,6 +185,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout (to manage the tag)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -187,10 +198,20 @@ jobs:
       - name: List artifacts
         run: find ./artifacts -type f -maxdepth 3 -print
 
+      - name: Ensure tag exists
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "$VERSION" "${GITHUB_SHA}"
+          git push -f origin "$VERSION"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
           name: "${{ env.ARTIFACT_BASENAME }} ${{ env.VERSION }}"
           draft: false
           prerelease: false
