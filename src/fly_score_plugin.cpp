@@ -1,4 +1,4 @@
-#define LOG_TAG "[fly-score][plugin]"
+#define LOG_TAG "[obs-fly-scoreboard][plugin]"
 #include "fly_score_log.hpp"
 
 #include <obs-module.h>
@@ -132,7 +132,7 @@ static void frontend_event_cb(enum obs_frontend_event event, void *)
 }
 
 OBS_DECLARE_MODULE()
-OBS_MODULE_USE_DEFAULT_LOCALE("fly-score", "en-US")
+OBS_MODULE_USE_DEFAULT_LOCALE("obs-fly-scoreboard", "en-US")
 
 bool obs_module_load(void)
 {

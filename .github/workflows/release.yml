@@ -13,7 +13,7 @@ permissions:
 
 env:
   BUILD_TYPE: Release
-  ARTIFACT_BASENAME: fly-scoreboard
+  ARTIFACT_BASENAME: obs-fly-scoreboard
   VERSION: v${{ github.run_number }}
 
 jobs:
@@ -136,20 +136,20 @@ jobs:
 
           # Copy plugin binary
           if [[ "$OS_TAG" == "windows" ]]; then
-            find build -type f \( -iname "*fly-scoreboard*.dll" -o -iname "*fly-scoreboard*.pdb" \) \
+            find build -type f \( -iname "*obs-fly-scoreboard*.dll" -o -iname "*obs-fly-scoreboard*.pdb" \) \
               -print -exec cp {} "$PKG_DIR"/ \; || true
           elif [[ "$OS_TAG" == "macos" ]]; then
-            find build -type f \( -iname "*fly-scoreboard*.dylib" -o -iname "*fly-scoreboard*.so" \) \
+            find build -type f \( -iname "*obs-fly-scoreboard*.dylib" -o -iname "*obs-fly-scoreboard*.so" \) \
               -print -exec cp {} "$PKG_DIR"/ \; || true
           else
-            find build -type f -iname "*fly-scoreboard*.so" \
+            find build -type f -iname "*obs-fly-scoreboard*.so" \
               -print -exec cp {} "$PKG_DIR"/ \; || true
           fi
 
           # Include plugin data folder (themes, etc.) if present
-          if [ -d "data/obs-plugins/fly-scoreboard" ]; then
+          if [ -d "data/obs-plugins/obs-fly-scoreboard" ]; then
             mkdir -p "$PKG_DIR/data/obs-plugins"
-            cp -R "data/obs-plugins/fly-scoreboard" "$PKG_DIR/data/obs-plugins/"
+            cp -R "data/obs-plugins/obs-fly-scoreboard" "$PKG_DIR/data/obs-plugins/"
           fi
 
           echo "Contents of $PKG_DIR:"
@@ -196,6 +196,6 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            artifacts/**/fly-scoreboard-*.zip
+            artifacts/**/obs-fly-scoreboard-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

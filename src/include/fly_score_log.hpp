@@ -2,7 +2,7 @@
 #include <obs-module.h>
 
 #ifndef LOG_TAG
-#define LOG_TAG "[fly-score]"
+#define LOG_TAG "[obs-fly-scoreboard]"
 #endif
 
 #define LOGI(fmt, ...) blog(LOG_INFO,    LOG_TAG " " fmt, ##__VA_ARGS__)
