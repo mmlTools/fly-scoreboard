@@ -16,11 +16,21 @@ endif()
 project(${_name} VERSION ${_version} LANGUAGES C CXX)
 
 # ---------------------------------------------------------------------------
-# Options
+# Options (these are mainly here so your CI flags are "used")
 # ---------------------------------------------------------------------------
-# Only runtime-related toggles; frontend API is always enabled if available.
-option(ENABLE_HTTP_SERVER    "Serve overlay on http://127.0.0.1:<port>"  ON)
-option(EMBED_DEFAULT_ASSETS  "Embed data/overlay + locale into binary"   ON)
+option(ENABLE_FRONTEND_API "Use obs-frontend-api for dock, hotkeys, browser auto-setup" ON)
+option(ENABLE_QT           "Use Qt for dock UI and dialogs"                             ON)
+option(ENABLE_HTTP_SERVER  "Serve overlay on http://127.0.0.1:<port>"                   ON)
+option(EMBED_DEFAULT_ASSETS "Embed data/overlay + locale into binary"                   ON)
+
+# This plugin *requires* Qt and frontend API; don't allow disabling them.
+if(NOT ENABLE_QT)
+  message(FATAL_ERROR "ENABLE_QT=OFF is not supported for fly-scoreboard; Qt is required.")
+endif()
+
+if(NOT ENABLE_FRONTEND_API)
+  message(FATAL_ERROR "ENABLE_FRONTEND_API=OFF is not supported for fly-scoreboard; obs-frontend-api is required.")
+endif()
 
 include(compilerconfig)
 include(defaults)
@@ -33,7 +43,7 @@ if(MSVC)
   add_compile_options(/WX- /utf-8)
 endif()
 
-# OBS 32+ has obs_frontend_add_dock_by_id; we always use by-id dock API.
+# OBS 32+: use dock-by-id API
 add_compile_definitions(HAVE_OBS_DOCK_BY_ID=1)
 
 if(APPLE)
@@ -75,14 +85,15 @@ find_package(libobs REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
 
 # ---------------------------------------------------------------------------
-# Frontend API (REQUIRED: we want docks/hotkeys/browser auto-setup everywhere)
+# Frontend API (REQUIRED)
 # ---------------------------------------------------------------------------
 find_package(obs-frontend-api REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::obs-frontend-api)
+# Define macro for your #ifdefs
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_FRONTEND_API=1)
 
 # ---------------------------------------------------------------------------
-# Qt (dock & dialogs)
+# Qt (dock & dialogs) – REQUIRED
 # ---------------------------------------------------------------------------
 find_package(Qt6 COMPONENTS Core Widgets QUIET)
 if(Qt6_FOUND)
@@ -98,6 +109,7 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
   AUTORCC ON
 )
 
+# Define macro for your #ifdefs (even if you don't currently use it)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_QT=1)
 
 # ---------------------------------------------------------------------------
