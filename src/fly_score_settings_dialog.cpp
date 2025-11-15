@@ -1,4 +1,4 @@
-#define LOG_TAG "[obs-fly-scoreboard][settings]"
+#define LOG_TAG "[fly-scoreboard][settings]"
 #include "fly_score_log.hpp"
 
 #include "fly_score_settings_dialog.hpp"

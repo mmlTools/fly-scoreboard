@@ -6,7 +6,7 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCO
 # Fallbacks if not provided by buildspec/bootstrap
 # ---------------------------------------------------------------------------
 if(NOT DEFINED _name)
-  set(_name "obs-fly-scoreboard")
+  set(_name "fly-scoreboard")
 endif()
 
 if(NOT DEFINED _version)

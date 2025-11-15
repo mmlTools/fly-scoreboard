@@ -1,4 +1,4 @@
-#define LOG_TAG "[obs-fly-scoreboard][hotkeys]"
+#define LOG_TAG "[fly-scoreboard][hotkeys]"
 #include "fly_score_log.hpp"
 
 #include "fly_score_hotkeys.hpp"

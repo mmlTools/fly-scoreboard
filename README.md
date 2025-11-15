@@ -36,7 +36,7 @@ It runs a local web server that powers an **auto-updating browser overlay**, all
 
 ### From Release (Recommended)
 
-1. Download the latest **Release ZIP** from [GitHub Releases](https://github.com/mmlTools/obs-fly-scoreboard/releases).
+1. Download the latest **Release ZIP** from [GitHub Releases](https://github.com/mmlTools/fly-scoreboard/releases).
 2. Extract it into your OBS plugins directory, e.g.:
    ```
    C:\Program Files\obs-studio\obs-plugins\64bit\
@@ -118,7 +118,7 @@ cmake --build build --config Release
 
 ### Run Locally
 
-OBS will automatically detect and load `obs-fly-scoreboard.dll` / `obs-fly-scoreboard.so` on startup.
+OBS will automatically detect and load `fly-scoreboard.dll` / `fly-scoreboard.so` on startup.
 
 ---
 
@@ -141,8 +141,8 @@ overlay/
 ## 💬 Support & Contribution
 
 - 💖 [Support the project on Ko-fi](https://ko-fi.com/mmltech)
-- 🐛 Report bugs via [GitHub Issues](https://github.com/mmlTools/obs-fly-scoreboard/issues)
-- 📘 Read the [Full Documentation →](https://mmlTools.github.io/obs-fly-scoreboard/)
+- 🐛 Report bugs via [GitHub Issues](https://github.com/mmlTools/fly-scoreboard/issues)
+- 📘 Read the [Full Documentation →](https://mmlTools.github.io/fly-scoreboard/)
 
 ---
 

@@ -33,10 +33,10 @@
     },
     "platformConfig": {
         "macos": {
-            "bundleId": "com.example.obs-fly-scoreboard"
+            "bundleId": "com.example.fly-scoreboard"
         }
     },
-    "name": "obs-fly-scoreboard",
+    "name": "fly-scoreboard",
     "displayName": "OBS Studio Fly Scoreboard",
     "version": "1.0.0",
     "author": "MML Tech",
