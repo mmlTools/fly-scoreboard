@@ -1,8 +1,9 @@
 #pragma once
 #include <obs-module.h>
+#include "config.hpp"
 
 #ifndef LOG_TAG
-#define LOG_TAG "[obs-fly-scoreboard]"
+#define LOG_TAG "[" PLUGIN_NAME "]"
 #endif
 
 #define LOGI(fmt, ...) blog(LOG_INFO,    LOG_TAG " " fmt, ##__VA_ARGS__)

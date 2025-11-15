@@ -3,16 +3,16 @@ cmake_minimum_required(VERSION 3.28...3.30)
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)
 
 if(NOT DEFINED _name)
-  set(_name "obs-fly-scoreboard")
+  set(_name "fly-scoreboard")
 endif()
+
 if(NOT DEFINED _version)
   set(_version "1.0.0")
 endif()
 
 project(${_name} VERSION ${_version} LANGUAGES C CXX)
 
-option(ENABLE_FRONTEND_API   "Use obs-frontend-api for UI functionality" ON)
-option(ENABLE_QT             "Use Qt functionality (dock UI)"            ON)
+# Only runtime options now
 option(ENABLE_HTTP_SERVER    "Serve overlay on http://127.0.0.1:<port>"  ON)
 option(EMBED_DEFAULT_ASSETS  "Embed data/overlay + locale into binary"   ON)
 
@@ -20,10 +20,15 @@ include(compilerconfig)
 include(defaults)
 include(helpers)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
+
 if(MSVC)
   add_compile_options(/WX- /utf-8)
 endif()
+
+# OBS 32+ removed obs_frontend_add_dock; we always use the new by-id API.
+add_compile_definitions(HAVE_OBS_DOCK_BY_ID=1)
 
 if(APPLE)
   add_compile_options(
@@ -34,8 +39,6 @@ if(APPLE)
   )
 endif()
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 set(FS_INC_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/src/include")
 set(FS_3P_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty")
 set(FS_SRC_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -44,9 +47,54 @@ set(FS_OVERLAY_DIR "${FS_DATA_DIR}/overlay")
 set(FS_LOCALE_DIR  "${FS_DATA_DIR}/locale")
 set(FS_GEN_DIR     "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
+file(MAKE_DIRECTORY "${FS_GEN_DIR}")
+
+configure_file(
+  "${FS_INC_DIR}/config.hpp.in"
+  "${FS_INC_DIR}/config.hpp"
+  @ONLY
+)
+
 add_library(${CMAKE_PROJECT_NAME} MODULE)
-if(APPLE OR UNIX)
-  set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES PREFIX "")
+
+# libobs
+find_package(libobs REQUIRED)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
+
+# Qt (dock & dialogs)
+find_package(Qt6 COMPONENTS Core Widgets QUIET)
+if(Qt6_FOUND)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt6::Core Qt6::Widgets)
+else()
+  find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets)
+endif()
+
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+  AUTOMOC ON
+  AUTOUIC ON
+  AUTORCC ON
+)
+
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_QT=1)
+
+# ---------------------------------------------------------------------------
+# Frontend API (optional; only if OBS::obs-frontend-api is available)
+# ---------------------------------------------------------------------------
+if(TARGET OBS::obs-frontend-api)
+  message(STATUS "OBS::obs-frontend-api found; enabling frontend features")
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::obs-frontend-api)
+  target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_FRONTEND_API=1)
+else()
+  message(WARNING "OBS::obs-frontend-api not found; building WITHOUT frontend API (no dock/hotkey persistence/browser auto-setup).")
+endif()
+
+# HTTP server
+if(ENABLE_HTTP_SERVER)
+  target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_HTTP_SERVER=1)
+  if(WIN32)
+    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ws2_32)
+  endif()
 endif()
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -56,56 +104,26 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
   ${FS_3P_DIR}
 )
 
-find_package(libobs REQUIRED)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
-
-if(ENABLE_FRONTEND_API)
-  find_package(obs-frontend-api REQUIRED)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::obs-frontend-api)
-  target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_FRONTEND_API=1)
-
-  if(WIN32 OR APPLE)
-    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_OBS_DOCK_BY_ID=1)
-  endif()
-endif()
-
-
-if(ENABLE_QT)
-  find_package(Qt6 COMPONENTS Core Widgets QUIET)
-  if(Qt6_FOUND)
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt6::Core Qt6::Widgets)
-  else()
-    find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets)
-  endif()
-  set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
-  target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_QT=1)
-endif()
-
-if(ENABLE_HTTP_SERVER)
-  target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_HTTP_SERVER=1)
-  if(WIN32)
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ws2_32)
-  endif()
-endif()
-
 set(OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_plugin.cpp
   ${FS_SRC_DIR}/fly_score_hotkeys.cpp
   ${FS_SRC_DIR}/fly_score_state.cpp
   ${FS_SRC_DIR}/seed_defaults.cpp
 )
+
 if(ENABLE_HTTP_SERVER)
-  list(APPEND OBS_FLY_SCORE_SRC ${FS_SRC_DIR}/fly_score_server.cpp)
-endif()
-if(ENABLE_QT)
   list(APPEND OBS_FLY_SCORE_SRC
-    ${FS_SRC_DIR}/fly_score_dock.cpp
-    ${FS_INC_DIR}/fly_score_dock.hpp
-    ${FS_SRC_DIR}/fly_score_settings_dialog.cpp
-    ${FS_INC_DIR}/fly_score_settings_dialog.hpp
+    ${FS_SRC_DIR}/fly_score_server.cpp
   )
 endif()
+
+list(APPEND OBS_FLY_SCORE_SRC
+  ${FS_SRC_DIR}/fly_score_dock.cpp
+  ${FS_INC_DIR}/fly_score_dock.hpp
+  ${FS_SRC_DIR}/fly_score_settings_dialog.cpp
+  ${FS_INC_DIR}/fly_score_settings_dialog.hpp
+)
+
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${OBS_FLY_SCORE_SRC})
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
@@ -116,12 +134,12 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
   CXX_STANDARD 20
   CXX_STANDARD_REQUIRED YES
-  OUTPUT_NAME ${_name}
 )
 
+# ---------------------------------------------------------------------------
+# Embedded overlay/locale assets
+# ---------------------------------------------------------------------------
 if(EMBED_DEFAULT_ASSETS)
-  file(MAKE_DIRECTORY "${FS_GEN_DIR}")
-
   set(EMBED_TEXT_FILES
     "${FS_OVERLAY_DIR}/index.html"
     "${FS_OVERLAY_DIR}/style.css"
@@ -149,25 +167,13 @@ inline constexpr const char* ${_id} = R\"obsplg(${_contents})obsplg\";\n")
   endforeach()
 
   set(_embedded_header "${FS_GEN_DIR}/embedded_assets.hpp")
-  file(WRITE "${_embedded_header}" "/* Auto-generated: do not edit. */\n#pragma once\nnamespace fly_score_embedded {\n${_asset_entries}}\n")
+  file(WRITE "${_embedded_header}"
+"/* Auto-generated: do not edit. */\n#pragma once\nnamespace fly_score_embedded {\n${_asset_entries}}\n")
+
   target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_EMBEDDED_DEFAULTS=1)
 endif()
 
-if(WIN32)
-  install(TARGETS ${CMAKE_PROJECT_NAME}
-    RUNTIME DESTINATION "obs-plugins/64bit"
-    LIBRARY DESTINATION "obs-plugins/64bit")
-elseif(APPLE)
-  install(TARGETS ${CMAKE_PROJECT_NAME}
-    LIBRARY DESTINATION "obs-plugins")
-else()
-  install(TARGETS ${CMAKE_PROJECT_NAME}
-    LIBRARY DESTINATION "obs-plugins")
-endif()
-
-if(NOT EMBED_DEFAULT_ASSETS)
-  install(DIRECTORY "${FS_OVERLAY_DIR}/"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/obs/obs-plugins/${_name}")
-  install(DIRECTORY "${FS_LOCALE_DIR}/"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/obs/obs-plugins/${_name}/locale")
-endif()
+# Let the obs-plugintemplate helpers handle bundles & install layout
+set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES
+  OUTPUT_NAME ${_name}
+)

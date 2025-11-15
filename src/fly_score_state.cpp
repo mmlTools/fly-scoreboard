@@ -1,4 +1,6 @@
-#define LOG_TAG "[obs-fly-scoreboard][state]"
+#include "config.hpp"
+
+#define LOG_TAG "[" PLUGIN_NAME "][state]"
 #include "fly_score_state.hpp"
 
 #include <obs-module.h>

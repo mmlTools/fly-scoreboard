@@ -1,12 +1,12 @@
-#define LOG_TAG "[obs-fly-scoreboard][settings]"
+#include "config.hpp"
+
+#define LOG_TAG "[" PLUGIN_NAME "][settings]"
 #include "fly_score_log.hpp"
 
 #include "fly_score_settings_dialog.hpp"
 #include "fly_score_server.hpp"
 #include "fly_score_state.hpp"
 #include "seed_defaults.hpp"
-
-#include <obs-frontend-api.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>

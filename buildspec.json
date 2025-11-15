@@ -33,11 +33,11 @@
     },
     "platformConfig": {
         "macos": {
-            "bundleId": "com.example.obs-fly-scoreboard"
+            "bundleId": "com.example.fly-scoreboard"
         }
     },
-    "name": "obs-fly-scoreboard",
-    "displayName": "OBS Studio Fly Scoreboard",
+    "name": "fly-scoreboard",
+    "displayName": "Scoreboard Plugin for OBS Studio",
     "version": "1.0.0",
     "author": "MML Tech",
     "website": "https://obscountdown.com",

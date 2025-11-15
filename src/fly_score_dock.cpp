@@ -1,4 +1,6 @@
-#define LOG_TAG "[obs-fly-scoreboard][dock]"
+#include "config.hpp"
+
+#define LOG_TAG "[" PLUGIN_NAME "][dock]"
 #include "fly_score_log.hpp"
 
 #include "fly_score_dock.hpp"
@@ -8,8 +10,10 @@
 #include "seed_defaults.hpp"
 #include "fly_score_const.hpp"
 
-#include <obs-frontend-api.h>
 #include <obs.h>
+#ifdef ENABLE_FRONTEND_API
+#include <obs-frontend-api.h>
+#endif
 
 #include <QRegularExpression>
 #include <QBoxLayout>
@@ -890,56 +894,37 @@ void FlyScoreDock::toggleShow()
 	saveState();
 }
 
+// ---------------------------------------------------------------------------
+// Dock registration with OBS frontend
+// ---------------------------------------------------------------------------
+
 static QWidget *g_dockContent = nullptr;
 
 void fly_create_dock()
 {
-    if (g_dockContent)
-        return;
+#ifdef ENABLE_FRONTEND_API
+	if (g_dockContent)
+		return;
 
-    auto *panel = new FlyScoreDock(nullptr);
-    panel->init();
+	auto *panel = new FlyScoreDock(nullptr);
+	panel->init();
 
-#if defined(HAVE_OBS_DOCK_BY_ID)
-    obs_frontend_add_dock_by_id(kFlyDockId, kFlyDockTitle, panel);
+	obs_frontend_add_dock_by_id(kFlyDockId, kFlyDockTitle, panel);
+	g_dockContent = panel;
 #else
-#  if defined(__clang__)
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#  endif
-    obs_frontend_add_dock(panel);
-#  if defined(__clang__)
-#    pragma clang diagnostic pop
-#  endif
+	LOGW("fly_create_dock: frontend API not available; dock will not be registered.");
 #endif
-
-    g_dockContent = panel;
 }
 
 void fly_destroy_dock()
 {
-    if (!g_dockContent)
-        return;
+#ifdef ENABLE_FRONTEND_API
+	if (!g_dockContent)
+		return;
 
-#if defined(HAVE_OBS_DOCK_BY_ID)
-    obs_frontend_remove_dock(kFlyDockId);
-#elif defined(__linux__)
-    QWidget *w = g_dockContent;
-    w->setParent(nullptr);
-    w->hide();
-    w->deleteLater();
-#else
-#  if defined(__clang__)
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#  endif
-    obs_frontend_remove_dock(g_dockContent);
-#  if defined(__clang__)
-#    pragma clang diagnostic pop
-#  endif
+	obs_frontend_remove_dock(g_dockContent);
+	g_dockContent = nullptr;
 #endif
-
-    g_dockContent = nullptr;
 }
 
 FlyScoreDock *fly_get_dock()

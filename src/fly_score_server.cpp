@@ -2,7 +2,9 @@
 #undef CPPHTTPLIB_OPENSSL_SUPPORT
 #endif
 
-#define LOG_TAG "[obs-fly-scoreboard][server]"
+#include "config.hpp"
+
+#define LOG_TAG "[" PLUGIN_NAME "][server]"
 #include "fly_score_log.hpp"
 #include "fly_score_server.hpp"
 
