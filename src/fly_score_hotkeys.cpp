@@ -28,6 +28,8 @@ static inline void ui_invoke(std::function<void()> fn)
 	QMetaObject::invokeMethod(ctx, [f = std::move(fn)]() { f(); }, Qt::QueuedConnection);
 }
 
+#ifdef ENABLE_FRONTEND_API
+
 static obs_hotkey_id hk_home_score_inc = OBS_INVALID_HOTKEY_ID;
 static obs_hotkey_id hk_home_score_dec = OBS_INVALID_HOTKEY_ID;
 static obs_hotkey_id hk_away_score_inc = OBS_INVALID_HOTKEY_ID;
@@ -55,7 +57,12 @@ static constexpr const char *kToggleShowKey = "toggle_show";
 
 static obs_data_t *g_deferred = nullptr;
 
-// All the callbacks can stay unchanged – they only touch the dock / obs hotkeys.
+#endif // ENABLE_FRONTEND_API
+
+// -----------------------------------------------------------------------------
+// Callbacks (frontend-agnostic: they just talk to the dock)
+// -----------------------------------------------------------------------------
+
 static void cb_home_score_inc(void *, obs_hotkey_id id, obs_hotkey_t *, bool pressed)
 {
 	if (!pressed)
@@ -165,6 +172,10 @@ static void cb_toggle_show(void *, obs_hotkey_id id, obs_hotkey_t *, bool presse
 			d->toggleShow();
 	});
 }
+
+// -----------------------------------------------------------------------------
+// Frontend API–backed helpers
+// -----------------------------------------------------------------------------
 
 static void register_ids_once()
 {
@@ -318,6 +329,10 @@ static void frontend_save_cb(obs_data_t *save_data, bool saving, void *)
 	}
 }
 #endif
+
+// -----------------------------------------------------------------------------
+// Public API
+// -----------------------------------------------------------------------------
 
 void fly_hotkeys_init()
 {
