@@ -12,9 +12,12 @@ endif()
 
 project(${_name} VERSION ${_version} LANGUAGES C CXX)
 
-# Only runtime options now
+# ---------------------------------------------------------------------------
+# Options
+# ---------------------------------------------------------------------------
 option(ENABLE_HTTP_SERVER    "Serve overlay on http://127.0.0.1:<port>"  ON)
 option(EMBED_DEFAULT_ASSETS  "Embed data/overlay + locale into binary"   ON)
+option(ENABLE_FRONTEND_API   "Use obs-frontend-api for UI functionality" ON)
 
 include(compilerconfig)
 include(defaults)
@@ -39,6 +42,9 @@ if(APPLE)
   )
 endif()
 
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
 set(FS_INC_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/src/include")
 set(FS_3P_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty")
 set(FS_SRC_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -49,12 +55,16 @@ set(FS_GEN_DIR     "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 file(MAKE_DIRECTORY "${FS_GEN_DIR}")
 
+# config.hpp – simple name/version header
 configure_file(
   "${FS_INC_DIR}/config.hpp.in"
   "${FS_INC_DIR}/config.hpp"
   @ONLY
 )
 
+# ---------------------------------------------------------------------------
+# Target
+# ---------------------------------------------------------------------------
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
 # libobs
@@ -79,17 +89,28 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_QT=1)
 
 # ---------------------------------------------------------------------------
-# Frontend API (optional; only if OBS::obs-frontend-api is available)
+# Frontend API (dock, hotkeys, events)
 # ---------------------------------------------------------------------------
-if(TARGET OBS::obs-frontend-api)
-  message(STATUS "OBS::obs-frontend-api found; enabling frontend features")
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::obs-frontend-api)
-  target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_FRONTEND_API=1)
-else()
-  message(WARNING "OBS::obs-frontend-api not found; building WITHOUT frontend API (no dock/hotkey persistence/browser auto-setup).")
+if(ENABLE_FRONTEND_API)
+  if(APPLE)
+    # Homebrew / CI dev package usually doesn't ship obs-frontend-api headers
+    message(STATUS "APPLE build: disabling frontend API (no obs-frontend-api dev headers in CI).")
+  else()
+    find_package(obs-frontend-api REQUIRED)
+
+    if(TARGET OBS::obs-frontend-api)
+      message(STATUS "obs-frontend-api found; enabling frontend features (ENABLE_FRONTEND_API=1).")
+      target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::obs-frontend-api)
+      target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_FRONTEND_API=1)
+    else()
+      message(FATAL_ERROR "obs-frontend-api found but target OBS::obs-frontend-api is missing.")
+    endif()
+  endif()
 endif()
 
+# ---------------------------------------------------------------------------
 # HTTP server
+# ---------------------------------------------------------------------------
 if(ENABLE_HTTP_SERVER)
   target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_HTTP_SERVER=1)
   if(WIN32)
@@ -97,6 +118,9 @@ if(ENABLE_HTTP_SERVER)
   endif()
 endif()
 
+# ---------------------------------------------------------------------------
+# Includes & Sources
+# ---------------------------------------------------------------------------
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
   ${FS_INC_DIR}
   ${FS_SRC_DIR}
@@ -173,7 +197,9 @@ inline constexpr const char* ${_id} = R\"obsplg(${_contents})obsplg\";\n")
   target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_EMBEDDED_DEFAULTS=1)
 endif()
 
-# Let the obs-plugintemplate helpers handle bundles & install layout
+# ---------------------------------------------------------------------------
+# Install / bundles via obs-plugintemplate helpers
+# ---------------------------------------------------------------------------
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES
   OUTPUT_NAME ${_name}
 )
