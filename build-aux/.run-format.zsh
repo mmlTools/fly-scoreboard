@@ -12,9 +12,9 @@ setopt NO_PUSHD_IGNORE_DUPS
 setopt FUNCTION_ARGZERO
 
 ## Enable for script debugging
-# setopt WARN_CREATE_GLOBAL
-# setopt WARN_NESTED_VAR
-# setopt XTRACE
+setopt WARN_CREATE_GLOBAL
+setopt WARN_NESTED_VAR
+setopt XTRACE
 
 autoload -Uz is-at-least && if ! is-at-least 5.8; then
   print -u2 -PR "%F{1}${funcstack[1]##*/}:%f Running on Zsh version %B${ZSH_VERSION}%b, but Zsh %B5.2%b is the minimum supported version. Upgrade zsh to fix this issue."
