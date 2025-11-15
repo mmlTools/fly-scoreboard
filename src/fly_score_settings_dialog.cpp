@@ -8,8 +8,6 @@
 #include "fly_score_state.hpp"
 #include "seed_defaults.hpp"
 
-#include <obs-frontend-api.h>
-
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
