@@ -20,6 +20,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Make formatter scripts executable 🔐
+        run: |
+          chmod +x build-aux/.run-format.zsh
+          chmod +x build-aux/run-gersemi
+
       - name: gersemi Check 🎛️
         id: gersemi
         uses: ./.github/actions/run-gersemi

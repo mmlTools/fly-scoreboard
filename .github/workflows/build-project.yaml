@@ -84,6 +84,15 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Make scripts executable 🔐
+        run: |
+          chmod +x .github/scripts/build-macos
+          chmod +x .github/scripts/build-ubuntu
+          chmod +x .github/scripts/package-macos
+          chmod +x .github/scripts/package-ubuntu
+          chmod +x build-aux/.run-format.zsh
+          chmod +x build-aux/run-gersemi
+
       - name: Set Up Environment 🔧
         id: setup
         run: |
@@ -190,6 +199,15 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+
+      - name: Make scripts executable 🔐
+        run: |
+          chmod +x .github/scripts/build-macos
+          chmod +x .github/scripts/build-ubuntu
+          chmod +x .github/scripts/package-macos
+          chmod +x .github/scripts/package-ubuntu
+          chmod +x build-aux/.run-format.zsh
+          chmod +x build-aux/run-gersemi
 
       - name: Set Up Environment 🔧
         id: setup
