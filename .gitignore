@@ -9,7 +9,6 @@
 !/docs
 !/src
 !.clang-format
-!.gersemirc
 !.gitignore
 !.gitattributes
 !buildspec.json
