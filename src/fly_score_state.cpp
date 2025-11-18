@@ -11,6 +11,7 @@
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 
 static QString moduleBaseDirFromConfigFile()
 {
@@ -38,7 +39,7 @@ QString fly_data_dir()
 
 bool fly_ensure_webroot(QString *outBaseDir)
 {
-	const QString base = fly_data_dir();
+	const QString base    = fly_data_dir();
 	const QString overlay = overlay_dir_path(base);
 	QDir().mkpath(overlay);
 	if (outBaseDir)
@@ -49,7 +50,7 @@ bool fly_ensure_webroot(QString *outBaseDir)
 static QJsonObject toJson(const FlyState &st)
 {
 	QJsonObject j;
-	j["version"] = 1;
+	j["version"] = 2; // bumped
 
 	QJsonObject srv;
 	srv["port"] = st.server_port;
@@ -57,27 +58,40 @@ static QJsonObject toJson(const FlyState &st)
 	j["time_label"] = st.time_label;
 
 	QJsonObject t;
-	t["mode"] = st.timer.mode;
-	t["running"] = st.timer.running;
-	t["initial_ms"] = QString::number(st.timer.initial_ms);
+	t["mode"]         = st.timer.mode;
+	t["running"]      = st.timer.running;
+	t["initial_ms"]   = QString::number(st.timer.initial_ms);
 	t["remaining_ms"] = QString::number(st.timer.remaining_ms);
 	t["last_tick_ms"] = QString::number(st.timer.last_tick_ms);
-	j["timer"] = t;
+	j["timer"]        = t;
 
 	auto team = [](const FlyTeam &tm) {
 		QJsonObject o;
-		o["title"] = tm.title;
+		o["title"]    = tm.title;
 		o["subtitle"] = tm.subtitle;
-		o["logo"] = tm.logo;
-		o["score"] = tm.score;
-		o["rounds"] = tm.rounds;
+		o["logo"]     = tm.logo;
+		o["score"]    = tm.score;
+		o["rounds"]   = tm.rounds;
 		return o;
 	};
 	j["home"] = team(st.home);
 	j["away"] = team(st.away);
 
-	j["swap_sides"] = st.swap_sides;
+	j["swap_sides"]      = st.swap_sides;
 	j["show_scoreboard"] = st.show_scoreboard;
+	j["show_rounds"]     = st.show_rounds;
+
+	// Custom fields
+	QJsonArray cfArr;
+	for (const auto &cf : st.custom_fields) {
+		QJsonObject o;
+		o["label"]   = cf.label;
+		o["home"]    = cf.home;
+		o["away"]    = cf.away;
+		o["visible"] = cf.visible;
+		cfArr.append(o);
+	}
+	j["custom_fields"] = cfArr;
 
 	return j;
 }
@@ -85,29 +99,43 @@ static QJsonObject toJson(const FlyState &st)
 static bool fromJson(const QJsonObject &j, FlyState &st)
 {
 	st.server_port = j.value("server").toObject().value("port").toInt(8089);
-	st.time_label = j.value("time_label").toString("First Half");
+	st.time_label  = j.value("time_label").toString("First Half");
 
-	const auto t = j.value("timer").toObject();
-	st.timer.mode = t.value("mode").toString("countdown");
-	st.timer.running = t.value("running").toBool(false);
-	st.timer.initial_ms = t.value("initial_ms").toString("0").toLongLong();
-	st.timer.remaining_ms = t.value("remaining_ms").toString("0").toLongLong();
-	st.timer.last_tick_ms = t.value("last_tick_ms").toString("0").toLongLong();
+	const auto t   = j.value("timer").toObject();
+	st.timer.mode        = t.value("mode").toString("countdown");
+	st.timer.running     = t.value("running").toBool(false);
+	st.timer.initial_ms  = t.value("initial_ms").toString("0").toLongLong();
+	st.timer.remaining_ms= t.value("remaining_ms").toString("0").toLongLong();
+	st.timer.last_tick_ms= t.value("last_tick_ms").toString("0").toLongLong();
 
 	auto readTeam = [](const QJsonObject &o) {
 		FlyTeam tm;
-		tm.title = o.value("title").toString();
+		tm.title    = o.value("title").toString();
 		tm.subtitle = o.value("subtitle").toString();
-		tm.logo = o.value("logo").toString();
-		tm.score = o.value("score").toInt(0);
-		tm.rounds = o.value("rounds").toInt(0);
+		tm.logo     = o.value("logo").toString();
+		tm.score    = o.value("score").toInt(0);
+		tm.rounds   = o.value("rounds").toInt(0);
 		return tm;
 	};
 	st.home = readTeam(j.value("home").toObject());
 	st.away = readTeam(j.value("away").toObject());
 
-	st.swap_sides = j.value("swap_sides").toBool(false);
+	st.swap_sides      = j.value("swap_sides").toBool(false);
 	st.show_scoreboard = j.value("show_scoreboard").toBool(true);
+	st.show_rounds     = j.value("show_rounds").toBool(true);
+
+	// Custom fields
+	st.custom_fields.clear();
+	const auto cfArr = j.value("custom_fields").toArray();
+	for (const auto &v : cfArr) {
+		const auto o = v.toObject();
+		FlyCustomField cf;
+		cf.label   = o.value("label").toString();
+		cf.home    = o.value("home").toInt(0);
+		cf.away    = o.value("away").toInt(0);
+		cf.visible = o.value("visible").toBool(true);
+		st.custom_fields.push_back(cf);
+	}
 
 	return true;
 }
@@ -115,7 +143,7 @@ static bool fromJson(const QJsonObject &j, FlyState &st)
 bool fly_state_read_json(const std::string &base_dir_s, std::string &out_json)
 {
 	const QString base_dir = QString::fromStdString(base_dir_s);
-	const QString path = overlay_plugin_json(base_dir);
+	const QString path     = overlay_plugin_json(base_dir);
 	QFile f(path);
 	if (!f.exists() || !f.open(QIODevice::ReadOnly))
 		return false;
@@ -127,7 +155,7 @@ bool fly_state_read_json(const std::string &base_dir_s, std::string &out_json)
 bool fly_state_write_json(const std::string &base_dir_s, const std::string &json)
 {
 	const QString base_dir = QString::fromStdString(base_dir_s);
-	const QString path = overlay_plugin_json(base_dir);
+	const QString path     = overlay_plugin_json(base_dir);
 	QDir().mkpath(QFileInfo(path).absolutePath());
 	QFile f(path);
 	if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate))
@@ -168,17 +196,19 @@ bool fly_state_save(const QString &base_dir, const FlyState &st)
 FlyState fly_state_make_defaults()
 {
 	FlyState st;
-	st.server_port = 8089;
-	st.time_label = "First Half";
-	st.timer.mode = "countdown";
-	st.timer.running = false;
-	st.timer.initial_ms = 0;
-	st.timer.remaining_ms = 0;
-	st.timer.last_tick_ms = 0;
-	st.home = FlyTeam{};
-	st.away = FlyTeam{};
-	st.swap_sides = false;
-	st.show_scoreboard = true;
+	st.server_port         = 8089;
+	st.time_label          = "First Half";
+	st.timer.mode          = "countdown";
+	st.timer.running       = false;
+	st.timer.initial_ms    = 0;
+	st.timer.remaining_ms  = 0;
+	st.timer.last_tick_ms  = 0;
+	st.home                = FlyTeam{};
+	st.away                = FlyTeam{};
+	st.swap_sides          = false;
+	st.show_scoreboard     = true;
+	st.show_rounds         = true;
+	st.custom_fields.clear();
 	return st;
 }
 

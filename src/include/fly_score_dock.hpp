@@ -1,87 +1,97 @@
 #pragma once
 #include <QWidget>
 #include <QString>
+#include <QVector>
 
 #include "fly_score_state.hpp"
 
-class QTimer;
-class QTimeEdit;
 class QPushButton;
 class QSpinBox;
 class QLineEdit;
-class QToolButton;
 class QComboBox;
 class QCheckBox;
+class QVBoxLayout;
+
+struct FlyCustomFieldUi {
+    QWidget    *row          = nullptr;
+    QLineEdit  *labelEdit    = nullptr;
+    QSpinBox   *homeSpin     = nullptr;
+    QSpinBox   *awaySpin     = nullptr;
+    QCheckBox  *visibleCheck = nullptr;
+    QPushButton *removeBtn   = nullptr;
+};
 
 class FlyScoreDock : public QWidget {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit FlyScoreDock(QWidget *parent = nullptr);
-	bool init();
+    explicit FlyScoreDock(QWidget *parent = nullptr);
+    bool init();
 
 signals:
-	void requestSave();
+    void requestSave();
 
 public slots:
-	void bumpHomeScore(int delta);
-	void bumpAwayScore(int delta);
-	void bumpHomeRounds(int delta);
-	void bumpAwayRounds(int delta);
-	void toggleSwap();
-	void toggleShow();
+    void bumpHomeScore(int delta);
+    void bumpAwayScore(int delta);
+    void bumpHomeRounds(int delta);
+    void bumpAwayRounds(int delta);
+    void toggleSwap();
+    void toggleShow();
 
 private slots:
-	void onTick();
-	void onStartStop();
-	void onReset();
-	void onTimeEdited();
-	void onBrowseHomeLogo();
-	void onBrowseAwayLogo();
-	void onApply();
-	void onClearTeamsAndReset();
+    void onStartStop();
+    void onReset();
+    void onTimeEdited();
+    void onApply();
+    void onClearTeamsAndReset();
+
+    // Custom fields
+    void onAddCustomField();
+
+    // Teams dialog
+    void onOpenTeamsDialog();
 
 private:
-	void loadState();
-	void saveState();
-	void refreshUiFromState(bool onlyTimeIfRunning = false);
-	void ensureTimerAccounting();
+    void loadState();
+    void saveState();
+    void refreshUiFromState(bool onlyTimeIfRunning = false);
 
-	QString copyLogoToOverlay(const QString &srcAbs, const QString &baseName);
-	QString normalizedExtFromMime(const QString &path) const;
-
-	bool deleteLogoIfExists(const QString &relPath);
+    // Custom fields helpers (wired to FlyState)
+    void loadCustomFieldsFromState();
+    void saveCustomFieldsToState();
+    FlyCustomFieldUi addCustomFieldRow(const QString &label,
+                                       int home,
+                                       int away,
+                                       bool visible);
+    void clearAllCustomFieldRows();
 
 private:
-	QTimer *uiTimer_ = nullptr;
-	QString dataDir_;
-	FlyState st_;
+    QString  dataDir_;
+    FlyState st_;
 
-	QLineEdit *time_label_ = nullptr;
-	QComboBox *mode_ = nullptr;
+    QLineEdit  *time_label_ = nullptr;
+    QComboBox  *mode_       = nullptr;
 
-	QLineEdit *time_ = nullptr;
-	QPushButton *startStop_ = nullptr;
-	QPushButton *reset_ = nullptr;
+    QLineEdit  *time_       = nullptr;
+    QPushButton *startStop_ = nullptr;
+    QPushButton *reset_     = nullptr;
 
-	QSpinBox *homeScore_ = nullptr;
-	QSpinBox *awayScore_ = nullptr;
-	QSpinBox *homeRounds_ = nullptr;
-	QSpinBox *awayRounds_ = nullptr;
+    QSpinBox *homeScore_  = nullptr;
+    QSpinBox *awayScore_  = nullptr;
+    QSpinBox *homeRounds_ = nullptr;
+    QSpinBox *awayRounds_ = nullptr;
 
-	QLineEdit *homeTitle_ = nullptr;
-	QLineEdit *homeSub_ = nullptr;
-	QLineEdit *homeLogo_ = nullptr;
-	QToolButton *homeBrowse_ = nullptr;
+    QCheckBox *swapSides_      = nullptr;
+    QCheckBox *showScoreboard_ = nullptr;
+    QCheckBox *showRounds_     = nullptr;
 
-	QLineEdit *awayTitle_ = nullptr;
-	QLineEdit *awaySub_ = nullptr;
-	QLineEdit *awayLogo_ = nullptr;
-	QToolButton *awayBrowse_ = nullptr;
+    QPushButton *applyBtn_ = nullptr;
+    QPushButton *teamsBtn_ = nullptr;
 
-	QCheckBox *swapSides_ = nullptr;
-	QCheckBox *showScoreboard_ = nullptr;
-
-	QPushButton *applyBtn_ = nullptr;
+    // Custom stats fields (inside the dock)
+    QVBoxLayout *customFieldsLayout_ = nullptr;
+    QPushButton *addFieldBtn_        = nullptr;
+    QVector<FlyCustomFieldUi> customFields_;
 };
 
 void fly_create_dock();

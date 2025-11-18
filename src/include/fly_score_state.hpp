@@ -1,5 +1,6 @@
 #pragma once
 #include <QString>
+#include <QVector>
 #include <string>
 
 struct FlyTeam {
@@ -12,10 +13,17 @@ struct FlyTeam {
 
 struct FlyTimer {
 	QString mode;
-	bool running = false;
-	long long initial_ms = 0;
+	bool running      = false;
+	long long initial_ms   = 0;
 	long long remaining_ms = 0;
 	long long last_tick_ms = 0;
+};
+
+struct FlyCustomField {
+	QString label;
+	int home   = 0;
+	int away   = 0;
+	bool visible = true;
 };
 
 struct FlyState {
@@ -25,8 +33,14 @@ struct FlyState {
 	FlyTeam home;
 	FlyTeam away;
 
-	bool swap_sides = false;
+	bool swap_sides      = false;
 	bool show_scoreboard = true;
+
+	// Show/hide wins (rounds)
+	bool show_rounds = true;
+
+	// Custom numeric fields
+	QVector<FlyCustomField> custom_fields;
 };
 
 bool fly_state_read_json(const std::string &base_dir, std::string &out_json);
