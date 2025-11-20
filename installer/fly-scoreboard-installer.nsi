@@ -16,17 +16,6 @@ Unicode true
 !include "Sections.nsh"
 
 ; ------------------------------------------------------------------------
-; UI text & graphics overrides
-; ------------------------------------------------------------------------
-
-; Change the "Browse..." button text on directory pages
-LangString ^BrowseBtn ${LANG_ENGLISH} "Browse"
-
-; Custom welcome/finish left-side bitmap
-; (Make sure this file exists: installer/resources/fly-scoreboard-welcome.bmp)
-!define MUI_WELCOMEFINISHPAGE_BITMAP "${PROJECT_ROOT}\installer\resources\fly-scoreboard-welcome.bmp"
-
-; ------------------------------------------------------------------------
 ; Compile-time defines (with sane fallbacks)
 ; ------------------------------------------------------------------------
 
@@ -63,6 +52,9 @@ LangString ^BrowseBtn ${LANG_ENGLISH} "Browse"
   !define INSTALLER_ICON "${PROJECT_ROOT}\installer\resources\fly-scoreboard.ico"
 !endif
 
+; Optional custom welcome/finish bitmap
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${PROJECT_ROOT}\installer\resources\fly-scoreboard-welcome.bmp"
+
 ; ------------------------------------------------------------------------
 ; Basic installer metadata
 ; ------------------------------------------------------------------------
@@ -86,7 +78,7 @@ Section "Core OBS Plugin" SEC_CORE
   SetOutPath "$OBSDir\obs-plugins\64bit"
   File "/oname=fly-scoreboard.dll" "${BUILD_ROOT}\bin\64bit\fly-scoreboard.dll"
 
-  ; --- Locale files ---
+  ; --- Locale files (future-proof) ---
   SetOutPath "$OBSDir\data\obs-plugins\fly-scoreboard\locale"
   File /nonfatal /r "${BUILD_ROOT}\data\locale\*.*"
 SectionEnd
@@ -115,7 +107,7 @@ SectionEnd
 PageEx directory
   DirText "Select the folder where OBS Studio is installed." \
           "The Fly Scoreboard plugin DLL will be installed into this OBS Studio folder." \
-          "OBS Studio Folder:"
+          "Browse..."
   DirVar $OBSDir
 PageExEnd
 
@@ -127,11 +119,13 @@ PageEx directory
   PageCallbacks overlayDirPre
   DirText "Select the folder where the base overlay files will be installed." \
           "This is where the HTML/CSS/JS overlay and your local web server will run from." \
-          "Overlay Folder:"
+          "Browse..."
   DirVar $OverlayDir
 PageExEnd
 
 !insertmacro MUI_PAGE_INSTFILES
+
+; Languages
 !insertmacro MUI_LANGUAGE "English"
 
 ; ------------------------------------------------------------------------

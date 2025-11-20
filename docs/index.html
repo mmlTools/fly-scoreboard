@@ -3,416 +3,434 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Fly Scoreboard - OBS Plugin</title>
+    <title>Fly Scoreboard Live Scoreboard Overlay for OBS</title>
     <meta
       name="description"
-      content="A lightweight, hotkey-friendly scoreboard overlay plugin for OBS Studio."
+      content="Fly Scoreboard is a lightweight, hotkey-friendly scoreboard overlay for OBS Studio. Control scores, timers and custom stats in one dock and keep your on-screen graphics perfectly in sync."
     />
     <link rel="icon" href="assets/img/logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="assets/css/style.css" />
   </head>
   <body>
+    <!-- Top nav (brand + CTAs only) -->
     <header class="nav">
-      <div class="container inner">
-        <a class="brand" href="#home">
+      <div class="nav-inner">
+        <a class="brand" href="#top">
           <img src="assets/img/logo.svg" alt="Fly Scoreboard logo" />
           <span>Fly Scoreboard</span>
         </a>
 
-        <nav class="links">
-          <a href="#features">Features</a>
-          <a href="#getting-started">Getting Started</a>
-          <a href="#install">Install</a>
-          <a href="#usage">Usage</a>
-          <a href="#hotkeys">Hotkeys</a>
-          <a href="#settings">Settings</a>
-          <a href="#overlay">Overlay</a>
-          <a href="#troubleshooting">Troubleshooting</a>
-
-          <!-- NEW: GitHub + Releases (nav) -->
+        <nav class="nav-cta">
           <a
-            class="btn navbtn github"
-            href="https://github.com/MMLTech/fly-scoreboard"
+            class="btn github"
+            href="https://github.com/mmlTools/fly-scoreboard"
             target="_blank"
             rel="noopener"
-            aria-label="Fork on GitHub"
-            >Fork on GitHub</a
           >
+            ⭐ View on GitHub
+          </a>
           <a
-            class="btn navbtn releases"
-            href="https://github.com/MMLTech/fly-scoreboard/releases"
-            target="_blank"
-            rel="noopener"
-            aria-label="Download Releases"
-            >Releases</a
-          >
-
-          <a
-            class="kofi"
+            class="btn support"
             href="https://ko-fi.com/mmltech"
             target="_blank"
             rel="noopener"
-            >☕ Support</a
           >
+            ☕ Support the Project
+          </a>
         </nav>
       </div>
     </header>
 
-    <main id="home">
-      <!-- HERO -->
-      <section class="hero">
-        <div class="container">
-          <div class="glass wrap hero-grid">
-            <div class="hero-copy">
-              <img
-                class="logo"
-                src="assets/img/logo.svg"
-                alt="Fly Scoreboard logo"
-                width="72"
-                height="72"
-                loading="eager"
-              />
-              <h1>Live, hotkey-friendly scoreboard overlay for OBS</h1>
-              <p>
-                Control scores, total wins, and a precise timer with a crisp
-                glass UI and an auto-updating
-                <strong>Browser Source</strong> powered by a local server.
-              </p>
+    <main id="top">
+      <div class="page">
+        <!-- Main content + right toc -->
+        <div class="page-inner">
+          <div class="content">
+            <!-- HERO -->
+            <section id="hero" class="hero" data-section>
+              <div class="hero-grid">
+                <div class="hero-copy">
+                  <img
+                    class="hero-logo"
+                    src="assets/img/logo.svg"
+                    alt="Fly Scoreboard logo"
+                    width="72"
+                    height="72"
+                    loading="eager"
+                  />
+                  <h1>Live scoreboard overlays, fully controlled from OBS</h1>
+                  <p class="hero-lead">
+                    Fly Scoreboard lets you control scores, timers and custom
+                    match stats from a simple dock inside OBS. Your on-screen
+                    overlay updates instantly no browser tools, no external
+                    services, no coding.
+                  </p>
 
-              <div class="badges">
-                <span class="pill">Windows</span>
-                <span class="pill">macOS</span>
-                <span class="pill">Linux</span>
-                <span class="pill">Qt + OBS SDK</span>
+                  <ul class="hero-bullets">
+                    <li>⚽ Perfect for sports, esports and tournaments</li>
+                    <li>🎮 Unlimited custom stats (shots, rounds, maps, etc.)</li>
+                    <li>🎨 Flexible layout create your own scoreboard style</li>
+                  </ul>
+
+                  <div class="hero-actions">
+                    <a class="btn primary" href="#getting-started">
+                      Get Started in 3 Steps
+                    </a>
+                    <a class="btn ghost" href="#what-you-can-do">
+                      See what you can build
+                    </a>
+                  </div>
+
+                  <div class="hero-tags">
+                    <span>Windows</span>
+                    <span>macOS</span>
+                    <span>Linux</span>
+                    <span>OBS Browser Source</span>
+                  </div>
+                </div>
+
+                <div class="hero-media">
+                  <picture>
+                    <source srcset="assets/img/preview.webp" type="image/webp" />
+                    <img
+                      src="assets/img/preview.webp"
+                      alt="Fly Scoreboard overlay preview in OBS"
+                      width="960"
+                      height="540"
+                      loading="eager"
+                    />
+                  </picture>
+                </div>
               </div>
+            </section>
 
-              <div class="actions">
-                <a class="btn brand" href="#getting-started">Get Started →</a>
-                <a class="btn alt" href="#install">Install</a>
-                <a class="btn" href="#usage">Usage</a>
+            <!-- WHAT YOU CAN DO -->
+            <section id="what-you-can-do" data-section>
+              <h2>What you can do with Fly Scoreboard</h2>
+              <div class="cards-grid">
+                <article class="card">
+                  <h3>Classic match scoreboard</h3>
+                  <p>
+                    Show team names, logos, main score and a central match
+                    timer. Perfect for football, basketball, hockey and more.
+                  </p>
+                  <ul>
+                    <li>Team logos and colors</li>
+                    <li>Clear main score in the middle of the overlay</li>
+                    <li>Live timer with start, pause and reset</li>
+                  </ul>
+                </article>
 
-                <!-- NEW: GitHub + Releases (hero) -->
+                <article class="card">
+                  <h3>Esports & best-of series</h3>
+                  <p>
+                    Track maps, rounds or games won using custom stats not
+                    just the main score.
+                  </p>
+                  <ul>
+                    <li>“Maps won”, “Rounds”, “Best-of 5” counters</li>
+                    <li>Quick +/− buttons and hotkeys</li>
+                    <li>Instant updates on stream</li>
+                  </ul>
+                </article>
+
+                <article class="card">
+                  <h3>Custom tournament overlays</h3>
+                  <p>
+                    Combine multiple timers and stats for events, show matches,
+                    boxing nights, speedruns and more.
+                  </p>
+                  <ul>
+                    <li>Multiple timers (main time, extra time, breaks)</li>
+                    <li>Any stat you want: corners, penalties, fouls…</li>
+                    <li>Overlay layout you can restyle to match your brand</li>
+                  </ul>
+                </article>
+              </div>
+            </section>
+
+            <!-- KEY FEATURES -->
+            <section id="features" data-section>
+              <h2>Key features at a glance</h2>
+              <div class="cards-grid">
+                <article class="card">
+                  <h3>🎛️ All controls in one dock</h3>
+                  <p>
+                    Manage teams, scores, timers and custom stats from a single
+                    OBS dock no alt-tabbing to external tools.
+                  </p>
+                </article>
+
+                <article class="card">
+                  <h3>⏱️ Flexible timers</h3>
+                  <p>
+                    Create as many timers as you need: match clock, extra time,
+                    breaks, countdowns or stopwatches.
+                  </p>
+                </article>
+
+                <article class="card">
+                  <h3>📊 Custom stats</h3>
+                  <p>
+                    Add your own numeric fields (like corners, penalties, maps
+                    won, shots on target) and control them with +/− buttons and
+                    hotkeys.
+                  </p>
+                </article>
+
+                <article class="card">
+                  <h3>🏷️ Teams & logos</h3>
+                  <p>
+                    Set titles, subtitles and logos for both sides. Swap sides
+                    with a single click when teams switch.
+                  </p>
+                </article>
+
+                <article class="card">
+                  <h3>🌐 Built-in browser overlay</h3>
+                  <p>
+                    The plugin serves a ready-to-use HTML overlay locally. Add
+                    it as a Browser Source and it stays in sync automatically.
+                  </p>
+                </article>
+
+                <article class="card">
+                  <h3>⌨️ Hotkey friendly</h3>
+                  <p>
+                    Assign OBS hotkeys for score changes, custom stats, timer
+                    control and team swap. Update the match without touching
+                    the mouse.
+                  </p>
+                </article>
+              </div>
+            </section>
+
+            <!-- HOW IT WORKS -->
+            <section id="how-it-works" data-section>
+              <h2>How it works behind the scenes</h2>
+              <div class="split">
+                <div class="split-col">
+                  <h3>1. Control panel in OBS</h3>
+                  <p>
+                    After installing the plugin, you’ll get a new dock called
+                    <strong>Fly Scoreboard</strong>. That dock is your control
+                    room: teams, logos, scores, timers and custom stats all live
+                    there.
+                  </p>
+
+                  <h3>2. Live overlay in a Browser Source</h3>
+                  <p>
+                    The plugin runs a small local web server and serves the
+                    overlay files directly from its own folder (docroot). You
+                    just add a Browser Source in OBS pointing to:
+                  </p>
+
+                  <div class="code">
+                    <code>http://127.0.0.1:&lt;port&gt;/</code>
+                  </div>
+
+                  <p>
+                    Whenever you change something in the dock, the browser
+                    overlay updates automatically no manual refresh needed.
+                  </p>
+                </div>
+
+                <div class="split-col">
+                  <h3>3. Safe, local & offline</h3>
+                  <p>
+                    Everything runs on your machine. No external accounts, no
+                    online dashboards and no extra subscription services. Just
+                    install the plugin and go live.
+                  </p>
+
+                  <h3>4. Smart layout & swapping</h3>
+                  <p>
+                    The overlay uses a flexible layout that supports two
+                    <strong>teams[]</strong> and a list of
+                    <strong>custom_fields</strong> for your stats. When you
+                    press <em>Swap teams</em>, the overlay reacts instantly
+                    including scores and labels.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <!-- CUSTOM OVERLAYS -->
+            <section id="custom-overlays" data-section>
+              <h2>Create your own scoreboard style</h2>
+              <p>
+                Fly Scoreboard ships with a clean, modern scoreboard layout, but
+                you’re not locked into one design. Because the overlay is just
+                standard <strong>HTML + CSS + JavaScript</strong> served from
+                the plugin folder, you (or a designer you work with) can:
+              </p>
+              <ul>
+                <li>Change fonts, colors and background styles</li>
+                <li>
+                  Rearrange where scores, timers and stats are placed on screen
+                </li>
+                <li>
+                  Add sponsor logos, league badges or extra text blocks
+                </li>
+                <li>
+                  Create different looks for different games while using the
+                  same dock
+                </li>
+              </ul>
+              <p>
+                The scoreboard logic stays the same you still control
+                everything from the OBS dock but the <strong>visuals</strong>
+                are entirely yours.
+              </p>
+            </section>
+
+            <!-- GETTING STARTED -->
+            <section id="getting-started" data-section>
+              <h2>Getting started in 3 simple steps</h2>
+
+              <ol class="steps">
+                <li>
+                  <strong>Install the plugin</strong><br />
+                  Download the latest ZIP from
+                  <a
+                    href="https://github.com/mmlTools/fly-scoreboard/releases"
+                    target="_blank"
+                    rel="noopener"
+                    >GitHub Releases</a
+                  >
+                  and extract it into your OBS plugins folder. Restart OBS.
+                </li>
+                <li>
+                  <strong>Open the Fly Scoreboard dock</strong><br />
+                  In OBS, go to <em>View → Docks → Fly Scoreboard</em>. Set
+                  team names, logos, your main score stat and any extra stats
+                  you want.
+                </li>
+                <li>
+                  <strong>Add the Browser Source</strong><br />
+                  Add a new <em>Browser Source</em> to your scene and set the
+                  URL to the address shown in the plugin settings, usually:
+                  <div class="code">
+                    <code>http://127.0.0.1:&lt;port&gt;/</code>
+                  </div>
+                  Set width/height to match your canvas (for example
+                  <code>1920×1080</code>). Your scoreboard will appear
+                  immediately.
+                </li>
+              </ol>
+
+              <p class="note">
+                💡 Tip: Once everything is set up, you can run full matches
+                using only hotkeys perfect when you’re casting and producing
+                at the same time.
+              </p>
+            </section>
+
+            <!-- HOTKEYS (CLIENT-ORIENTED) -->
+            <section id="hotkeys" data-section>
+              <h2>Use hotkeys to stay focused on the game</h2>
+              <p>
+                Fly Scoreboard integrates with the standard OBS hotkey system.
+                In <strong>OBS → Settings → Hotkeys</strong>, look for the
+                <em>“Fly Scoreboard”</em> section and assign keys for:
+              </p>
+              <ul>
+                <li>Increasing or decreasing the main score for each team</li>
+                <li>Adjusting your custom stats (+1 / −1)</li>
+                <li>Starting, pausing and resetting timers</li>
+                <li>Swapping teams left/right on the overlay</li>
+                <li>Showing or hiding the entire scoreboard</li>
+              </ul>
+              <p>
+                Choose shortcuts that feel natural for your setup, then run the
+                whole match with your keyboard while the overlay keeps up.
+              </p>
+            </section>
+
+            <!-- FAQ / TROUBLESHOOTING -->
+            <section id="faq" data-section>
+              <h2>FAQ & quick troubleshooting</h2>
+
+              <details>
+                <summary>The Browser Source is blank what should I check?</summary>
+                <p>
+                  Make sure OBS is allowed to access <code>localhost</code> on
+                  your system, and that the port shown in the Fly Scoreboard
+                  settings matches the one in your Browser Source URL. Restart
+                  OBS after changing the port.
+                </p>
+              </details>
+
+              <details>
+                <summary>Can I use this offline?</summary>
+                <p>
+                  Yes. Everything runs locally on your machine. Once installed,
+                  you don’t need an internet connection for the scoreboard to
+                  work.
+                </p>
+              </details>
+
+              <details>
+                <summary>Can I have different designs for different shows?</summary>
+                <p>
+                  Absolutely. Because the overlay is just HTML/CSS in the plugin
+                  folder, you can create different versions or styles that read
+                  from the same scoreboard state. The dock controls stay the
+                  same only the visuals change.
+                </p>
+              </details>
+
+              <details>
+                <summary>Where can I ask questions or suggest features?</summary>
+                <p>
+                  You can open an issue on
+                  <a
+                    href="https://github.com/mmlTools/fly-scoreboard/issues"
+                    target="_blank"
+                    rel="noopener"
+                    >GitHub</a
+                  >
+                  or join the community via the links in the plugin dock.
+                </p>
+              </details>
+            </section>
+
+            <!-- FOOTER -->
+            <footer class="site-footer">
+              <p>
+                Fly Scoreboard is built for creators who want clean, controlled
+                overlays without extra complexity.
+              </p>
+              <p>
+                Made with ❤️ by
                 <a
-                  class="btn github"
-                  href="https://github.com/MMLTech/fly-scoreboard"
+                  href="https://github.com/MMLTech"
                   target="_blank"
                   rel="noopener"
-                  aria-label="Fork on GitHub"
-                  >Fork on GitHub</a
-                >
-                <a
-                  class="btn releases"
-                  href="https://github.com/MMLTech/fly-scoreboard/releases"
-                  target="_blank"
-                  rel="noopener"
-                  aria-label="Download Releases"
-                  >Download Releases</a
-                >
-              </div>
-            </div>
-
-            <div class="hero-media">
-              <picture>
-                <source srcset="assets/img/preview.webp" type="image/webp" />
-                <img
-                  src="assets/img/preview.webp"
-                  alt="Fly Scoreboard overlay preview"
-                  width="960"
-                  height="540"
-                  loading="eager"
-                  class="preview"
-                />
-              </picture>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- FEATURES -->
-      <section id="features">
-        <div class="container">
-          <h2>✨ Features</h2>
-          <div class="grid">
-            <div class="glass card">
-              <h3>🕐 Timer</h3>
-              <p>
-                Count up/down with pause &amp; reset. State persists across
-                sessions, overlay updates live.
+                  >MMLTech</a
+                >.
               </p>
-            </div>
-            <div class="glass card">
-              <h3>🏁 Scoreboard</h3>
-              <p>
-                Adjust scores &amp; total wins, swap sides, and toggle
-                visibility from the dock or hotkeys.
-              </p>
-            </div>
-            <div class="glass card">
-              <h3>🖼️ Hashed Logos</h3>
-              <p>
-                Uploads copied into <code>overlay/</code> with short hashes to
-                avoid browser caching issues.
-              </p>
-            </div>
-            <div class="glass card">
-              <h3>⚙️ Settings</h3>
-              <p>
-                Server health, port control, open overlay folder, and a quick
-                hotkeys helper.
-              </p>
-            </div>
-            <div class="glass card">
-              <h3>🌐 Browser Source</h3>
-              <p>
-                Auto-creates/updates an OBS Browser Source pointing at the local
-                overlay.
-              </p>
-            </div>
-            <div class="glass card">
-              <h3>⌨️ Hotkeys</h3>
-              <p>
-                Bind +1/−1, wins, swap, and show/hide in
-                <em>OBS → Settings → Hotkeys</em>.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- GETTING STARTED -->
-      <section id="getting-started">
-        <div class="container">
-          <h2>🚀 Getting Started</h2>
-          <ol>
-            <li>Install the plugin (or build from source) and launch OBS.</li>
-            <li>Open <em>View → Docks → Fly Scoreboard</em>.</li>
-            <li>
-              The plugin prepares <code>overlay/</code> and configures a Browser
-              Source automatically.
-            </li>
-          </ol>
-          <div class="code">
-            <pre><code>Windows (build quickstart)
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 ^
-  -DENABLE_FRONTEND_API=ON -DENABLE_QT=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF
-cmake --build build --config Release
-cmake --install build --config Release --prefix "E:\obs-studio"</code></pre>
-          </div>
-        </div>
-      </section>
-
-      <!-- INSTALL -->
-      <section id="install">
-        <div class="container">
-          <h2>⬇️ Install</h2>
-          <div class="grid">
-            <div class="glass card">
-              <h3>Windows</h3>
-              <ol>
-                <li>Download the <code>fly-scoreboard-windows.zip</code>.</li>
-                <li>
-                  Extract <code>fly-scoreboard.dll</code> to
-                  <code>%ProgramFiles%\obs-studio\obs-plugins\64bit\</code>.
-                </li>
-                <li>
-                  Copy the included <code>data/</code> next to OBS’s
-                  <code>data/</code> if present.
-                </li>
-                <li>Restart OBS.</li>
-              </ol>
-            </div>
-            <div class="glass card">
-              <h3>macOS</h3>
-              <ol>
-                <li>Download <code>fly-scoreboard-macos.zip</code>.</li>
-                <li>
-                  Place the plugin binary into
-                  <code>/Library/Application Support/obs-studio/plugins/</code>.
-                </li>
-                <li>
-                  Ensure <code>data/</code> folder sits under the same plugin
-                  directory.
-                </li>
-                <li>Restart OBS.</li>
-              </ol>
-            </div>
-            <div class="glass card">
-              <h3>Linux</h3>
-              <ol>
-                <li>
-                  Download <code>fly-scoreboard-ubuntu.zip</code> (or your
-                  distro build).
-                </li>
-                <li>
-                  Copy <code>*.so</code> to
-                  <code>~/.config/obs-studio/plugins/</code> or system plugin
-                  dir.
-                </li>
-                <li>
-                  Copy <code>data/</code> under the same plugin directory.
-                </li>
-                <li>Restart OBS.</li>
-              </ol>
-            </div>
+            </footer>
           </div>
 
-          <h3>🧪 Build from source (macOS / Linux)</h3>
-          <div class="code">
-            <pre><code># macOS
-brew install cmake qt@6
-cmake -S . -B build -G Xcode -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(brew --prefix qt@6)"
-cmake --build build --config Release
-
-# Ubuntu (Qt5 & libobs from PPA)
-sudo apt update
-sudo apt install -y cmake ninja-build build-essential libobs-dev qtbase5-dev qtbase5-dev-tools
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release</code></pre>
-          </div>
+          <!-- RIGHT SIDEBAR TOC -->
+          <aside class="toc">
+            <div class="toc-inner">
+              <p class="toc-title">On this page</p>
+              <nav>
+                <a href="#hero" class="toc-link active">Overview</a>
+                <a href="#what-you-can-do" class="toc-link">What you can do</a>
+                <a href="#features" class="toc-link">Key features</a>
+                <a href="#how-it-works" class="toc-link">How it works</a>
+                <a href="#custom-overlays" class="toc-link">Custom overlays</a>
+                <a href="#getting-started" class="toc-link">Getting started</a>
+                <a href="#hotkeys" class="toc-link">Hotkeys</a>
+                <a href="#faq" class="toc-link">FAQ</a>
+              </nav>
+            </div>
+          </aside>
         </div>
-      </section>
-
-      <!-- USAGE -->
-      <section id="usage">
-        <div class="container">
-          <h2>🧠 Usage</h2>
-          <ul>
-            <li>
-              <strong>Timer</strong>: type <code>mm:ss</code>, choose
-              <em>countdown</em> or <em>countup</em>, then start/pause/reset.
-            </li>
-            <li>
-              <strong>Scoreboard</strong>: adjust scores &amp; total wins;
-              toggle <em>Swap</em> and <em>Show</em>.
-            </li>
-            <li>
-              <strong>Teams</strong>: set Title/Subtitle; upload logos (hashed
-              filenames avoid cache issues).
-            </li>
-            <li>
-              <strong>Apply</strong> persists to
-              <code>overlay/plugin.json</code>; <strong>Refresh</strong> busts
-              the Browser Source cache.
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- HOTKEYS -->
-      <section id="hotkeys">
-        <div class="container">
-          <h2>⌨️ Hotkeys</h2>
-          <p>
-            Bind keys in <strong>OBS → Settings → Hotkeys</strong> under
-            <em>“Fly Scoreboard:”</em>
-          </p>
-          <div class="glass table-wrap">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Action</th>
-                  <th>Suggested Key</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Home Score +1 / −1</td>
-                  <td>
-                    <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>H</kbd> /
-                    <kbd>Shift</kbd> variant
-                  </td>
-                </tr>
-                <tr>
-                  <td>Guests Score +1 / −1</td>
-                  <td>
-                    <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>G</kbd> /
-                    <kbd>Shift</kbd> variant
-                  </td>
-                </tr>
-                <tr>
-                  <td>Home Wins +1 / −1</td>
-                  <td>
-                    <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>1</kbd> /
-                    <kbd>Shift</kbd> variant
-                  </td>
-                </tr>
-                <tr>
-                  <td>Guests Wins +1 / −1</td>
-                  <td>
-                    <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>2</kbd> /
-                    <kbd>Shift</kbd> variant
-                  </td>
-                </tr>
-                <tr>
-                  <td>Swap Home ↔ Guests</td>
-                  <td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>S</kbd></td>
-                </tr>
-                <tr>
-                  <td>Show/Hide Scoreboard</td>
-                  <td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p>
-            <em
-              >Hotkeys are stored per OBS profile; the plugin restores bindings
-              on load.</em
-            >
-          </p>
-        </div>
-      </section>
-
-      <!-- SETTINGS -->
-      <section id="settings">
-        <div class="container">
-          <h2>⚙️ Settings</h2>
-          <ul>
-            <li>
-              Server status + port control (restart server after port change).
-            </li>
-            <li>Open overlay folder shortcut.</li>
-            <li>Inline helper describing all hotkeys and default bindings.</li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- OVERLAY -->
-      <section id="overlay">
-        <div class="container">
-          <h2>🌐 Overlay</h2>
-          <p>Browser Source URL:</p>
-          <div class="code">
-            <pre><code>http://127.0.0.1:&lt;port&gt;/overlay/index.html</code></pre>
-          </div>
-
-          <p>State file (updated by the dock):</p>
-          <div class="code">
-            <pre><code>&lt;config_path&gt;/overlay/plugin.json</code></pre>
-          </div>
-
-          <h3>State format (excerpt)</h3>
-          <div class="code">
-            <pre><code>{
-  "time_label": "Match Time",
-  "timer": { "mode": "countdown", "initial_ms": 600000, "remaining_ms": 543210, "running": true },
-  "swap_sides": false,
-  "show_scoreboard": true,
-  "home":  { "title": "Home",  "subtitle": "Team A", "score": 3, "rounds": 1, "logo": "home-1a2b3c.png" },
-  "away":  { "title": "Guests","subtitle": "Team B", "score": 2, "rounds": 0, "logo": "guest-9f8e7d.png" }
-}</code></pre>
-          </div>
-        </div>
-      </section>
-
-      <footer>
-        <div class="container">
-          Built with ❤️ for OBS •
-          <a href="https://ko-fi.com/mmltech" target="_blank" rel="noopener"
-            >Buy me a coffee</a
-          >
-        </div>
-      </footer>
+      </div>
     </main>
 
     <script src="assets/js/app.js"></script>

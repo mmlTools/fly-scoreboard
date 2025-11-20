@@ -80,10 +80,11 @@ body {
   min-width: 0;
 }
 
-.fs-home {
+/* Generic left/right slots now: team-x / team-y */
+.fs-team-x {
   justify-self: start;
 }
-.fs-away {
+.fs-team-y {
   justify-self: end;
 }
 

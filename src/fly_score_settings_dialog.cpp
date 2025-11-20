@@ -20,6 +20,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QLineEdit>
+#include <QGroupBox>
 
 #include "httplib.h"
 
@@ -32,53 +33,110 @@ static void styleDot(QLabel *dot, bool ok)
 				   .arg(ok ? "#39d353" : "#ff6b6b"));
 }
 
-FlySettingsDialog::FlySettingsDialog(QWidget *parent)
-	: QDialog(parent)
+FlySettingsDialog::FlySettingsDialog(QWidget *parent) : QDialog(parent)
 {
-	setWindowTitle(QStringLiteral("Fly Score Settings"));
+	setObjectName(QStringLiteral("FlySettingsDialog"));
+	setWindowTitle(QStringLiteral("Fly Scoreboard – Settings"));
 	setModal(false);
+	setSizeGripEnabled(false);
+	setMinimumWidth(460);
 
-	auto v = new QVBoxLayout(this);
-	v->setContentsMargins(10, 10, 10, 10);
-	v->setSpacing(8);
+	auto *root = new QVBoxLayout(this);
+	root->setContentsMargins(14, 14, 14, 14);
+	root->setSpacing(10);
 
-	// Server status row
-	auto statusRow = new QWidget(this);
-	auto statusLay = new QHBoxLayout(statusRow);
+	auto *hint = new QLabel(QStringLiteral("Configure the local web server used by the Fly Scoreboard overlay.\n"
+					       "The overlay Browser Source will connect to this local server."),
+				this);
+	hint->setWordWrap(true);
+	root->addWidget(hint);
+
+	auto *gbServer = new QGroupBox(QStringLiteral("Server status"), this);
+
+	auto *serverLayout = new QVBoxLayout(gbServer);
+	serverLayout->setContentsMargins(10, 10, 10, 10);
+	serverLayout->setSpacing(6);
+
+	auto *statusRow = new QWidget(gbServer);
+	auto *statusLay = new QHBoxLayout(statusRow);
 	statusLay->setContentsMargins(0, 0, 0, 0);
 	statusLay->setSpacing(6);
-	statusLay->addWidget(new QLabel(QStringLiteral("Server:"), statusRow));
+
 	statusDot_ = new QLabel(statusRow);
 	statusText_ = new QLabel(QStringLiteral("Stopped"), statusRow);
+
 	statusLay->addWidget(statusDot_);
 	statusLay->addWidget(statusText_);
 	statusLay->addStretch(1);
+
 	statusRow->setLayout(statusLay);
+	serverLayout->addWidget(statusRow);
 
-	// Data/doc root row (user-configurable)
-	auto docRootRow = new QWidget(this);
-	auto docRootLay = new QHBoxLayout(docRootRow);
-	docRootLay->setContentsMargins(0, 0, 0, 0);
-	docRootLay->setSpacing(6);
-	docRootLay->addWidget(new QLabel(QStringLiteral("Data / web root:"), docRootRow));
-	docRootEdit_ = new QLineEdit(docRootRow);
+	auto *statusHint = new QLabel(
+		QStringLiteral("If the server is running, your Browser Source can load the overlay URL."), gbServer);
+	statusHint->setWordWrap(true);
+	serverLayout->addWidget(statusHint);
+
+	gbServer->setLayout(serverLayout);
+	root->addWidget(gbServer);
+
+	auto *gbDoc = new QGroupBox(QStringLiteral("Document root (overlay files)"), this);
+
+	auto *docLayout = new QVBoxLayout(gbDoc);
+	docLayout->setContentsMargins(10, 10, 10, 10);
+	docLayout->setSpacing(6);
+
+	auto *docHint = new QLabel(
+		QStringLiteral("This folder will contain plugin.json, hotkeys.json and your overlay HTML/CSS/JS."),
+		gbDoc);
+	docHint->setWordWrap(true);
+	docLayout->addWidget(docHint);
+
+	docRootEdit_ = new QLineEdit(gbDoc);
 	docRootEdit_->setReadOnly(true);
+	docRootEdit_->setMinimumWidth(320);
 
-	// First-run handling: use global helper (asks user if unset)
-	QString docRoot = fly_get_data_root(this);
-	docRootEdit_->setText(docRoot);
+	const QString rootPath = fly_get_data_root(this);
+	docRootEdit_->setText(rootPath);
+	docLayout->addWidget(docRootEdit_);
 
-	browseDocRootBtn_ = new QPushButton(QStringLiteral("Browse…"), docRootRow);
-	docRootLay->addWidget(docRootEdit_, 1);
-	docRootLay->addWidget(browseDocRootBtn_);
-	docRootRow->setLayout(docRootLay);
+	auto *docButtonsRow = new QWidget(gbDoc);
+	auto *docButtonsLay = new QHBoxLayout(docButtonsRow);
+	docButtonsLay->setContentsMargins(0, 0, 0, 0);
+	docButtonsLay->setSpacing(6);
 
-	// Port row
-	auto portRow = new QWidget(this);
-	auto portLay = new QHBoxLayout(portRow);
+	browseDocRootBtn_ = new QPushButton(QStringLiteral("Browse…"), docButtonsRow);
+	openOverlayBtn_ = new QPushButton(QStringLiteral("Open folder"), docButtonsRow);
+
+	browseDocRootBtn_->setCursor(Qt::PointingHandCursor);
+	openOverlayBtn_->setCursor(Qt::PointingHandCursor);
+
+	docButtonsLay->addStretch(1);
+	docButtonsLay->addWidget(browseDocRootBtn_);
+	docButtonsLay->addWidget(openOverlayBtn_);
+
+	docButtonsRow->setLayout(docButtonsLay);
+	docLayout->addWidget(docButtonsRow);
+
+	gbDoc->setLayout(docLayout);
+	root->addWidget(gbDoc);
+
+	auto *gbPort = new QGroupBox(QStringLiteral("Web server port"), this);
+
+	auto *portLayoutOuter = new QVBoxLayout(gbPort);
+	portLayoutOuter->setContentsMargins(10, 10, 10, 10);
+	portLayoutOuter->setSpacing(6);
+
+	auto *portHint = new QLabel(
+		QStringLiteral("Default is 8089. Use a free port that your Browser Source can reach."), gbPort);
+	portHint->setWordWrap(true);
+	portLayoutOuter->addWidget(portHint);
+
+	auto *portRow = new QWidget(gbPort);
+	auto *portLay = new QHBoxLayout(portRow);
 	portLay->setContentsMargins(0, 0, 0, 0);
-	portLay->setSpacing(6);
-	portLay->addWidget(new QLabel(QStringLiteral("Web server port:"), portRow));
+	portLay->setSpacing(8);
+
 	portSpin_ = new QSpinBox(portRow);
 	portSpin_->setRange(1024, 65535);
 	{
@@ -87,40 +145,50 @@ FlySettingsDialog::FlySettingsDialog(QWidget *parent)
 			p = 8089;
 		portSpin_->setValue(p);
 	}
-	restartBtn_ = new QPushButton(QStringLiteral("Restart Server"), portRow);
-	portLay->addWidget(portSpin_, 1);
-	portLay->addWidget(restartBtn_);
+	portSpin_->setFixedWidth(100);
+
+	restartBtn_ = new QPushButton(QStringLiteral("Restart server"), portRow);
+	restartBtn_->setCursor(Qt::PointingHandCursor);
+
+	portLay->addWidget(portSpin_, 0, Qt::AlignLeft);
+	portLay->addStretch(1);
+	portLay->addWidget(restartBtn_, 0, Qt::AlignRight);
+
 	portRow->setLayout(portLay);
+	portLayoutOuter->addWidget(portRow);
 
-	// Action buttons row
-	auto actionsRow = new QWidget(this);
-	auto actionsLay = new QHBoxLayout(actionsRow);
-	actionsLay->setContentsMargins(0, 0, 0, 0);
-	actionsLay->setSpacing(8);
-	hotkeysBtn_ = new QPushButton(QStringLiteral("Hotkeys: how to bind…"), actionsRow);
-	openFolderBtn_ = new QPushButton(QStringLiteral("Open Overlay Folder…"), actionsRow);
-	actionsLay->addWidget(hotkeysBtn_);
-	actionsLay->addWidget(openFolderBtn_);
-	actionsLay->addStretch(1);
-	actionsRow->setLayout(actionsLay);
+	gbPort->setLayout(portLayoutOuter);
+	root->addWidget(gbPort);
 
-	v->addWidget(statusRow);
-	v->addWidget(docRootRow);
-	v->addWidget(portRow);
-	v->addSpacing(6);
-	v->addWidget(actionsRow);
-	setLayout(v);
+	auto *bottomRow = new QWidget(this);
+	auto *bottomLay = new QHBoxLayout(bottomRow);
+	bottomLay->setContentsMargins(0, 4, 0, 0);
+	bottomLay->setSpacing(8);
 
-	// Status polling
+	auto *bottomHint =
+		new QLabel(QStringLiteral("Changes to port and document root are applied when you restart the server."),
+			   bottomRow);
+
+	auto *closeBtn = new QPushButton(QStringLiteral("Close"), bottomRow);
+	closeBtn->setCursor(Qt::PointingHandCursor);
+	closeBtn->setDefault(true);
+
+	bottomLay->addWidget(bottomHint);
+	bottomLay->addStretch(1);
+	bottomLay->addWidget(closeBtn);
+
+	bottomRow->setLayout(bottomLay);
+	root->addWidget(bottomRow);
+
+	setLayout(root);
+
 	statusTimer_ = new QTimer(this);
 	connect(statusTimer_, &QTimer::timeout, this, &FlySettingsDialog::onPollHealth);
 	statusTimer_->start(2000);
-
-	// Signals
-	connect(restartBtn_, &QPushButton::clicked, this, &FlySettingsDialog::onRestartServer);
-	connect(openFolderBtn_, &QPushButton::clicked, this, &FlySettingsDialog::onOpenOverlay);
-	connect(hotkeysBtn_, &QPushButton::clicked, this, &FlySettingsDialog::onOpenHotkeysHelp);
 	connect(browseDocRootBtn_, &QPushButton::clicked, this, &FlySettingsDialog::onBrowseDocRoot);
+	connect(openOverlayBtn_, &QPushButton::clicked, this, &FlySettingsDialog::onOpenOverlayFolder);
+	connect(restartBtn_, &QPushButton::clicked, this, &FlySettingsDialog::onRestartServer);
+	connect(closeBtn, &QPushButton::clicked, this, &FlySettingsDialog::accept);
 
 	const int p = fly_server_port();
 	const bool ok = healthOkHttp(p);
@@ -133,21 +201,23 @@ bool FlySettingsDialog::healthOkHttp(int port, int timeout_ms)
 {
 	if (port <= 0)
 		return false;
+
 	httplib::Client cli("127.0.0.1", port);
 	cli.set_keep_alive(false);
 	cli.set_connection_timeout(0, timeout_ms * 1000);
 	cli.set_read_timeout(0, timeout_ms * 1000);
 	cli.set_write_timeout(0, timeout_ms * 1000);
+
 	if (auto res = cli.Get("/__ow/health"))
 		return res->status == 200;
+
 	return false;
 }
 
 void FlySettingsDialog::setStatusUi(bool ok, int port)
 {
-	if (!statusDot_ || !statusText_)
-		return;
 	styleDot(statusDot_, ok);
+
 	if (ok)
 		statusText_->setText(QStringLiteral("Running on :%1").arg(port));
 	else
@@ -157,59 +227,43 @@ void FlySettingsDialog::setStatusUi(bool ok, int port)
 void FlySettingsDialog::onPollHealth()
 {
 	const int p = fly_server_port();
-	const bool ok = fly_server_is_running() || healthOkHttp(p, 400);
+	const bool ok = fly_server_is_running() || healthOkHttp(p);
 	setStatusUi(ok, p);
 }
 
 void FlySettingsDialog::onRestartServer()
 {
-	const int desiredPort = portSpin_ ? portSpin_->value() : 8089;
-	QString docRoot = docRootEdit_ ? docRootEdit_->text() : fly_get_data_root_no_ui();
+	int desiredPort = portSpin_ ? portSpin_->value() : 8089;
 
+	QString docRoot = fly_get_data_root_no_ui();
 	if (docRoot.isEmpty())
-		docRoot = fly_get_data_root(this); // will ask user
+		docRoot = fly_get_data_root(this);
 
 	if (fly_server_port() > 0)
-		LOGI("Stopping current server on :%d", fly_server_port());
-	fly_server_stop();
+		fly_server_stop();
 
 	int bound = fly_server_start(docRoot, desiredPort);
 	if (!bound) {
-		LOGW("Could not start server on requested port %d", desiredPort);
+		LOGW("Could not bind any port near %d", desiredPort);
 	} else if (bound != desiredPort) {
 		LOGI("Port adjusted to %d (requested %d)", bound, desiredPort);
 		if (portSpin_)
 			portSpin_->setValue(bound);
-	} else {
-		LOGI("Server running on :%d", bound);
 	}
 
 	const int p = fly_server_port();
 	setStatusUi(healthOkHttp(p), p);
 }
 
-void FlySettingsDialog::onOpenOverlay()
+void FlySettingsDialog::onOpenOverlayFolder()
 {
-	QString dataRoot = docRootEdit_ ? docRootEdit_->text() : fly_get_data_root_no_ui();
-	if (dataRoot.isEmpty())
-		dataRoot = fly_get_data_root(this);
+	QString root = fly_get_data_root_no_ui();
+	if (root.isEmpty())
+		root = fly_get_data_root(this);
 
-	const QString overlay = QDir(dataRoot).filePath(QStringLiteral("overlay"));
-	QDesktopServices::openUrl(QUrl::fromLocalFile(overlay));
-	LOGI("Open overlay/doc root folder: %s", overlay.toUtf8().constData());
-}
+	QDesktopServices::openUrl(QUrl::fromLocalFile(root));
 
-void FlySettingsDialog::onOpenHotkeysHelp()
-{
-	QMessageBox::information(
-		this, tr("Fly Score Hotkeys"),
-		tr("Bind keys in <b>OBS → Settings → Hotkeys</b>.\n\n"
-		   "Search for actions that start with <i>\"Fly Scoreboard:\"</i>:\n"
-		   " • Home/Guests Score ±1\n"
-		   " • Home/Guests Wins ±1\n"
-		   " • Swap Home ↔ Guests\n"
-		   " • Show/Hide Scoreboard\n\n"
-		   "Hotkeys are saved per profile by OBS."));
+	LOGI("Open data root folder: %s", root.toUtf8().constData());
 }
 
 void FlySettingsDialog::onBrowseDocRoot()
@@ -219,16 +273,14 @@ void FlySettingsDialog::onBrowseDocRoot()
 		current = fly_default_data_root();
 
 	QString picked = QFileDialog::getExistingDirectory(
-		this,
-		tr("Select Fly Scoreboard data folder (overlay + plugin.json)"),
-		current);
+		this, tr("Select Fly Scoreboard document root (contains plugin.json and overlay files)"), current);
 
 	if (picked.isEmpty())
 		return;
 
 	fly_set_data_root(picked);
-	if (docRootEdit_)
-		docRootEdit_->setText(picked);
 
-	LOGI("Data root changed: %s", picked.toUtf8().constData());
+	docRootEdit_->setText(picked);
+
+	LOGI("Data root (document root) changed to: %s", picked.toUtf8().constData());
 }

@@ -1,27 +1,45 @@
-const links = document.querySelectorAll('nav.links a[href^="#"]');
-links.forEach((a) => {
-  a.addEventListener("click", (e) => {
+// Fly Scoreboard docs – smooth scroll + active TOC highlight
+
+// Smooth scroll for TOC links
+const tocLinks = document.querySelectorAll(".toc-link[href^='#']");
+
+tocLinks.forEach((link) => {
+  link.addEventListener("click", (e) => {
     e.preventDefault();
-    const id = a.getAttribute("href").slice(1);
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    const id = link.getAttribute("href").slice(1);
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    target.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   });
 });
 
-const obs = new IntersectionObserver(
+// Active state sync using IntersectionObserver
+const sections = document.querySelectorAll("section[data-section]");
+const sectionById = {};
+sections.forEach((s) => {
+  sectionById[s.id] = s;
+});
+
+const observer = new IntersectionObserver(
   (entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) {
-        const id = e.target.id;
-        document
-          .querySelectorAll("nav.links a")
-          .forEach((a) =>
-            a.classList.toggle("active", a.getAttribute("href") === "#" + id)
-          );
-      }
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const id = entry.target.id;
+
+      tocLinks.forEach((link) => {
+        const hrefId = link.getAttribute("href").slice(1);
+        link.classList.toggle("active", hrefId === id);
+      });
     });
   },
-  { rootMargin: "-60% 0px -35% 0px", threshold: 0.01 }
+  {
+    rootMargin: "-50% 0px -40% 0px",
+    threshold: 0.01,
+  }
 );
 
-document.querySelectorAll("section[id]").forEach((s) => obs.observe(s));
+sections.forEach((section) => observer.observe(section));

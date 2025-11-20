@@ -14,10 +14,6 @@ async function fetchState() {
   return await res.json();
 }
 
-/**
- * Compute the live timer value from JSON only.
- * Uses: mode, running, remaining_ms, last_tick_ms.
- */
 function liveTimerMs(timer) {
   if (!timer) return 0;
 
@@ -26,6 +22,7 @@ function liveTimerMs(timer) {
   const baseRemaining = Number(timer.remaining_ms ?? 0);
   const lastTick = Number(timer.last_tick_ms ?? 0);
 
+  // If not running or no tick info, just trust remaining_ms
   if (!running || !lastTick) {
     return baseRemaining;
   }
@@ -37,53 +34,120 @@ function liveTimerMs(timer) {
     return baseRemaining + delta;
   }
 
-  // countdown
   const v = baseRemaining - delta;
   return v < 0 ? 0 : v;
 }
 
 // -----------------------------------------------------------------------------
-// Template engine
-//
-// Supports:
-//   {{home.logo}}
-//   {{away.title}}
-//   {{custom_fields[0].label}}
-//   {{timers[0].label}}
-//   {{timers[0].mmss}}
-//   {{show_rounds ? 'fs-show' : 'fs-hide'}}
+// Expression engine
 // -----------------------------------------------------------------------------
-const templateBindings = [];
+function resolvePath(obj, path) {
+  if (!obj || !path) return undefined;
 
-function collectTemplateBindings() {
-  // Text nodes
-  const walker = document.createTreeWalker(
-    document.body,
-    NodeFilter.SHOW_TEXT,
-    null
-  );
+  const re = /([^[.\]]+)|\[(\d+)\]/g;
+  let cur = obj;
+  let m;
 
-  let node;
-  while ((node = walker.nextNode())) {
-    const text = node.nodeValue;
-    if (text && text.includes("{{")) {
-      const binding = createBinding(node, "text", null, text);
-      if (binding) templateBindings.push(binding);
+  while ((m = re.exec(path)) !== null) {
+    if (m[1]) {
+      cur = cur ? cur[m[1]] : undefined;
+    } else if (m[2]) {
+      const idx = Number(m[2]);
+      if (!Array.isArray(cur)) return undefined;
+      cur = cur[idx];
     }
+    if (cur == null) return cur;
   }
 
-  // Attributes
-  const all = document.querySelectorAll("*");
-  all.forEach((el) => {
-    for (const attr of el.attributes) {
-      const val = attr.value;
-      if (val && val.includes("{{")) {
-        const binding = createBinding(el, "attr", attr.name, val);
-        if (binding) templateBindings.push(binding);
-      }
-    }
-  });
+  return cur;
 }
+
+function stripQuotes(s) {
+  if (!s) return s;
+  s = s.trim();
+  if (
+    (s.startsWith('"') && s.endsWith('"')) ||
+    (s.startsWith("'") && s.endsWith("'"))
+  ) {
+    return s.slice(1, -1);
+  }
+  return s;
+}
+
+function isTruthyValue(val) {
+  if (val === null || val === undefined) return false;
+  if (typeof val === "string") return val.trim() !== "";
+  return !!val;
+}
+
+/**
+ * Evaluate an expression used inside {{ ... }} for text/attributes.
+ * Supports:
+ *   path                → team_x.logo, timers[0].mmss, fields_xy[1].x, etc.
+ *   cond ? 'a' : 'b'    → swap_sides ? 'foo' : 'bar'
+ *   !path               → returns boolean true/false, but will get stringified when used
+ */
+function evaluateExpression(expr, data) {
+  if (!expr) return "";
+
+  expr = expr.trim();
+
+  // Ternary: cond ? 'a' : 'b'
+  const ternaryMatch = expr.match(
+    /^(.+?)\s*\?\s*(['"].*?['"])\s*:\s*(['"].*?['"])$/
+  );
+  if (ternaryMatch) {
+    let condExpr = ternaryMatch[1].trim();
+    const trueLit = stripQuotes(ternaryMatch[2]);
+    const falseLit = stripQuotes(ternaryMatch[3]);
+
+    let negate = false;
+    if (condExpr.startsWith("!")) {
+      negate = true;
+      condExpr = condExpr.slice(1).trim();
+    }
+
+    const condVal = resolvePath(data, condExpr);
+    const base = isTruthyValue(condVal);
+    return (negate ? !base : base) ? trueLit : falseLit;
+  }
+
+  // Simple boolean: !path (returns true/false)
+  if (expr.startsWith("!")) {
+    const val = resolvePath(data, expr.slice(1).trim());
+    return !isTruthyValue(val);
+  }
+
+  // Simple path
+  const v = resolvePath(data, expr);
+  return v == null ? "" : v;
+}
+
+/**
+ * Evaluate a pure boolean condition for fs-if
+ * Supports:
+ *   fs-if="path"
+ *   fs-if="!path"
+ */
+function evaluateCondition(expr, data) {
+  if (!expr) return false;
+  expr = expr.trim();
+
+  if (expr.startsWith("!")) {
+    const path = expr.slice(1).trim();
+    const val = resolvePath(data, path);
+    return !isTruthyValue(val);
+  }
+
+  const val = resolvePath(data, expr);
+  return isTruthyValue(val);
+}
+
+// -----------------------------------------------------------------------------
+// Template engine ({{ }}) and fs-if
+// -----------------------------------------------------------------------------
+const templateBindings = [];
+const ifBindings = [];
 
 function createBinding(targetNode, kind, attrName, templateString) {
   const parts = [];
@@ -117,66 +181,39 @@ function createBinding(targetNode, kind, attrName, templateString) {
   return { targetNode, kind, attrName, parts };
 }
 
-function resolvePath(obj, path) {
-  if (!obj || !path) return undefined;
-
-  // tokens: foo, bar, [0] from "foo.bar[0].baz"
-  const re = /([^[.\]]+)|\[(\d+)\]/g;
-  let cur = obj;
-  let m;
-
-  while ((m = re.exec(path)) !== null) {
-    if (m[1]) {
-      // dot notation
-      cur = cur ? cur[m[1]] : undefined;
-    } else if (m[2]) {
-      // [index]
-      const idx = Number(m[2]);
-      if (!Array.isArray(cur)) return undefined;
-      cur = cur[idx];
-    }
-    if (cur == null) return cur;
-  }
-
-  return cur;
-}
-
-function stripQuotes(s) {
-  if (!s) return s;
-  s = s.trim();
-  if (
-    (s.startsWith('"') && s.endsWith('"')) ||
-    (s.startsWith("'") && s.endsWith("'"))
-  ) {
-    return s.slice(1, -1);
-  }
-  return s;
-}
-
-function evaluateExpression(expr, data) {
-  if (!expr) return "";
-
-  expr = expr.trim();
-
-  // Ternary:
-  //   condition ? 'trueVal' : 'falseVal'
-  //   condition ?? 'trueVal' : 'falseVal' (we treat ? and ?? the same here)
-  const ternaryMatch = expr.match(
-    /^(.+?)\s*(\?\??)\s*(['"].*?['"])\s*:\s*(['"].*?['"])$/
+function collectTemplateBindings() {
+  // Text nodes
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT,
+    null
   );
 
-  if (ternaryMatch) {
-    const condPath = ternaryMatch[1].trim();
-    const trueLit  = stripQuotes(ternaryMatch[3]);
-    const falseLit = stripQuotes(ternaryMatch[4]);
-
-    const condVal = resolvePath(data, condPath);
-    return condVal ? trueLit : falseLit;
+  let node;
+  while ((node = walker.nextNode())) {
+    const text = node.nodeValue;
+    if (text && text.includes("{{")) {
+      const binding = createBinding(node, "text", null, text);
+      if (binding) templateBindings.push(binding);
+    }
   }
 
-  // Simple path
-  const v = resolvePath(data, expr);
-  return v == null ? "" : v;
+  // Attributes (including fs-if)
+  const all = document.querySelectorAll("*");
+  all.forEach((el) => {
+    for (const attr of el.attributes) {
+      if (attr.name === "fs-if") {
+        ifBindings.push({ el, expr: attr.value.trim() });
+        continue;
+      }
+
+      const val = attr.value;
+      if (val && val.includes("{{")) {
+        const binding = createBinding(el, "attr", attr.name, val);
+        if (binding) templateBindings.push(binding);
+      }
+    }
+  });
 }
 
 function applyTemplateBindings(data) {
@@ -202,6 +239,23 @@ function applyTemplateBindings(data) {
   }
 }
 
+function applyIfBindings(data) {
+  if (!data) return;
+
+  for (const b of ifBindings) {
+    const ok = evaluateCondition(b.expr, data);
+
+    if (!ok) {
+      // Hide and mark aria-hidden, but keep in DOM so we can re-show later
+      b.el.style.display = "none";
+      b.el.setAttribute("aria-hidden", "true");
+    } else {
+      b.el.style.display = "";
+      b.el.removeAttribute("aria-hidden");
+    }
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Rendering
 // -----------------------------------------------------------------------------
@@ -210,15 +264,15 @@ let currentJsonState = null;
 function renderFrame() {
   if (!currentJsonState) return;
 
-  // Clone to avoid mutating original JSON
+  // Deep clone to avoid mutating original
   const st = JSON.parse(JSON.stringify(currentJsonState));
 
-  // Normalize timers array
+  // Ensure timers array
   if (!Array.isArray(st.timers)) {
     st.timers = [];
   }
 
-  // Compute live ms + mmss per timer
+  // Compute live timer values (mm:ss)
   for (let i = 0; i < st.timers.length; i++) {
     const t = st.timers[i] || {};
     const ms = liveTimerMs(t);
@@ -227,13 +281,44 @@ function renderFrame() {
     st.timers[i] = t;
   }
 
-  // Apply templates
-  applyTemplateBindings(st);
+  // ---------------------------------------------------------------------------
+  // Build derived view model:
+  //   - team_x / team_y: left/right teams based on swap_sides
+  //   - fields_xy: each custom field mapped to x/y based on swap_sides
+  // ---------------------------------------------------------------------------
+  const baseHome = st.home || {};
+  const baseAway = st.away || {};
+  const swap = !!st.swap_sides;
 
-  // Optionally handle show/hide scoreboard via class
+  const team_x = swap ? baseAway : baseHome; // left side
+  const team_y = swap ? baseHome : baseAway; // right side
+
+  const fields_xy = Array.isArray(st.custom_fields)
+    ? st.custom_fields.map((cf) => {
+      const leftVal = swap ? cf.away : cf.home;
+      const rightVal = swap ? cf.home : cf.away;
+      return {
+        ...cf,
+        x: leftVal,
+        y: rightVal,
+      };
+    })
+    : [];
+
+  const view = {
+    ...st,
+    team_x,
+    team_y,
+    fields_xy,
+  };
+
+  // First apply fs-if (visibility), then template bindings (text/attrs)
+  applyIfBindings(view);
+  applyTemplateBindings(view);
+
   const board = document.getElementById("scoreboard");
   if (board) {
-    if (st.show_scoreboard) {
+    if (view.show_scoreboard) {
       board.classList.remove("is-hidden");
       board.setAttribute("aria-hidden", "false");
     } else {
@@ -251,9 +336,9 @@ async function pollLoop() {
     const st = await fetchState();
     currentJsonState = st;
   } catch (e) {
-    // ignore errors; keep last state
+    // ignore; keep last state
   } finally {
-    setTimeout(pollLoop, 1000); // poll every second
+    setTimeout(pollLoop, 1000);
   }
 }
 

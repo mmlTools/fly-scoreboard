@@ -1,6 +1,8 @@
 #include "config.hpp"
 
 #define LOG_TAG "[" PLUGIN_NAME "][state]"
+#include "fly_score_log.hpp"
+
 #include "fly_score_state.hpp"
 
 #include <obs-module.h>
@@ -24,12 +26,12 @@ static QString moduleBaseDirFromConfigFile()
 
 static QString overlay_dir_path(const QString &base_dir)
 {
-	return QDir(base_dir).filePath("overlay");
+	return QDir(base_dir).absolutePath();
 }
 
 static QString overlay_plugin_json(const QString &base_dir)
 {
-	return QDir(overlay_dir_path(base_dir)).filePath("plugin.json");
+	return QDir(overlay_dir_path(base_dir)).filePath(QStringLiteral("plugin.json"));
 }
 
 QString fly_data_dir()
@@ -40,16 +42,39 @@ QString fly_data_dir()
 bool fly_ensure_webroot(QString *outBaseDir)
 {
 	const QString base = fly_data_dir();
-	const QString overlay = overlay_dir_path(base);
-	QDir().mkpath(overlay);
+	const QString webroot = overlay_dir_path(base);
+	QDir().mkpath(webroot);
 	if (outBaseDir)
 		*outBaseDir = base;
 	return true;
 }
 
-// -----------------------------------------------------------------------------
-// JSON helpers
-// -----------------------------------------------------------------------------
+static FlyTimer makeDefaultMainTimer()
+{
+	FlyTimer t;
+	t.label = QStringLiteral("First Half");
+	t.mode = QStringLiteral("countdown");
+	t.running = false;
+	t.initial_ms = 0;
+	t.remaining_ms = 0;
+	t.last_tick_ms = 0;
+	return t;
+}
+
+static void ensureDefaultCustomFields(FlyState &st)
+{
+	auto ensureAt = [&](int index, const QString &label) {
+		if (st.custom_fields.size() <= index)
+			st.custom_fields.resize(index + 1);
+
+		FlyCustomField &cf = st.custom_fields[index];
+		if (cf.label.isEmpty())
+			cf.label = label;
+	};
+
+	ensureAt(0, QStringLiteral("Points"));
+	ensureAt(1, QStringLiteral("Score"));
+}
 
 static QJsonObject timerToJson(const FlyTimer &t)
 {
@@ -75,109 +100,75 @@ static FlyTimer timerFromJson(const QJsonObject &o)
 	return t;
 }
 
-static QJsonObject toJson(const FlyState &st)
+static QJsonObject toJson(const FlyState &stIn)
 {
-    QJsonObject j;
-    j["version"] = 2; // bumped
+	FlyState st = stIn;
 
-    // -----------------------------------------------------------------
-    // Server
-    // -----------------------------------------------------------------
-    QJsonObject srv;
-    srv["port"] = st.server_port;
-    j["server"] = srv;
+	ensureDefaultCustomFields(st);
 
-    // -----------------------------------------------------------------
-    // Determine main timer (timers[0]); if none, create a default one
-    // -----------------------------------------------------------------
-    FlyTimer mainTimer;
-    if (!st.timers.isEmpty()) {
-        mainTimer = st.timers[0];
-    } else {
-        mainTimer.label        = QStringLiteral("First Half");
-        mainTimer.mode         = QStringLiteral("countdown");
-        mainTimer.running      = false;
-        mainTimer.initial_ms   = 0;
-        mainTimer.remaining_ms = 0;
-        mainTimer.last_tick_ms = 0;
-    }
+	QJsonObject j;
+	j["version"] = 3;
 
-    // Legacy single "timer" field (for older overlays / compatibility)
-    j["timer"] = timerToJson(mainTimer);
+	QJsonObject srv;
+	srv["port"] = st.server_port;
+	j["server"] = srv;
 
-    // -----------------------------------------------------------------
-    // Teams
-    // -----------------------------------------------------------------
-    auto teamToJson = [](const FlyTeam &tm) {
-        QJsonObject o;
-        o["title"]    = tm.title;
-        o["subtitle"] = tm.subtitle;
-        o["logo"]     = tm.logo;
-        o["score"]    = tm.score;
-        o["rounds"]   = tm.rounds;
-        return o;
-    };
-    j["home"] = teamToJson(st.home);
-    j["away"] = teamToJson(st.away);
+	auto teamToJson = [](const FlyTeam &tm) {
+		QJsonObject o;
+		o["title"] = tm.title;
+		o["subtitle"] = tm.subtitle;
+		o["logo"] = tm.logo;
+		return o;
+	};
 
-    j["swap_sides"]      = st.swap_sides;
-    j["show_scoreboard"] = st.show_scoreboard;
-    j["show_rounds"]     = st.show_rounds;
+	j["home"] = teamToJson(st.home);
+	j["away"] = teamToJson(st.away);
 
-    // -----------------------------------------------------------------
-    // Custom fields
-    // -----------------------------------------------------------------
-    QJsonArray cfArr;
-    for (const auto &cf : st.custom_fields) {
-        QJsonObject o;
-        o["label"]   = cf.label;
-        o["home"]    = cf.home;
-        o["away"]    = cf.away;
-        o["visible"] = cf.visible;
-        cfArr.append(o);
-    }
-    j["custom_fields"] = cfArr;
+	j["swap_sides"] = st.swap_sides;
+	j["show_scoreboard"] = st.show_scoreboard;
 
-    // -----------------------------------------------------------------
-    // Timers array: timers[0] + extra timers
-    // -----------------------------------------------------------------
-    QJsonArray timersArr;
-    if (st.timers.isEmpty()) {
-        // Persist at least the main timer
-        timersArr.append(timerToJson(mainTimer));
-    } else {
-        for (const auto &tm : st.timers) {
-            timersArr.append(timerToJson(tm));
-        }
-    }
-    j["timers"] = timersArr;
+	QJsonArray cfArr;
+	for (const auto &cf : st.custom_fields) {
+		QJsonObject o;
+		o["label"] = cf.label;
+		o["home"] = cf.home;
+		o["away"] = cf.away;
+		o["visible"] = cf.visible;
+		cfArr.append(o);
+	}
+	j["custom_fields"] = cfArr;
 
-    return j;
+	QJsonArray timersArr;
+	if (st.timers.isEmpty()) {
+		timersArr.append(timerToJson(makeDefaultMainTimer()));
+	} else {
+		for (const auto &tm : st.timers) {
+			timersArr.append(timerToJson(tm));
+		}
+	}
+	j["timers"] = timersArr;
+
+	return j;
 }
 
 static bool fromJson(const QJsonObject &j, FlyState &st)
 {
-	// Server
 	st.server_port = j.value("server").toObject().value("port").toInt(8089);
 
-	// Teams
 	auto readTeam = [](const QJsonObject &o) {
 		FlyTeam tm;
 		tm.title = o.value("title").toString();
 		tm.subtitle = o.value("subtitle").toString();
 		tm.logo = o.value("logo").toString();
-		tm.score = o.value("score").toInt(0);
-		tm.rounds = o.value("rounds").toInt(0);
 		return tm;
 	};
+
 	st.home = readTeam(j.value("home").toObject());
 	st.away = readTeam(j.value("away").toObject());
 
 	st.swap_sides = j.value("swap_sides").toBool(false);
 	st.show_scoreboard = j.value("show_scoreboard").toBool(true);
-	st.show_rounds = j.value("show_rounds").toBool(true);
 
-	// Custom fields
 	st.custom_fields.clear();
 	const auto cfArr = j.value("custom_fields").toArray();
 	for (const auto &v : cfArr) {
@@ -190,9 +181,11 @@ static bool fromJson(const QJsonObject &j, FlyState &st)
 		st.custom_fields.push_back(cf);
 	}
 
-	// Timers: prefer "timers" array; fall back to legacy single "timer"
+	ensureDefaultCustomFields(st);
+
 	st.timers.clear();
 	const auto timersArr = j.value("timers").toArray();
+
 	if (!timersArr.isEmpty()) {
 		st.timers.reserve(timersArr.size());
 		for (const auto &v : timersArr) {
@@ -200,28 +193,18 @@ static bool fromJson(const QJsonObject &j, FlyState &st)
 			st.timers.push_back(timerFromJson(o));
 		}
 	} else {
-		// Legacy: use "timer" field as timers[0]
 		const auto tObj = j.value("timer").toObject();
-		FlyTimer main = timerFromJson(tObj);
-		st.timers.push_back(main);
+		if (!tObj.isEmpty()) {
+			FlyTimer main = timerFromJson(tObj);
+			st.timers.push_back(main);
+		}
 	}
 
-	// Ensure timers[0] always exists
 	if (st.timers.isEmpty()) {
-		FlyTimer main;
-		main.mode = QStringLiteral("countdown");
-		main.running = false;
-		main.initial_ms = 0;
-		main.remaining_ms = 0;
-		main.last_tick_ms = 0;
-		st.timers.push_back(main);
+		st.timers.push_back(makeDefaultMainTimer());
 	}
 
 	FlyTimer &main = st.timers[0];
-	if (main.mode.isEmpty())
-		main.mode = QStringLiteral("countdown");
-
-	// Ensure mode
 	if (main.mode.isEmpty())
 		main.mode = QStringLiteral("countdown");
 
@@ -268,43 +251,36 @@ bool fly_state_load(const QString &base_dir, FlyState &out)
 	QFile f(path);
 	if (!f.exists() || !f.open(QIODevice::ReadOnly))
 		return false;
+
 	const auto doc = QJsonDocument::fromJson(f.readAll());
 	if (!doc.isObject())
 		return false;
+
 	return fromJson(doc.object(), out);
 }
 
 bool fly_state_save(const QString &base_dir, const FlyState &st)
 {
 	const QJsonDocument doc(toJson(st));
-	const QString overlayPath = overlay_plugin_json(base_dir);
-	return write_one_json(overlayPath, doc);
+	const QString path = overlay_plugin_json(base_dir);
+	return write_one_json(path, doc);
 }
 
 FlyState fly_state_make_defaults()
 {
 	FlyState st;
 	st.server_port = 8089;
-
 	st.home = FlyTeam{};
 	st.away = FlyTeam{};
 	st.swap_sides = false;
 	st.show_scoreboard = true;
-	st.show_rounds = true;
-	st.custom_fields.clear();
 
-	// Default main timer as timers[0]
+	st.custom_fields.clear();
 	st.timers.clear();
-	{
-		FlyTimer main;
-		main.label = QStringLiteral("First Half");
-		main.mode = QStringLiteral("countdown");
-		main.running = false;
-		main.initial_ms = 0;
-		main.remaining_ms = 0;
-		main.last_tick_ms = 0;
-		st.timers.push_back(main);
-	}
+
+	ensureDefaultCustomFields(st);
+
+	st.timers.push_back(makeDefaultMainTimer());
 
 	return st;
 }
@@ -313,6 +289,7 @@ bool fly_state_reset_defaults(const QString &base_dir)
 {
 	const QString pj = overlay_plugin_json(base_dir);
 	QFile::remove(pj);
+
 	const FlyState def = fly_state_make_defaults();
 	return fly_state_save(base_dir, def);
 }

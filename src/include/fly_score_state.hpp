@@ -8,17 +8,15 @@ struct FlyTeam {
 	QString title;
 	QString subtitle;
 	QString logo;
-	int score  = 0;
-	int rounds = 0;
 };
 
 struct FlyTimer {
-	QString label;           // shows as center label / timer label
-	QString mode;            // "countdown" | "countup"
-	bool      running      = false;
-	long long initial_ms   = 0;
-	long long remaining_ms = 0;
-	long long last_tick_ms = 0;
+	QString label;
+	QString mode; // "countdown" | "countup"
+	bool running = false;
+	long long initial_ms = 0;   // Starting value (for reset / dialog)
+	long long remaining_ms = 0; // Authoritative current value, used by overlay
+	long long last_tick_ms = 0; // Epoch ms when we last set running = true
 };
 
 struct FlyCustomField {
@@ -37,13 +35,7 @@ struct FlyState {
 	bool swap_sides      = false;
 	bool show_scoreboard = true;
 
-	// Show/hide wins (rounds)
-	bool show_rounds = true;
-
-	// Custom numeric fields
 	QVector<FlyCustomField> custom_fields;
-
-	// Timers: timers[0] is the main "match" timer, others are additional timers
 	QVector<FlyTimer> timers;
 };
 

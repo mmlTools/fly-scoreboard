@@ -1,7 +1,7 @@
-# 🏆 Fly Scoreboard OBS Studio Plugin
+# 🏆 Fly Scoreboard - OBS Studio Plugin (2025 Edition)
 
-A lightweight, **hotkey-friendly scoreboard overlay** for OBS Studio designed for live sports, esports, and streaming events.  
-It runs a local web server that powers an **auto-updating browser overlay**, allowing real-time updates via dock controls or hotkeys.
+A modern, **team‑agnostic, auto‑updating scoreboard overlay** for OBS Studio.  
+Fly Scoreboard now uses a fully flexible **team_x / team_y architecture**, dynamic custom fields, multiple timers, live swapping, and a clean browser-based overlay powered by a lightweight built‑in web server.
 
 [![Support on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mmltech)
 
@@ -11,8 +11,7 @@ It runs a local web server that powers an **auto-updating browser overlay**, all
 
 <p align="center">
   <picture>
-    <source srcset="docs/assets/img/preview.webp" type="image/webp">
-    <img src="docs/assets/img/preview.png" alt="Fly Scoreboard Preview" width="800">
+    <img src="docs/assets/img/preview_v2.png" alt="Fly Scoreboard Preview" width="800">
   </picture>
 </p>
 
@@ -20,134 +19,201 @@ It runs a local web server that powers an **auto-updating browser overlay**, all
 
 ## ✨ Features
 
-- 🕐 **Live Timer** - Count up or down, pause, reset, and auto-syncs with overlay.
-- 🏁 **Scoreboard Dock** - Control home/guest scores, rounds, and visibility.
-- 💡 **Hotkey Support** - Bind keys for +1/−1, swap teams, and show/hide.
-- 🧩 **Web Overlay** - Auto-generated and served via local HTTP (`overlay/index.html`).
-- 🖼️ **Logo Uploads** - Automatically copied with hashed filenames to prevent cache issues.
-- 🧹 **Clear + Reset** - Wipes teams, deletes logos, and restores defaults.
-- ⚙️ **Settings Dialog** - Configure web server port, health check, open overlay folder, and hotkey help.
+### 🆕 2025 Engine (team_x / team_y)
+- Flexible **team order** (swap dynamically)
+- Custom fields mapped to **x/y** values (no more home/away hardcoding)
+- Future-proof overlay structure for any sport or event
 
-> 💬 **Lightweight and fast:** zero dependencies, just Qt + OBS SDK.
+### Core Features
+- 🕐 **Multi‑Timer System**  
+  Count up/down, pause, reset, extra timers, and synchronized overlay updates.
+- 🏁 **Dock Controls**  
+  Adjust scores, fields, timers, and visibility instantly.
+- 🎮 **Hotkey Support**  
+  Bind keys for +1/−1, swap teams, start/pause/reset timers, and show/hide scoreboard.
+- 🌐 **Web Overlay**  
+  Lightweight auto-generated overlay served locally with seamless live updates.
+- 🏞️ **Logos & Branding**  
+  Upload team logos; plugin handles hashing, copying, and cache‑safe filenames.
+- 🧹 **Reset Tools**  
+  Clear team info, reset fields, delete logos, restore defaults in one click.
+- ⚙️ **Settings Dialog**  
+  Configure server port, open overlay folder, enable/disable health check, etc.
+
+> ⚡ **No dependencies** besides OBS SDK + Qt. Fast, safe, and extremely lightweight.
 
 ---
 
 ## 📦 Installation
 
-### From Release (Recommended)
+### ✔ Recommended - Download Release ZIP
 
-1. Download the latest **Release ZIP** from [GitHub Releases](https://github.com/mmlTools/fly-scoreboard/releases).
-2. Extract it into your OBS plugins directory, e.g.:
+1. Download the latest release:  
+   **https://github.com/mmlTools/fly-scoreboard/releases**
+2. Extract into OBS plugins directory:  
    ```
-   C:\Program Files\obs-studio\obs-plugins\64bit\
-   ```
-3. Launch OBS → `View → Docks → Fly Scoreboard`.
+   C:\Program Files\obs-studio\obs-plugins4bit   ```
+3. Restart OBS → `View → Docks → Fly Scoreboard`.
 
-### From Source (Manual Build)
+---
 
-#### Windows (Visual Studio 2022)
+## 🛠 Building From Source
+
+### Windows (Visual Studio 2022)
 
 ```bash
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DENABLE_FRONTEND_API=ON -DENABLE_QT=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 ^
+  -DENABLE_FRONTEND_API=ON -DENABLE_QT=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF
+
 cmake --build build --config Release
 cmake --install build --config Release --prefix "E:\obs-studio"
 ```
 
-#### Linux / macOS
+### Linux / macOS
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_FRONTEND_API=ON -DENABLE_QT=ON
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release   -DENABLE_FRONTEND_API=ON -DENABLE_QT=ON
+
 cmake --build build --config Release
 sudo cmake --install build
 ```
 
 ---
 
-## 🧠 Usage Overview
+## 🧠 How to Use
 
-Once installed and OBS restarted:
-
-1. Open **Dock → Fly Scoreboard**.
-2. Configure team titles, logos, and scores.
-3. Control the **timer** and **scoreboard visibility**.
-4. Click **Apply** the overlay updates instantly in your Browser Source.
-
-### Hotkeys
-
-Bind keys in **OBS → Settings → Hotkeys** under the section `Fly Scoreboard:`
-
-- `Home Score +1 / −1`
-- `Guests Score +1 / −1`
-- `Swap Home ↔ Guests`
-- `Show / Hide Scoreboard`
+1. Open **Dock → Fly Scoreboard**  
+2. Edit:
+   - Team names, subtitles, logos  
+   - Custom numeric fields  
+   - Timers (main match timer + extra timers)  
+3. Toggle **Show/Hide Scoreboard**  
+4. Overlay updates **instantly** in OBS Browser Source
 
 ---
 
-## 🧰 Overlay Setup
+## 🎹 Hotkeys
 
-The plugin automatically manages a Browser Source (name: `Fly Scoreboard Overlay`) pointing to:
+Found in **FlyScore → Hotkeys**:
+
+- Team X Score +1 / −1  
+- Team Y Score +1 / −1  
+- Swap Teams (team_x ↔ team_y)  
+- Timer: Start / Stop / Reset  
+- Toggle Scoreboard Visibility  
+
+---
+
+## 🌐 Overlay Setup
+
+The overlay is served from:
 
 ```
-http://127.0.0.1:<port>/overlay/index.html
+http://127.0.0.1:<port>/index.html
 ```
 
-If missing, manually add a new **Browser Source** and set that URL.
+If not auto-created, add a Browser Source manually using that address.
 
-All state is stored in:
+### State is stored here:
 
 ```
-<config_path>/overlay/plugin.json
+<config_path>/plugin.json
+```
+
+This includes:
+- team_x / team_y data  
+- custom field values  
+- timers  
+- visibility flags  
+- logo paths (hashed)  
+- web server config  
+
+---
+
+## 📁 Project Structure
+
+```
+├───data
+│   ├───locale
+│   │       en-US.ini
+│   │       ro-RO.ini
+│   │
+│   └───overlay
+│           index.html
+│           script.js
+│           style.css
+│
+├───docs
+│   │   index.html
+│   │
+│   └───assets
+│       ├───css
+│       │       style.css
+│       │
+│       ├───img
+│       │       logo.svg
+│       │       preview.webp
+│       │
+│       └───js
+│               app.js
+│
+├───installer
+│   │   fly-scoreboard-installer.nsi
+│   │
+│   └───resources
+│           fly-scoreboard-welcome.bmp
+│           fly-scoreboard.ico
+│
+└───src
+    │   fly_score_dock.cpp
+    │   fly_score_fields_dialog.cpp
+    │   fly_score_hotkeys_dialog.cpp
+    │   fly_score_kofi_widget.cpp
+    │   fly_score_logo_helpers.cpp
+    │   fly_score_obs_helpers.cpp
+    │   fly_score_paths.cpp
+    │   fly_score_plugin.cpp
+    │   fly_score_qt_helpers.cpp
+    │   fly_score_server.cpp
+    │   fly_score_settings_dialog.cpp
+    │   fly_score_state.cpp
+    │   fly_score_teams_dialog.cpp
+    │   fly_score_timers_dialog.cpp
+    │
+    ├───include
+    │       config.hpp
+    │       config.hpp.in
+    │       fly_score_const.hpp
+    │       fly_score_dock.hpp
+    │       fly_score_fields_dialog.hpp
+    │       fly_score_hotkeys_dialog.hpp
+    │       fly_score_kofi_widget.hpp
+    │       fly_score_log.hpp
+    │       fly_score_logo_helpers.hpp
+    │       fly_score_obs_helpers.hpp
+    │       fly_score_paths.hpp
+    │       fly_score_qt_helpers.hpp
+    │       fly_score_server.hpp
+    │       fly_score_settings_dialog.hpp
+    │       fly_score_state.hpp
+    │       fly_score_teams_dialog.hpp
+    │       fly_score_timers_dialog.hpp
+    │
+    └───thirdparty
+            httplib.h
 ```
 
 ---
 
-## ⚙️ Development
+## 🤝 Contributing & Support
 
-| Platform        | Toolchain / Notes                               |
-| --------------- | ----------------------------------------------- |
-| 🪟 Windows      | Visual Studio 17 2022 / Qt 6.x                  |
-| 🍎 macOS        | Xcode 16.0 / Homebrew Qt                        |
-| 🐧 Ubuntu 24.04 | CMake ≥3.28, ninja, pkg-config, build-essential |
-
-### Build Commands
-
-```bash
-cmake -S . -B build -DENABLE_FRONTEND_API=ON -DENABLE_QT=ON
-cmake --build build --config Release
-```
-
-### Run Locally
-
-OBS will automatically detect and load `fly-scoreboard.dll` / `fly-scoreboard.so` on startup.
-
----
-
-## 🧩 Project Structure
-
-```
-src/
-  fly_score_dock.cpp        # Main dock UI
-  fly_score_plugin.cpp      # OBS plugin entrypoints
-  fly_score_server.cpp      # Embedded web server
-  fly_score_state.cpp       # JSON state management
-  fly_score_hotkeys.cpp     # Hotkey registration
-  fly_score_settings_dialog.cpp # Settings dialog
-overlay/
-  index.html, style.css, script.js
-```
-
----
-
-## 💬 Support & Contribution
-
-- 💖 [Support the project on Ko-fi](https://ko-fi.com/mmltech)
-- 🐛 Report bugs via [GitHub Issues](https://github.com/mmlTools/fly-scoreboard/issues)
-- 📘 Read the [Full Documentation →](https://mmlTools.github.io/fly-scoreboard/)
+- 🐛 Bug reports → https://github.com/mmlTools/fly-scoreboard/issues  
+- 💖 Support development → https://ko-fi.com/mmltech  
+- 📘 Documentation → https://mmlTools.github.io/fly-scoreboard/
 
 ---
 
 ## 📜 License
 
-MIT License © 2025 [MMLTech](https://github.com/MMLTech)
-
-> Built with ❤️ using the OBS SDK, Qt, and a lot of caffeine.
+MIT License © 2025 **MMLTech**  
+Built with ❤️ using OBS Studio, Qt, and a lot of caffeine.
