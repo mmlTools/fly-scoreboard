@@ -8,6 +8,8 @@
 #include "fly_score_state.hpp"
 #include "fly_score_paths.hpp"
 
+#include "fly_score_dock.hpp"
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -36,7 +38,7 @@ static void styleDot(QLabel *dot, bool ok)
 FlySettingsDialog::FlySettingsDialog(QWidget *parent) : QDialog(parent)
 {
 	setObjectName(QStringLiteral("FlySettingsDialog"));
-	setWindowTitle(QStringLiteral("Fly Scoreboard – Settings"));
+	setWindowTitle(QStringLiteral("Fly Scoreboard Settings"));
 	setModal(false);
 	setSizeGripEnabled(false);
 	setMinimumWidth(460);
@@ -51,6 +53,9 @@ FlySettingsDialog::FlySettingsDialog(QWidget *parent) : QDialog(parent)
 	hint->setWordWrap(true);
 	root->addWidget(hint);
 
+	// ---------------------------------------------------------------------
+	// Server status group
+	// ---------------------------------------------------------------------
 	auto *gbServer = new QGroupBox(QStringLiteral("Server status"), this);
 
 	auto *serverLayout = new QVBoxLayout(gbServer);
@@ -80,6 +85,9 @@ FlySettingsDialog::FlySettingsDialog(QWidget *parent) : QDialog(parent)
 	gbServer->setLayout(serverLayout);
 	root->addWidget(gbServer);
 
+	// ---------------------------------------------------------------------
+	// Document root group
+	// ---------------------------------------------------------------------
 	auto *gbDoc = new QGroupBox(QStringLiteral("Document root (overlay files)"), this);
 
 	auto *docLayout = new QVBoxLayout(gbDoc);
@@ -121,6 +129,9 @@ FlySettingsDialog::FlySettingsDialog(QWidget *parent) : QDialog(parent)
 	gbDoc->setLayout(docLayout);
 	root->addWidget(gbDoc);
 
+	// ---------------------------------------------------------------------
+	// Port group
+	// ---------------------------------------------------------------------
 	auto *gbPort = new QGroupBox(QStringLiteral("Web server port"), this);
 
 	auto *portLayoutOuter = new QVBoxLayout(gbPort);
@@ -160,6 +171,9 @@ FlySettingsDialog::FlySettingsDialog(QWidget *parent) : QDialog(parent)
 	gbPort->setLayout(portLayoutOuter);
 	root->addWidget(gbPort);
 
+	// ---------------------------------------------------------------------
+	// Bottom row
+	// ---------------------------------------------------------------------
 	auto *bottomRow = new QWidget(this);
 	auto *bottomLay = new QHBoxLayout(bottomRow);
 	bottomLay->setContentsMargins(0, 4, 0, 0);
@@ -182,9 +196,13 @@ FlySettingsDialog::FlySettingsDialog(QWidget *parent) : QDialog(parent)
 
 	setLayout(root);
 
+	// ---------------------------------------------------------------------
+	// Signals / polling
+	// ---------------------------------------------------------------------
 	statusTimer_ = new QTimer(this);
 	connect(statusTimer_, &QTimer::timeout, this, &FlySettingsDialog::onPollHealth);
 	statusTimer_->start(2000);
+
 	connect(browseDocRootBtn_, &QPushButton::clicked, this, &FlySettingsDialog::onBrowseDocRoot);
 	connect(openOverlayBtn_, &QPushButton::clicked, this, &FlySettingsDialog::onOpenOverlayFolder);
 	connect(restartBtn_, &QPushButton::clicked, this, &FlySettingsDialog::onRestartServer);
@@ -239,6 +257,14 @@ void FlySettingsDialog::onRestartServer()
 	if (docRoot.isEmpty())
 		docRoot = fly_get_data_root(this);
 
+	// Ensure defaults exist in the CURRENT root BEFORE starting server
+	if (auto *dock = fly_get_dock()) {
+		dock->ensureResourcesDefaults();
+	} else {
+		// fallback: at least ensure plugin.json exists
+		fly_state_ensure_json_exists(docRoot, nullptr);
+	}
+
 	if (fly_server_port() > 0)
 		fly_server_stop();
 
@@ -262,7 +288,6 @@ void FlySettingsDialog::onOpenOverlayFolder()
 		root = fly_get_data_root(this);
 
 	QDesktopServices::openUrl(QUrl::fromLocalFile(root));
-
 	LOGI("Open data root folder: %s", root.toUtf8().constData());
 }
 
@@ -273,14 +298,21 @@ void FlySettingsDialog::onBrowseDocRoot()
 		current = fly_default_data_root();
 
 	QString picked = QFileDialog::getExistingDirectory(
-		this, tr("Select Fly Scoreboard document root (contains plugin.json and overlay files)"), current);
+		this,
+		tr("Select Fly Scoreboard document root (contains plugin.json and overlay files)"),
+		current);
 
 	if (picked.isEmpty())
 		return;
 
 	fly_set_data_root(picked);
-
 	docRootEdit_->setText(picked);
+
+	if (auto *dock = fly_get_dock()) {
+		dock->ensureResourcesDefaults();
+	} else {
+		fly_state_ensure_json_exists(picked, nullptr);
+	}
 
 	LOGI("Data root (document root) changed to: %s", picked.toUtf8().constData());
 }

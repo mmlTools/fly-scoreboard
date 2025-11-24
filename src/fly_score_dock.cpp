@@ -111,7 +111,9 @@ QVector<FlyHotkeyBinding> FlyScoreDock::buildMergedHotkeyBindings() const
 bool FlyScoreDock::init()
 {
 	dataDir_ = fly_get_data_root();
+
 	loadState();
+	ensureResourcesDefaults();
 
 	hotkeyBindings_ = fly_hotkeys_load(dataDir_);
 
@@ -297,10 +299,11 @@ bool FlyScoreDock::init()
 		saveState();
 	});
 
-	connect(refreshBrowserBtn, &QPushButton::clicked, this, []() {
-		const bool ok = fly_refresh_browser_source_by_name(QString::fromUtf8(kBrowserSourceName));
-		if (!ok)
-			LOGW("Refresh failed for Browser Source: %s", kBrowserSourceName);
+	connect(refreshBrowserBtn, &QPushButton::clicked, this, [this]() {
+	    const bool ok = fly_refresh_browser_source_by_name(QString::fromUtf8(kBrowserSourceName));
+	    ensureResourcesDefaults();
+	    if (!ok)
+	        LOGW("Refresh failed for Browser Source: %s", kBrowserSourceName);
 	});
 
 	connect(addSourceBtn, &QPushButton::clicked, this, [this]() {
@@ -1068,6 +1071,15 @@ void FlyScoreDock::onOpenTeamsDialog()
 	// Reload state from disk in case other fields were touched
 	loadState();
 	refreshUiFromState(false);
+}
+
+void FlyScoreDock::ensureResourcesDefaults()
+{
+    QString resDir = fly_get_data_root_no_ui();
+    if (resDir.isEmpty())
+        resDir = dataDir_; 
+
+    fly_state_ensure_json_exists(resDir, &st_);
 }
 
 // -----------------------------------------------------------------------------

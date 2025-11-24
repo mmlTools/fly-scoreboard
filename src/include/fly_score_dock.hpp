@@ -65,6 +65,7 @@ public slots:
 
 	// Open hotkeys dialog
 	void openHotkeysDialog();
+	void ensureResourcesDefaults();
 
 private slots:
 	void onClearTeamsAndReset();

@@ -97,19 +97,12 @@ function evaluateExpression(expr, data) {
     /^(.+?)\s*\?\s*(['"].*?['"])\s*:\s*(['"].*?['"])$/
   );
   if (ternaryMatch) {
-    let condExpr = ternaryMatch[1].trim();
+    const condExpr = ternaryMatch[1].trim();
     const trueLit = stripQuotes(ternaryMatch[2]);
     const falseLit = stripQuotes(ternaryMatch[3]);
 
-    let negate = false;
-    if (condExpr.startsWith("!")) {
-      negate = true;
-      condExpr = condExpr.slice(1).trim();
-    }
-
-    const condVal = resolvePath(data, condExpr);
-    const base = isTruthyValue(condVal);
-    return (negate ? !base : base) ? trueLit : falseLit;
+    const ok = evaluateCondition(condExpr, data);
+    return ok ? trueLit : falseLit;
   }
 
   // Simple boolean: !path (returns true/false)
@@ -124,23 +117,144 @@ function evaluateExpression(expr, data) {
 }
 
 /**
- * Evaluate a pure boolean condition for fs-if
+ * Advanced boolean evaluator for fs-if and ternary conditions.
  * Supports:
- *   fs-if="path"
- *   fs-if="!path"
+ *   - path (fields_xy[2].visible)
+ *   - !path
+ *   - &&, ||
+ *   - parentheses (...)
+ * Precedence: ! > && > ||
  */
 function evaluateCondition(expr, data) {
   if (!expr) return false;
   expr = expr.trim();
+  if (!expr) return false;
 
-  if (expr.startsWith("!")) {
-    const path = expr.slice(1).trim();
-    const val = resolvePath(data, path);
-    return !isTruthyValue(val);
+  // ---------------------------
+  // Tokenizer
+  // ---------------------------
+  function tokenizeBoolExpr(s) {
+    const tokens = [];
+    let i = 0;
+
+    while (i < s.length) {
+      const c = s[i];
+
+      if (/\s/.test(c)) {
+        i++;
+        continue;
+      }
+
+      if (c === "(" || c === ")") {
+        tokens.push(c);
+        i++;
+        continue;
+      }
+
+      if (c === "!") {
+        tokens.push("!");
+        i++;
+        continue;
+      }
+
+      if (s.startsWith("&&", i)) {
+        tokens.push("&&");
+        i += 2;
+        continue;
+      }
+
+      if (s.startsWith("||", i)) {
+        tokens.push("||");
+        i += 2;
+        continue;
+      }
+
+      // Path token: read until whitespace or operator/parens
+      const start = i;
+      while (i < s.length) {
+        if (/\s/.test(s[i])) break;
+        if (s.startsWith("&&", i) || s.startsWith("||", i)) break;
+        if (s[i] === "!" || s[i] === "(" || s[i] === ")") break;
+        i++;
+      }
+      tokens.push(s.slice(start, i));
+    }
+
+    return tokens;
   }
 
-  const val = resolvePath(data, expr);
-  return isTruthyValue(val);
+  const tokens = tokenizeBoolExpr(expr);
+
+  // ---------------------------
+  // Shunting-yard to RPN
+  // ---------------------------
+  const prec = { "!": 3, "&&": 2, "||": 1 };
+  const rightAssoc = { "!": true };
+
+  const out = [];
+  const ops = [];
+
+  for (const t of tokens) {
+    if (t === "(") {
+      ops.push(t);
+      continue;
+    }
+
+    if (t === ")") {
+      while (ops.length && ops[ops.length - 1] !== "(") {
+        out.push(ops.pop());
+      }
+      if (ops.length && ops[ops.length - 1] === "(") ops.pop();
+      continue;
+    }
+
+    if (t === "!" || t === "&&" || t === "||") {
+      while (ops.length) {
+        const top = ops[ops.length - 1];
+        if (!(top in prec)) break;
+
+        const shouldPop = rightAssoc[t]
+          ? prec[top] > prec[t]
+          : prec[top] >= prec[t];
+
+        if (!shouldPop) break;
+        out.push(ops.pop());
+      }
+      ops.push(t);
+      continue;
+    }
+
+    // path/value token
+    out.push(t);
+  }
+
+  while (ops.length) out.push(ops.pop());
+
+  // ---------------------------
+  // Evaluate RPN
+  // ---------------------------
+  const stack = [];
+
+  for (const tok of out) {
+    if (tok === "!") {
+      const a = stack.pop() || false;
+      stack.push(!a);
+      continue;
+    }
+
+    if (tok === "&&" || tok === "||") {
+      const b = stack.pop() || false;
+      const a = stack.pop() || false;
+      stack.push(tok === "&&" ? (a && b) : (a || b));
+      continue;
+    }
+
+    // resolve path -> truthy
+    const val = resolvePath(data, tok);
+    stack.push(isTruthyValue(val));
+  }
+
+  return stack.pop() || false;
 }
 
 // -----------------------------------------------------------------------------
@@ -315,17 +429,6 @@ function renderFrame() {
   // First apply fs-if (visibility), then template bindings (text/attrs)
   applyIfBindings(view);
   applyTemplateBindings(view);
-
-  const board = document.getElementById("scoreboard");
-  if (board) {
-    if (view.show_scoreboard) {
-      board.classList.remove("is-hidden");
-      board.setAttribute("aria-hidden", "false");
-    } else {
-      board.classList.add("is-hidden");
-      board.setAttribute("aria-hidden", "true");
-    }
-  }
 }
 
 // -----------------------------------------------------------------------------

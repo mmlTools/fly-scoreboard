@@ -8,6 +8,7 @@ struct FlyTeam {
 	QString title;
 	QString subtitle;
 	QString logo;
+	uint32_t color = 0xFFFFFF;
 };
 
 struct FlyTimer {
@@ -47,3 +48,4 @@ QString  fly_data_dir();
 bool     fly_ensure_webroot(QString *outBaseDir = nullptr);
 FlyState fly_state_make_defaults();
 bool     fly_state_reset_defaults(const QString &base_dir);
+bool fly_state_ensure_json_exists(const QString &base_dir, const FlyState *writeState = nullptr);
