@@ -208,7 +208,7 @@ This includes:
 ## 🤝 Contributing & Support
 
 - 🐛 Bug reports → https://github.com/mmlTools/fly-scoreboard/issues  
-- 💖 Support development → https://ko-fi.com/mmltech  
+- 💖 Support development → https://ko-fi.com/mmltech Or https://paypal.me/mmlTools
 - 📘 Documentation → https://mmlTools.github.io/fly-scoreboard/
 
 ---
