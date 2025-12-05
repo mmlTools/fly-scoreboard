@@ -187,13 +187,14 @@ void FlyTimersDialog::loadFromState()
 		main.initial_ms = 0;
 		main.remaining_ms = 0;
 		main.last_tick_ms = 0;
+		main.visible = true;
 		st_.timers.push_back(main);
 	}
 
 	rows_.reserve(st_.timers.size());
 	for (int i = 0; i < st_.timers.size(); ++i) {
 		const auto &tm = st_.timers[i];
-		const bool canRemove = (i > 0); // timer 0 is protected
+		const bool canRemove = (i > 0);
 		Row r = addRow(tm, canRemove);
 		rows_.push_back(r);
 	}
@@ -201,6 +202,8 @@ void FlyTimersDialog::loadFromState()
 
 void FlyTimersDialog::saveToState()
 {
+	const auto oldTimers = st_.timers;
+
 	st_.timers.clear();
 	st_.timers.reserve(rows_.size());
 
@@ -224,6 +227,13 @@ void FlyTimersDialog::saveToState()
 		tm.running = false;
 		tm.last_tick_ms = 0;
 
+		// Preserve previous visible flag if it exists; default to true for new timers
+		if (i < oldTimers.size()) {
+			tm.visible = oldTimers[i].visible;
+		} else {
+			tm.visible = true;
+		}
+
 		st_.timers.push_back(tm);
 	}
 
@@ -235,6 +245,7 @@ void FlyTimersDialog::saveToState()
 		main.initial_ms = 0;
 		main.remaining_ms = 0;
 		main.last_tick_ms = 0;
+		main.visible = true;
 		st_.timers.push_back(main);
 	}
 
@@ -250,6 +261,7 @@ void FlyTimersDialog::onAddTimer()
 	tm.initial_ms = 0;
 	tm.remaining_ms = 0;
 	tm.last_tick_ms = 0;
+	tm.visible = true;
 
 	Row r = addRow(tm, true);
 	rows_.push_back(r);

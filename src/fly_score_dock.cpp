@@ -881,6 +881,10 @@ void FlyScoreDock::loadTimerControlsFromState()
 		lay->setContentsMargins(0, 0, 0, 0);
 		lay->setSpacing(6);
 
+		auto *visibleCheck = new QCheckBox(row);
+		visibleCheck->setChecked(tm.visible);
+		visibleCheck->setToolTip(QStringLiteral("Show this timer on overlay"));
+
 		auto *labelLbl = new QLabel(tm.label.isEmpty() ? QStringLiteral("(unnamed)") : tm.label, row);
 		labelLbl->setMinimumWidth(120);
 
@@ -917,6 +921,7 @@ void FlyScoreDock::loadTimerControlsFromState()
 		startStopBtn->setFixedSize(btnSize, btnSize);
 		resetBtn->setFixedSize(btnSize, btnSize);
 
+		lay->addWidget(visibleCheck, 0, Qt::AlignVCenter);
 		lay->addWidget(labelLbl);
 		lay->addStretch(1);
 		lay->addWidget(timeEdit, 0, Qt::AlignVCenter);
@@ -931,6 +936,14 @@ void FlyScoreDock::loadTimerControlsFromState()
 		ui.timeEdit = timeEdit;
 		ui.startStop = startStopBtn;
 		ui.reset = resetBtn;
+		ui.visibleCheck = visibleCheck;
+
+		connect(visibleCheck, &QCheckBox::toggled, this, [this, i](bool on) {
+			if (i < 0 || i >= st_.timers.size())
+				return;
+			st_.timers[i].visible = on;
+			saveState();
+		});
 
 		connect(timeEdit, &QLineEdit::editingFinished, this, [this, i, timeEdit]() {
 			if (i < 0 || i >= st_.timers.size())

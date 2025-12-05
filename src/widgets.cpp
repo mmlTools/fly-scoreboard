@@ -296,6 +296,74 @@ QWidget *widget_create_shopping_card(QWidget *parent)
 }
 
 // -----------------------------------------------------------------------------
+// Free Streamers Promo – Facebook Group card
+// -----------------------------------------------------------------------------
+
+QWidget *widget_create_fb_group_card(QWidget *parent)
+{
+	auto *card = new QFrame(parent);
+	card->setObjectName(QStringLiteral("streamersGroupCard"));
+	card->setFrameShape(QFrame::NoFrame);
+	card->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+	auto *lay = new QHBoxLayout(card);
+	lay->setContentsMargins(12, 10, 12, 10);
+	lay->setSpacing(10);
+
+	auto *icon = new QLabel(card);
+	icon->setText(QString::fromUtf8("🚀"));
+	icon->setStyleSheet(QStringLiteral("font-size:30px;"));
+
+	auto *text = new QLabel(card);
+	text->setTextFormat(Qt::RichText);
+	text->setWordWrap(true);
+	text->setText("<b>Free Streamers Promo</b><br>"
+		      "Grow on <b>Twitch</b>, <b>YouTube</b>,<br>"
+		      "<b>Kick</b> & <b>TikTok</b> together.");
+
+	auto *btn = new QPushButton(QStringLiteral("📣 Join Facebook Group"), card);
+	btn->setCursor(Qt::PointingHandCursor);
+	btn->setMinimumHeight(28);
+	btn->setStyleSheet("QPushButton { "
+			   "  background: #1877F2; "
+			   "  color: #FFFFFF; "
+			   "  border: none; "
+			   "  border-radius: 6px; "
+			   "  padding: 6px 12px; "
+			   "  font-weight: 600; "
+			   "}"
+			   "QPushButton:hover { "
+			   "  background: #145ECC; "
+			   "}"
+			   "QPushButton:pressed { "
+			   "  background: #0F4AA4; "
+			   "}");
+
+	const QUrl groupUrl(QStringLiteral("https://www.facebook.com/groups/freestreamerspromotion"));
+
+	QObject::connect(btn, &QPushButton::clicked, card, [groupUrl]() { QDesktopServices::openUrl(groupUrl); });
+
+	lay->addWidget(icon, 0, Qt::AlignVCenter);
+	lay->addWidget(text, 1);
+	lay->addWidget(btn, 0, Qt::AlignVCenter);
+
+	card->setStyleSheet("#streamersGroupCard {"
+			    "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
+			    "    stop:0 #141E30, "
+			    "    stop:0.45 #243B55, "
+			    "    stop:1 #4C2A85);"
+			    "  border: 1px solid rgba(255, 255, 255, 0.18);"
+			    "  border-radius: 10px; "
+			    "  padding: 6px; "
+			    "}"
+			    "#streamersGroupCard QLabel { "
+			    "  color: #F5F7FF; "
+			    "}");
+
+	return card;
+}
+
+// -----------------------------------------------------------------------------
 // Carousel: auto-rotating stack of cards
 // -----------------------------------------------------------------------------
 
@@ -312,6 +380,7 @@ QWidget *create_widget_carousel(QWidget *parent)
 	stack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
 	stack->addWidget(widget_create_shopping_card(stack));
+	stack->addWidget(widget_create_fb_group_card(stack));
 	stack->addWidget(widget_create_discord_card(stack));
 	stack->addWidget(widget_create_custom_overlay_card(stack));
 	stack->addWidget(widget_create_kofi_card(stack));

@@ -36,6 +36,7 @@ struct FlyTimerUi {
 	QLineEdit *timeEdit = nullptr;
 	QPushButton *startStop = nullptr;
 	QPushButton *reset = nullptr;
+	QCheckBox *visibleCheck = nullptr;
 };
 
 // Forward-declared; defined in fly_score_hotkeys_dialog.hpp

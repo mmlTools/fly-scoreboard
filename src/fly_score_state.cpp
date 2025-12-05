@@ -58,6 +58,7 @@ static FlyTimer makeDefaultMainTimer()
 	t.initial_ms = 0;
 	t.remaining_ms = 0;
 	t.last_tick_ms = 0;
+	t.visible = true;
 	return t;
 }
 
@@ -85,6 +86,7 @@ static QJsonObject timerToJson(const FlyTimer &t)
 	o["initial_ms"] = QString::number(t.initial_ms);
 	o["remaining_ms"] = QString::number(t.remaining_ms);
 	o["last_tick_ms"] = QString::number(t.last_tick_ms);
+	o["visible"] = t.visible;
 	return o;
 }
 
@@ -97,6 +99,7 @@ static FlyTimer timerFromJson(const QJsonObject &o)
 	t.initial_ms = o.value("initial_ms").toString("0").toLongLong();
 	t.remaining_ms = o.value("remaining_ms").toString("0").toLongLong();
 	t.last_tick_ms = o.value("last_tick_ms").toString("0").toLongLong();
+	t.visible = o.value("visible").toBool(true);
 	return t;
 }
 

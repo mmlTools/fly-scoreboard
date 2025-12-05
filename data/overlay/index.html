@@ -1,114 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Handball Scoreboard</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="preload" href="style.css" as="style" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div id="scoreboard"
-     class="{{show_scoreboard ? 'hb-board' : 'hb-board is-hidden'}}">
-      <!-- LEFT / Team X -->
-      <div class="hb-side hb-team-x">
-        <div class="hb-logo" fs-if="team_x.logo">
-          <img alt="" src="{{team_x.logo}}" />
-        </div>
 
-        <div class="hb-team">
-          <div class="hb-title">{{team_x.title}}</div>
-          <div class="hb-subtitle" fs-if="team_x.subtitle">
-            {{team_x.subtitle}}
-          </div>
-        </div>
+<head>
+  <meta charset="utf-8" />
+  <title>Handball Scoreboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="preload" href="style.css" as="style" />
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-        <div class="hb-score">
-          {{fields_xy[0].x}}
+<body>
+  <div id="scoreboard" class="{{show_scoreboard ? 'hb-board' : 'hb-board is-hidden'}}">
+    <!-- LEFT / Team X -->
+    <div class="hb-side hb-team-x">
+      <div class="hb-logo" fs-if="team_x.logo">
+        <img alt="" src="{{team_x.logo}}" />
+      </div>
+
+      <div class="hb-team">
+        <div class="hb-title">{{team_x.title}}</div>
+        <div class="hb-subtitle" fs-if="team_x.subtitle">
+          {{team_x.subtitle}}
         </div>
       </div>
 
-      <!-- CENTER -->
-      <div class="hb-center">
-        <div class="hb-round" fs-if="fields_xy[1].visible">
-          <span class="hb-round-label">{{fields_xy[1].label}}</span>
-          <span class="hb-round-val">{{fields_xy[1].x}}</span>
+      <div class="hb-score">
+        {{fields_xy[0].x}}
+      </div>
+      </div>
+
+    <!-- CENTER -->
+    <div class="hb-center">
+      <div class="hb-round" fs-if="fields_xy[1].visible">
+        <span class="hb-round-label">{{fields_xy[1].label}}</span>
+        <span class="hb-round-val">{{fields_xy[1].x}}</span>
+      </div>
+
+      <!-- MAIN MATCH TIMER (respects timers[0].visible) -->
+      <div class="hb-clock-wrap" fs-if="timers[0] && timers[0].visible">
+        <div class="hb-clock-label">{{timers[0].label}}</div>
+        <div class="hb-clock">{{timers[0].mmss}}</div>
+      </div>
+
+      <!-- MINI TIMERS (auto hide when none visible) -->
+      <div
+        class="{{(timers[1] && timers[1].visible) || (timers[2] && timers[2].visible) ? 'hb-mini-timers' : 'hb-mini-timers is-hidden'}}">
+        <div class="hb-mini" fs-if="timers[1] && timers[1].visible">
+          <span class="hb-mini-label">{{timers[1].label}}</span>
+          <span class="hb-mini-val">{{timers[1].mmss}}</span>
+        </div>
+        <div class="hb-mini" fs-if="timers[2] && timers[2].visible">
+          <span class="hb-mini-label">{{timers[2].label}}</span>
+          <span class="hb-mini-val">{{timers[2].mmss}}</span>
+        </div>
+        </div>
         </div>
 
-        <div class="hb-clock-wrap">
-          <div class="hb-clock-label">{{timers[0].label}}</div>
-          <div class="hb-clock">{{timers[0].mmss}}</div>
-        </div>
+    <!-- RIGHT / Team Y -->
+    <div class="hb-side hb-team-y">
+      <div class="hb-score">
+        {{fields_xy[0].y}}
+      </div>
 
-        <div class="hb-mini-timers">
-          <div class="hb-mini" fs-if="timers[1]">
-            <span class="hb-mini-label">{{timers[1].label}}</span>
-            <span class="hb-mini-val">{{timers[1].mmss}}</span>
-          </div>
-          <div class="hb-mini" fs-if="timers[2]">
-            <span class="hb-mini-label">{{timers[2].label}}</span>
-            <span class="hb-mini-val">{{timers[2].mmss}}</span>
-          </div>
+      <div class="hb-team">
+        <div class="hb-title text-right">{{team_y.title}}</div>
+        <div class="hb-subtitle text-right" fs-if="team_y.subtitle">
+          {{team_y.subtitle}}
         </div>
       </div>
 
-      <!-- RIGHT / Team Y -->
-      <div class="hb-side hb-team-y">
-        <div class="hb-score">
-          {{fields_xy[0].y}}
-        </div>
-
-        <div class="hb-team">
-          <div class="hb-title text-right">{{team_y.title}}</div>
-          <div class="hb-subtitle text-right" fs-if="team_y.subtitle">
-            {{team_y.subtitle}}
-          </div>
-        </div>
-
-        <div class="hb-logo" fs-if="team_y.logo">
-          <img alt="" src="{{team_y.logo}}" />
-        </div>
+      <div class="hb-logo" fs-if="team_y.logo">
+        <img alt="" src="{{team_y.logo}}" />
       </div>
+      </div>
+      </div>
+
+  <!-- BOTTOM STATS STRIP (auto hides per visible flag) -->
+  <div
+    class="{{show_scoreboard && (fields_xy[2].visible || fields_xy[3].visible || fields_xy[4].visible || fields_xy[5].visible || fields_xy[6].visible) ? 'hb-stats' : 'hb-stats is-hidden'}}">
+    <div class="hb-stat" fs-if="fields_xy[2].visible">
+      <span class="hb-stat-label">{{fields_xy[2].label}}</span>
+      <span class="hb-stat-x">{{fields_xy[2].x}}</span>
+      <span class="hb-stat-sep">–</span>
+      <span class="hb-stat-y">{{fields_xy[2].y}}</span>
     </div>
 
-    <!-- BOTTOM STATS STRIP (auto hides per visible flag) -->
-    <div class="{{show_scoreboard && (fields_xy[2].visible || fields_xy[3].visible || fields_xy[4].visible || fields_xy[5].visible || fields_xy[6].visible) ? 'hb-stats' : 'hb-stats is-hidden'}}">
-      <div class="hb-stat" fs-if="fields_xy[2].visible">
-        <span class="hb-stat-label">{{fields_xy[2].label}}</span>
-        <span class="hb-stat-x">{{fields_xy[2].x}}</span>
-        <span class="hb-stat-sep">–</span>
-        <span class="hb-stat-y">{{fields_xy[2].y}}</span>
-      </div>
-
-      <div class="hb-stat" fs-if="fields_xy[3].visible">
-        <span class="hb-stat-label">{{fields_xy[3].label}}</span>
-        <span class="hb-stat-x">{{fields_xy[3].x}}</span>
-        <span class="hb-stat-sep">–</span>
-        <span class="hb-stat-y">{{fields_xy[3].y}}</span>
-      </div>
-
-      <div class="hb-stat" fs-if="fields_xy[4].visible">
-        <span class="hb-stat-label">{{fields_xy[4].label}}</span>
-        <span class="hb-stat-x">{{fields_xy[4].x}}</span>
-        <span class="hb-stat-sep">–</span>
-        <span class="hb-stat-y">{{fields_xy[4].y}}</span>
-      </div>
-
-      <div class="hb-stat" fs-if="fields_xy[5].visible">
-        <span class="hb-stat-label">{{fields_xy[5].label}}</span>
-        <span class="hb-stat-x">{{fields_xy[5].x}}</span>
-        <span class="hb-stat-sep">–</span>
-        <span class="hb-stat-y">{{fields_xy[5].y}}</span>
-      </div>
-
-      <div class="hb-stat" fs-if="fields_xy[6].visible">
-        <span class="hb-stat-label">{{fields_xy[6].label}}</span>
-        <span class="hb-stat-x">{{fields_xy[6].x}}</span>
-        <span class="hb-stat-sep">–</span>
-        <span class="hb-stat-y">{{fields_xy[6].y}}</span>
-      </div>
+    <div class="hb-stat" fs-if="fields_xy[3].visible">
+      <span class="hb-stat-label">{{fields_xy[3].label}}</span>
+      <span class="hb-stat-x">{{fields_xy[3].x}}</span>
+      <span class="hb-stat-sep">–</span>
+      <span class="hb-stat-y">{{fields_xy[3].y}}</span>
     </div>
 
-    <script src="script.js" defer></script>
+    <div class="hb-stat" fs-if="fields_xy[4].visible">
+      <span class="hb-stat-label">{{fields_xy[4].label}}</span>
+      <span class="hb-stat-x">{{fields_xy[4].x}}</span>
+      <span class="hb-stat-sep">–</span>
+      <span class="hb-stat-y">{{fields_xy[4].y}}</span>
+    </div>
+
+    <div class="hb-stat" fs-if="fields_xy[5].visible">
+      <span class="hb-stat-label">{{fields_xy[5].label}}</span>
+      <span class="hb-stat-x">{{fields_xy[5].x}}</span>
+      <span class="hb-stat-sep">–</span>
+      <span class="hb-stat-y">{{fields_xy[5].y}}</span>
+    </div>
+
+    <div class="hb-stat" fs-if="fields_xy[6].visible">
+      <span class="hb-stat-label">{{fields_xy[6].label}}</span>
+      <span class="hb-stat-x">{{fields_xy[6].x}}</span>
+      <span class="hb-stat-sep">–</span>
+      <span class="hb-stat-y">{{fields_xy[6].y}}</span>
+    </div>
+    </div>
+
+  <script src="script.js" defer></script>
   </body>
+
 </html>

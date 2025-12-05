@@ -13,11 +13,12 @@ struct FlyTeam {
 
 struct FlyTimer {
 	QString label;
-	QString mode; // "countdown" | "countup"
+	QString mode;
 	bool running = false;
-	long long initial_ms = 0;   // Starting value (for reset / dialog)
-	long long remaining_ms = 0; // Authoritative current value, used by overlay
-	long long last_tick_ms = 0; // Epoch ms when we last set running = true
+	long long initial_ms = 0;
+	long long remaining_ms = 0;
+	long long last_tick_ms = 0;
+	bool visible = true;
 };
 
 struct FlyCustomField {

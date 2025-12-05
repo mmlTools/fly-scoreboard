@@ -130,8 +130,8 @@ set(OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_qt_helpers.cpp
   ${FS_SRC_DIR}/fly_score_obs_helpers.cpp
   ${FS_SRC_DIR}/fly_score_logo_helpers.cpp
-  ${FS_SRC_DIR}/widget.cpp
   ${FS_SRC_DIR}/fly_score_paths.cpp
+  ${FS_SRC_DIR}/widgets.cpp
 )
 
 if(ENABLE_HTTP_SERVER)
