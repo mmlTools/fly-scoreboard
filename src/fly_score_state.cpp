@@ -115,11 +115,6 @@ static QJsonObject toJson(const FlyState &stIn)
     // ---------------------------------------------------------------------
     // Server
     // ---------------------------------------------------------------------
-    QJsonObject srv;
-    srv["port"] = st.server_port;
-    j["server"] = srv;
-
-    // ---------------------------------------------------------------------
     // Teams
     // ---------------------------------------------------------------------
     auto teamToJson = [](const FlyTeam &tm) {
@@ -177,10 +172,6 @@ static bool fromJson(const QJsonObject &j, FlyState &st)
 {
     // ---------------------------------------------------------------------
     // Server
-    // ---------------------------------------------------------------------
-    const QJsonObject srvObj = j.value("server").toObject();
-    st.server_port = srvObj.value("port").toInt(8089);
-
     // ---------------------------------------------------------------------
     // Helper: robust color reader
     // ---------------------------------------------------------------------
@@ -342,7 +333,6 @@ bool fly_state_save(const QString &base_dir, const FlyState &st)
 FlyState fly_state_make_defaults()
 {
 	FlyState st;
-	st.server_port = 8089;
 	st.home = FlyTeam{};
 	st.away = FlyTeam{};
 	st.swap_sides = false;

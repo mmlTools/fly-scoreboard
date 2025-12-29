@@ -80,6 +80,12 @@ function isTruthyValue(val) {
   return !!val;
 }
 
+function intToHex(colorInt) {
+  if (colorInt === undefined || colorInt === null) return "#555555";
+  const hex = Number(colorInt).toString(16).padStart(6, "0");
+  return "#" + hex;
+}
+
 /**
  * Evaluate an expression used inside {{ ... }} for text/attributes.
  * Supports:
@@ -406,6 +412,9 @@ function renderFrame() {
 
   const team_x = swap ? baseAway : baseHome; // left side
   const team_y = swap ? baseHome : baseAway; // right side
+
+  if (team_x.color) team_x.color = intToHex(team_x.color);
+  if (team_y.color) team_y.color = intToHex(team_y.color);
 
   const fields_xy = Array.isArray(st.custom_fields)
     ? st.custom_fields.map((cf) => {

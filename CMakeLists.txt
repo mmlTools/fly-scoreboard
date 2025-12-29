@@ -9,7 +9,6 @@ project(${_name} VERSION ${_version} LANGUAGES C CXX)
 # ---------------------------------------------------------------------------
 option(ENABLE_FRONTEND_API "Use obs-frontend-api for dock, hotkeys, browser auto-setup" ON)
 option(ENABLE_QT           "Use Qt for dock UI and dialogs"                             ON)
-option(ENABLE_HTTP_SERVER  "Serve overlay on http://127.0.0.1:<port>"                   ON)
 option(EMBED_DEFAULT_ASSETS "Embed data/overlay + locale into binary"                   ON)
 
 # This plugin *requires* Qt and frontend API; don't allow disabling them.
@@ -102,16 +101,6 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_QT=1)
 
 # ---------------------------------------------------------------------------
-# HTTP server (cpp-httplib)
-# ---------------------------------------------------------------------------
-if(ENABLE_HTTP_SERVER)
-  target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_HTTP_SERVER=1)
-  if(WIN32)
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ws2_32)
-  endif()
-endif()
-
-# ---------------------------------------------------------------------------
 # Includes
 # ---------------------------------------------------------------------------
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -131,20 +120,11 @@ set(OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_obs_helpers.cpp
   ${FS_SRC_DIR}/fly_score_logo_helpers.cpp
   ${FS_SRC_DIR}/fly_score_paths.cpp
-  ${FS_SRC_DIR}/widgets.cpp
 )
-
-if(ENABLE_HTTP_SERVER)
-  list(APPEND OBS_FLY_SCORE_SRC
-    ${FS_SRC_DIR}/server.cpp
-  )
-endif()
 
 list(APPEND OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_dock.cpp
   ${FS_INC_DIR}/fly_score_dock.hpp
-  ${FS_SRC_DIR}/fly_score_settings_dialog.cpp
-  ${FS_INC_DIR}/fly_score_settings_dialog.hpp
   ${FS_SRC_DIR}/fly_score_teams_dialog.cpp
   ${FS_INC_DIR}/fly_score_teams_dialog.hpp
   ${FS_SRC_DIR}/fly_score_fields_dialog.cpp

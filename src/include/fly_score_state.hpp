@@ -29,8 +29,6 @@ struct FlyCustomField {
 };
 
 struct FlyState {
-	int     server_port = 8089;
-
 	FlyTeam home;
 	FlyTeam away;
 
