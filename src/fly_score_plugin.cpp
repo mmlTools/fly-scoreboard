@@ -10,7 +10,6 @@
 #include <QDir>
 
 #include "fly_score_paths.hpp"
-#include "server.hpp"
 #include "fly_score_state.hpp"
 #include "fly_score_dock.hpp"
 #include "fly_score_const.hpp"
@@ -32,14 +31,6 @@ bool obs_module_load(void)
 {
 	LOGI("Plugin loaded (version %s)", PLUGIN_VERSION);
 
-	const QString docRoot = fly_get_data_root(nullptr);
-
-	int port = server_start(docRoot, 8089);
-	if (port == 0)
-		LOGW("Web server failed to bind");
-	else
-		LOGI("Web server listening on :%d (docRoot=%s)", port, docRoot.toUtf8().constData());
-
 	fly_create_dock();
 
 	return true;
@@ -50,7 +41,5 @@ void obs_module_unload(void)
 	LOGI("Plugin unloading...");
 
 	fly_destroy_dock();
-	server_stop();
-
 	LOGI("Plugin unloaded");
 }

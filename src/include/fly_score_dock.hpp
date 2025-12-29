@@ -2,7 +2,7 @@
 
 #include <QWidget>
 #include <QString>
-#include <QVector>
+#include <QList>
 #include <QKeySequence>
 
 #include "fly_score_state.hpp"
@@ -10,7 +10,6 @@
 class QPushButton;
 class QSpinBox;
 class QLineEdit;
-class QComboBox;
 class QCheckBox;
 class QVBoxLayout;
 class QLabel;
@@ -48,9 +47,6 @@ public:
 	explicit FlyScoreDock(QWidget *parent = nullptr);
 	bool init();
 
-signals:
-	void requestSave();
-
 public slots:
 	// Match stats from hotkeys
 	void bumpCustomFieldHome(int index, int delta);
@@ -66,6 +62,8 @@ public slots:
 
 	// Open hotkeys dialog
 	void openHotkeysDialog();
+
+	// Ensure plugin.json exists in current resources path
 	void ensureResourcesDefaults();
 
 private slots:
@@ -74,6 +72,9 @@ private slots:
 	void onOpenCustomFieldsDialog();
 	void onOpenTimersDialog();
 	void onOpenTeamsDialog();
+
+	void onSetResourcesPath();
+	void onOpenResourcesFolder();
 
 private:
 	void loadState();
@@ -90,10 +91,13 @@ private:
 	void loadTimerControlsFromState();
 
 	// Hotkeys (dialog-driven, plugin-local)
-	QVector<FlyHotkeyBinding> buildDefaultHotkeyBindings() const;
-	QVector<FlyHotkeyBinding> buildMergedHotkeyBindings() const;
-	void applyHotkeyBindings(const QVector<FlyHotkeyBinding> &bindings);
+	QList<FlyHotkeyBinding> buildDefaultHotkeyBindings() const;
+	QList<FlyHotkeyBinding> buildMergedHotkeyBindings() const;
+	void applyHotkeyBindings(const QList<FlyHotkeyBinding> &bindings);
 	void clearAllShortcuts();
+
+	// Browser source sync
+	void updateBrowserSourceToCurrentResources();
 
 private:
 	QString dataDir_;
@@ -104,24 +108,26 @@ private:
 	QCheckBox *showScoreboard_ = nullptr;
 
 	QPushButton *teamsBtn_ = nullptr;
-
-	// Custom fields quick area
-	QVBoxLayout *customFieldsLayout_ = nullptr;
 	QPushButton *editFieldsBtn_ = nullptr;
-	QVector<FlyCustomFieldUi> customFields_;
-
-	// Timers quick area
-	QVBoxLayout *timersLayout_ = nullptr;
 	QPushButton *editTimersBtn_ = nullptr;
-	QVector<FlyTimerUi> timers_;
+
+	// Quick controls layouts
+	QVBoxLayout *customFieldsLayout_ = nullptr;
+	QList<FlyCustomFieldUi> customFields_;
+
+	QVBoxLayout *timersLayout_ = nullptr;
+	QList<FlyTimerUi> timers_;
+
+	// Footer buttons
+	QPushButton *setResourcesPathBtn_ = nullptr;
+	QPushButton *openResourcesFolderBtn_ = nullptr;
 
 	// Hotkey bindings + actual shortcuts
-	QVector<FlyHotkeyBinding> hotkeyBindings_;
-	QVector<QShortcut *> shortcuts_;
+	QList<FlyHotkeyBinding> hotkeyBindings_;
+	QList<QShortcut *> shortcuts_;
 };
 
 // Dock helpers (OBS frontend registration)
 void fly_create_dock();
 void fly_destroy_dock();
-
 FlyScoreDock *fly_get_dock();
