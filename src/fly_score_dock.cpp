@@ -360,6 +360,7 @@ bool FlyScoreDock::init()
 		auto *teamVBox = new QVBoxLayout(teamTab);
 		teamVBox->setContentsMargins(0, 0, 0, 0);
 		teamVBox->setSpacing(4);
+		teamVBox->setAlignment(Qt::AlignTop);
 		customFieldsLayout_ = teamVBox;
 
 		// Single Stats tab
@@ -367,6 +368,7 @@ bool FlyScoreDock::init()
 		auto *singleVBox = new QVBoxLayout(singleTab);
 		singleVBox->setContentsMargins(0, 0, 0, 0);
 		singleVBox->setSpacing(4);
+		singleVBox->setAlignment(Qt::AlignTop);
 		singleStatsLayout_ = singleVBox;
 
 		// Timers tab
@@ -374,6 +376,7 @@ bool FlyScoreDock::init()
 		auto *timersVBox = new QVBoxLayout(timersTab);
 		timersVBox->setContentsMargins(0, 0, 0, 0);
 		timersVBox->setSpacing(4);
+		timersVBox->setAlignment(Qt::AlignTop);
 		timersLayout_ = timersVBox;
 
 		tabs->addTab(teamTab, tr("Team Stats"));
@@ -926,12 +929,21 @@ void FlyScoreDock::syncSingleStatControlsToState()
 
 void FlyScoreDock::clearAllTimerRows()
 {
-	for (auto &ui : timers_) {
-		if (timersLayout_ && ui.row)
-			timersLayout_->removeWidget(ui.row);
-		if (ui.row)
-			ui.row->deleteLater();
+	// IMPORTANT:
+	// The timers UI is rebuilt frequently (play/pause, reset, dialog changes).
+	// If we only remove the row widgets but leave QSpacerItems (stretches)
+	// behind, subsequent rebuilds will append new rows *after* the spacer,
+	// visually pushing the rows to the bottom. This is exactly the "row jumps
+	// to bottom when pressing play/pause" symptom.
+	if (timersLayout_) {
+		QLayoutItem *it = nullptr;
+		while ((it = timersLayout_->takeAt(0)) != nullptr) {
+			if (QWidget *w = it->widget())
+				w->deleteLater();
+			delete it; // also deletes spacer items
+		}
 	}
+	// Also clear our UI bookkeeping.
 	timers_.clear();
 }
 
@@ -1007,6 +1019,8 @@ void FlyScoreDock::loadTimerControlsFromState()
 		lay->addWidget(startStopBtn, 0, Qt::AlignVCenter);
 		lay->addWidget(resetBtn, 0, Qt::AlignVCenter);
 
+		// Keep rows pinned to top: rows must not expand vertically.
+		row->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 		timersLayout_->addWidget(row);
 
 		ui.row = row;
@@ -1047,7 +1061,6 @@ void FlyScoreDock::loadTimerControlsFromState()
 
 		connect(startStopBtn, &QPushButton::clicked, this, [this, i]() {
 			toggleTimerRunning(i);
-			refreshUiFromState(false);
 		});
 
 		connect(resetBtn, &QPushButton::clicked, this, [this, i]() {
