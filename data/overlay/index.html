@@ -35,8 +35,11 @@
           </div>
 
           <div class="hs-pills">
-            <div class="hs-pill" fs-if="fields_xy[1] && fields_xy[1].visible">
-              <span class="hs-pill-text">PERIOD {{fields_xy[1].x}}</span>
+            <div class="hs-pill" fs-if="single_stats[0] && single_stats[0].visible">
+              <span class="hs-pill-text">{{single_stats[0].label}} {{single_stats[0].value}}</span>
+            </div>
+            <div class="hs-pill" fs-if="single_stats[1] && single_stats[1].visible">
+              <span class="hs-pill-text">{{single_stats[1].label}} {{single_stats[1].value}}</span>
             </div>
           </div>
         </div>

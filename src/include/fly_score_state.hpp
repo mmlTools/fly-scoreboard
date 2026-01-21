@@ -28,6 +28,13 @@ struct FlyCustomField {
 	bool visible = true;
 };
 
+struct FlySingleStat {
+	QString label;
+	int  value   = 0;
+	bool visible = true;
+};
+
+
 struct FlyState {
 	FlyTeam home;
 	FlyTeam away;
@@ -36,6 +43,7 @@ struct FlyState {
 	bool show_scoreboard = true;
 
 	QVector<FlyCustomField> custom_fields;
+	QVector<FlySingleStat> single_stats;
 	QVector<FlyTimer> timers;
 };
 
