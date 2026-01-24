@@ -2,7 +2,6 @@
 
 #define LOG_TAG "[" PLUGIN_NAME "][dock]"
 #include "fly_score_log.hpp"
-#include "widget.hpp"
 
 #include "fly_score_dock.hpp"
 #include "fly_score_state.hpp"
@@ -31,51 +30,46 @@
 #include <QUrl>
 #include <QSettings>
 
-static inline QString fly_settings_org_name() { return QStringLiteral("MMLTech"); }
-static inline QString fly_settings_app_name() { return QStringLiteral("fly-scoreboard"); }
-static inline QString fly_settings_key_browser_source() { return QStringLiteral("dock/browser_source_name"); }
+static inline QString fly_settings_org_name()
+{
+	return QStringLiteral("MMLTech");
+}
+static inline QString fly_settings_app_name()
+{
+	return QStringLiteral("fly-scoreboard");
+}
+static inline QString fly_settings_key_browser_source()
+{
+	return QStringLiteral("dock/browser_source_name");
+}
 
 static QString fly_load_saved_browser_source_name()
 {
-    QSettings s(fly_settings_org_name(), fly_settings_app_name());
-    return s.value(fly_settings_key_browser_source()).toString().trimmed();
+	QSettings s(fly_settings_org_name(), fly_settings_app_name());
+	return s.value(fly_settings_key_browser_source()).toString().trimmed();
 }
 
 static void fly_save_browser_source_name(const QString &name)
 {
-    QSettings s(fly_settings_org_name(), fly_settings_app_name());
-    if (name.trimmed().isEmpty()) {
-        s.remove(fly_settings_key_browser_source());
-    } else {
-        s.setValue(fly_settings_key_browser_source(), name.trimmed());
-    }
-    s.sync();
+	QSettings s(fly_settings_org_name(), fly_settings_app_name());
+	if (name.trimmed().isEmpty()) {
+		s.remove(fly_settings_key_browser_source());
+	} else {
+		s.setValue(fly_settings_key_browser_source(), name.trimmed());
+	}
+	s.sync();
 }
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHash>
 #include <QLabel>
 #include <QLineEdit>
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QComboBox>
-#include <QMetaObject>
 #include <QShortcut>
-#include <QSignalBlocker>
 #include <QSizePolicy>
-
-static void fly_on_source_list_changed(void *data, calldata_t *)
-{
-	auto *self = static_cast<FlyScoreDock *>(data);
-	if (!self)
-		return;
-	QMetaObject::invokeMethod(self,
-		[self]() { self->refreshBrowserSourceCombo(true); },
-		Qt::QueuedConnection);
-}
-
 #include <QSpinBox>
-#include <QTabWidget>
 #include <QSpacerItem>
 
 #include <algorithm>
@@ -109,16 +103,6 @@ QList<FlyHotkeyBinding> FlyScoreDock::buildDefaultHotkeyBindings() const
 		v.push_back({baseId + "_home_dec", tr("Custom: %1 - Home -1").arg(label), QKeySequence()});
 		v.push_back({baseId + "_away_inc", tr("Custom: %1 - Guests +1").arg(label), QKeySequence()});
 		v.push_back({baseId + "_away_dec", tr("Custom: %1 - Guests -1").arg(label), QKeySequence()});
-	}
-
-	for (int i = 0; i < st_.single_stats.size(); ++i) {
-		const auto &ss = st_.single_stats[i];
-		const QString label = ss.label.isEmpty() ? tr("Single stat %1").arg(i + 1) : ss.label;
-		const QString baseId = QStringLiteral("single_%1").arg(i);
-
-		v.push_back({baseId + "_toggle", tr("Single: %1 - Toggle visibility").arg(label), QKeySequence()});
-		v.push_back({baseId + "_inc", tr("Single: %1 +1").arg(label), QKeySequence()});
-		v.push_back({baseId + "_dec", tr("Single: %1 -1").arg(label), QKeySequence()});
 	}
 
 	for (int i = 0; i < st_.timers.size(); ++i) {
@@ -185,7 +169,6 @@ void FlyScoreDock::applyHotkeyBindings(const QList<FlyHotkeyBinding> &bindings)
 			connect(sc, &QShortcut::activated, this, [this]() { toggleScoreboardVisible(); });
 
 		} else if (id.startsWith(QLatin1String("field_"))) {
-			// field_{idx}_{toggle|home_inc|home_dec|away_inc|away_dec}
 			const auto parts = id.split(QLatin1Char('_'));
 			if (parts.size() < 3)
 				continue;
@@ -216,28 +199,7 @@ void FlyScoreDock::applyHotkeyBindings(const QList<FlyHotkeyBinding> &bindings)
 						[this, idx]() { bumpCustomFieldAway(idx, -1); });
 			}
 
-		} else if (id.startsWith(QLatin1String("single_"))) {
-			// single_{idx}_{toggle|inc|dec}
-			const auto parts = id.split(QLatin1Char('_'));
-			if (parts.size() != 3)
-				continue;
-
-			bool ok = false;
-			int idx = parts[1].toInt(&ok);
-			if (!ok)
-				continue;
-
-			const QString action = parts[2];
-			if (action == QLatin1String("toggle"))
-				connect(sc, &QShortcut::activated, this,
-					[this, idx]() { toggleSingleStatVisible(idx); });
-			else if (action == QLatin1String("inc"))
-				connect(sc, &QShortcut::activated, this, [this, idx]() { bumpSingleStat(idx, +1); });
-			else if (action == QLatin1String("dec"))
-				connect(sc, &QShortcut::activated, this, [this, idx]() { bumpSingleStat(idx, -1); });
-
 		} else if (id.startsWith(QLatin1String("timer_"))) {
-			// timer_{idx}_toggle
 			const auto parts = id.split(QLatin1Char('_'));
 			if (parts.size() == 3 && parts[2] == QLatin1String("toggle")) {
 				bool ok = false;
@@ -322,91 +284,89 @@ bool FlyScoreDock::init()
 	mainVBox->setContentsMargins(8, 8, 8, 8);
 	mainVBox->setSpacing(6);
 
-	// Header row (buttons)
+	// Top controls row (toggles + Teams)
 	{
-		auto *headerRow = new QHBoxLayout();
-		headerRow->setContentsMargins(0, 0, 0, 0);
-		headerRow->setSpacing(6);
-
-		teamsBtn_ = new QPushButton(QStringLiteral("Teams"), mainBox);
-		teamsBtn_->setMinimumWidth(110);
-		teamsBtn_->setMaximumWidth(130);
-		teamsBtn_->setCursor(Qt::PointingHandCursor);
-
-		editFieldsBtn_ = new QPushButton(QStringLiteral("Stats…"), mainBox);
-		editFieldsBtn_->setMinimumWidth(110);
-		editFieldsBtn_->setMaximumWidth(130);
-		editFieldsBtn_->setCursor(Qt::PointingHandCursor);
-		editFieldsBtn_->setToolTip(QStringLiteral("Configure match stats fields"));
-
-		editTimersBtn_ = new QPushButton(QStringLiteral("Timers…"), mainBox);
-		editTimersBtn_->setMinimumWidth(110);
-		editTimersBtn_->setMaximumWidth(130);
-		editTimersBtn_->setCursor(Qt::PointingHandCursor);
-		editTimersBtn_->setToolTip(QStringLiteral("Configure timers"));
-
-		headerRow->addWidget(teamsBtn_);
-		headerRow->addWidget(editFieldsBtn_);
-		headerRow->addWidget(editTimersBtn_);
-		headerRow->addStretch(1);
-
-		mainVBox->addLayout(headerRow);
-	}
-
-	// Toggles row (below buttons)
-	{
-		auto *togglesRow = new QHBoxLayout();
-		togglesRow->setContentsMargins(0, 0, 0, 0);
-		togglesRow->setSpacing(10);
+		auto *topRow = new QHBoxLayout();
+		topRow->setContentsMargins(0, 0, 0, 0);
+		topRow->setSpacing(10);
 
 		swapSides_ = new QCheckBox(QStringLiteral("Swap Home ↔ Guests"), mainBox);
 		showScoreboard_ = new QCheckBox(QStringLiteral("Show scoreboard"), mainBox);
 
-		togglesRow->addWidget(swapSides_);
-		togglesRow->addWidget(showScoreboard_);
-		togglesRow->addStretch(1);
+		teamsBtn_ = new QPushButton(QStringLiteral("Teams…"), mainBox);
+		teamsBtn_->setCursor(Qt::PointingHandCursor);
+		teamsBtn_->setToolTip(QStringLiteral("Edit team names, logos and colors"));
 
-		mainVBox->addLayout(togglesRow);
+		topRow->addWidget(swapSides_);
+		topRow->addWidget(showScoreboard_);
+		topRow->addStretch(1);
+		topRow->addWidget(teamsBtn_);
+
+		mainVBox->addLayout(topRow);
 	}
 
-	// Tabbed quick controls: Team Stats | Single Stats | Timers
+	// Match stats header row (Add + Manage)
 	{
-		auto *tabs = new QTabWidget(mainBox);
-		tabs->setObjectName(QStringLiteral("flyScoreTabs"));
-		tabs->setDocumentMode(true);
-		tabs->setMovable(false);
-		tabs->setUsesScrollButtons(true);
+		auto *statsRow = new QHBoxLayout();
+		statsRow->setContentsMargins(0, 0, 0, 0);
+		statsRow->setSpacing(6);
 
-		// Team Stats tab
-		auto *teamTab = new QWidget(tabs);
-		auto *teamVBox = new QVBoxLayout(teamTab);
-		teamVBox->setContentsMargins(0, 0, 0, 0);
-		teamVBox->setSpacing(4);
-		teamVBox->setAlignment(Qt::AlignTop);
-		customFieldsLayout_ = teamVBox;
+		auto *lbl = new QLabel(QStringLiteral("Match stats"), mainBox);
+		lbl->setStyleSheet(QStringLiteral("font-weight:600;"));
 
-		// Single Stats tab
-		auto *singleTab = new QWidget(tabs);
-		auto *singleVBox = new QVBoxLayout(singleTab);
-		singleVBox->setContentsMargins(0, 0, 0, 0);
-		singleVBox->setSpacing(4);
-		singleVBox->setAlignment(Qt::AlignTop);
-		singleStatsLayout_ = singleVBox;
+		addFieldBtn_ = new QPushButton(QStringLiteral("＋"), mainBox);
+		addFieldBtn_->setCursor(Qt::PointingHandCursor);
+		addFieldBtn_->setToolTip(QStringLiteral("Add a new stat"));
 
-		// Timers tab
-		auto *timersTab = new QWidget(tabs);
-		auto *timersVBox = new QVBoxLayout(timersTab);
-		timersVBox->setContentsMargins(0, 0, 0, 0);
-		timersVBox->setSpacing(4);
-		timersVBox->setAlignment(Qt::AlignTop);
-		timersLayout_ = timersVBox;
+		editFieldsBtn_ = new QPushButton(QStringLiteral("Manage…"), mainBox);
+		editFieldsBtn_->setCursor(Qt::PointingHandCursor);
+		editFieldsBtn_->setToolTip(QStringLiteral("Manage match stats fields"));
 
-		tabs->addTab(teamTab, tr("Team Stats"));
-		tabs->addTab(singleTab, tr("Single Stats"));
-		tabs->addTab(timersTab, tr("Timers"));
+		addFieldBtn_->setFixedSize(32, 26);
+		editFieldsBtn_->setFixedHeight(26);
+		editFieldsBtn_->setMinimumWidth(90);
 
-		mainVBox->addWidget(tabs);
+		statsRow->addWidget(lbl);
+		statsRow->addStretch(1);
+		statsRow->addWidget(addFieldBtn_);
+		statsRow->addWidget(editFieldsBtn_);
+
+		mainVBox->addLayout(statsRow);
 	}
+
+	// Stats quick controls (custom fields)
+	customFieldsLayout_ = new QVBoxLayout();
+	customFieldsLayout_->setContentsMargins(0, 0, 0, 0);
+	customFieldsLayout_->setSpacing(4);
+	mainVBox->addLayout(customFieldsLayout_);
+
+	// Timers header row (Manage)
+	{
+		auto *timersRow = new QHBoxLayout();
+		timersRow->setContentsMargins(0, 0, 0, 0);
+		timersRow->setSpacing(6);
+
+		auto *lbl = new QLabel(QStringLiteral("Timers"), mainBox);
+		lbl->setStyleSheet(QStringLiteral("font-weight:600; margin-top:6px;"));
+
+		editTimersBtn_ = new QPushButton(QStringLiteral("Manage…"), mainBox);
+		editTimersBtn_->setCursor(Qt::PointingHandCursor);
+		editTimersBtn_->setToolTip(QStringLiteral("Manage timers"));
+		editTimersBtn_->setFixedHeight(26);
+		editTimersBtn_->setMinimumWidth(90);
+
+		timersRow->addWidget(lbl);
+		timersRow->addStretch(1);
+		timersRow->addWidget(editTimersBtn_);
+
+		mainVBox->addLayout(timersRow);
+	}
+
+	// Timers quick controls
+	timersLayout_ = new QVBoxLayout();
+	timersLayout_->setContentsMargins(0, 0, 0, 0);
+	timersLayout_->setSpacing(4);
+	mainVBox->addLayout(timersLayout_);
 
 	mainBox->setLayout(mainVBox);
 	root->addWidget(mainBox);
@@ -420,11 +380,9 @@ bool FlyScoreDock::init()
 	bottomRow->setContentsMargins(0, 0, 0, 0);
 	bottomRow->setSpacing(6);
 
-	browserSourceCombo_ = new QComboBox(content);
-	browserSourceCombo_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	browserSourceCombo_->setToolTip(QStringLiteral("Select which Browser Source to sync to the Fly Scoreboard resources"));
-	browserSourceCombo_->setMinimumContentsLength(18);
-	browserSourceCombo_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+	auto *addOrUpdateBtn = new QPushButton(QStringLiteral("🌐"), content);
+	addOrUpdateBtn->setCursor(Qt::PointingHandCursor);
+	addOrUpdateBtn->setToolTip(QStringLiteral("Add or update browser source in current scene"));
 
 	auto *clearBtn = new QPushButton(QStringLiteral("🧹"), content);
 	clearBtn->setCursor(Qt::PointingHandCursor);
@@ -442,7 +400,7 @@ bool FlyScoreDock::init()
 	hotkeysBtn->setCursor(Qt::PointingHandCursor);
 	hotkeysBtn->setToolTip(QStringLiteral("Configure hotkeys"));
 
-	bottomRow->addWidget(browserSourceCombo_, 1);
+	bottomRow->addWidget(addOrUpdateBtn);
 	bottomRow->addWidget(clearBtn);
 	bottomRow->addWidget(setResourcesPathBtn_);
 	bottomRow->addWidget(openResourcesFolderBtn_);
@@ -451,28 +409,26 @@ bool FlyScoreDock::init()
 
 	root->addLayout(bottomRow);
 	root->addStretch(1);
-	root->addWidget(create_widget_carousel(this));
 
 	// ---------------------------------------------------------------------
 	// Connections
 	// ---------------------------------------------------------------------
 	refreshBrowserSourceCombo();
-	connect(browserSourceCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-        [this](int idx) {
-            const QString name = selectedBrowserSourceName();
+	connect(browserSourceCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
+		const QString name = selectedBrowserSourceName();
 
-            // Placeholder selected: clear persisted selection and reset state so user can re-select and re-sync.
-            if (idx <= 0 || name.isEmpty()) {
-                fly_save_browser_source_name(QString());
-                onClearTeamsAndReset();
-                return;
-            }
+		// Placeholder selected: clear persisted selection and reset state so user can re-select and re-sync.
+		if (idx <= 0 || name.isEmpty()) {
+			fly_save_browser_source_name(QString());
+			onClearTeamsAndReset();
+			return;
+		}
 
-            // Persist selection so it survives OBS restarts.
-            fly_save_browser_source_name(name);
+		// Persist selection so it survives OBS restarts.
+		fly_save_browser_source_name(name);
 
-            updateBrowserSourceToCurrentResources();
-        });
+		updateBrowserSourceToCurrentResources();
+	});
 
 	// Keep the Browser Source selector up-to-date when sources are created/destroyed.
 	obsSignalHandler_ = obs_get_signal_handler();
@@ -495,12 +451,14 @@ bool FlyScoreDock::init()
 		saveState();
 	});
 
+	connect(addOrUpdateBtn, &QPushButton::clicked, this, [this]() { updateBrowserSourceToCurrentResources(); });
 
 	connect(clearBtn, &QPushButton::clicked, this, &FlyScoreDock::onClearTeamsAndReset);
 
 	connect(setResourcesPathBtn_, &QPushButton::clicked, this, &FlyScoreDock::onSetResourcesPath);
 	connect(openResourcesFolderBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenResourcesFolder);
 
+	connect(addFieldBtn_, &QPushButton::clicked, this, &FlyScoreDock::onAddCustomFieldQuick);
 	connect(editFieldsBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenCustomFieldsDialog);
 	connect(editTimersBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenTimersDialog);
 	connect(teamsBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenTeamsDialog);
@@ -524,9 +482,9 @@ bool FlyScoreDock::init()
 
 void FlyScoreDock::updateBrowserSourceToCurrentResources()
 {
-    const QString bsName = selectedBrowserSourceName();
-    if (bsName.isEmpty())
-        return;
+	const QString bsName = selectedBrowserSourceName();
+	if (bsName.isEmpty())
+		return;
 
 	const QString overlayRoot = fly_get_data_root_no_ui();
 	if (overlayRoot.isEmpty()) {
@@ -617,7 +575,6 @@ void FlyScoreDock::refreshUiFromState(bool onlyTimeIfRunning)
 		showScoreboard_->setChecked(st_.show_scoreboard);
 
 	loadCustomFieldControlsFromState();
-	loadSingleStatControlsFromState();
 	loadTimerControlsFromState();
 }
 
@@ -633,10 +590,6 @@ void FlyScoreDock::onClearTeamsAndReset()
 	for (auto &cf : st_.custom_fields) {
 		cf.home = 0;
 		cf.away = 0;
-	}
-
-	for (auto &ss : st_.single_stats) {
-		ss.value = 0;
 	}
 
 	for (auto &tm : st_.timers) {
@@ -829,7 +782,6 @@ void FlyScoreDock::loadCustomFieldControlsFromState()
 
 		customFields_.push_back(ui);
 	}
-	customFieldsLayout_->addStretch(1);
 }
 
 void FlyScoreDock::syncCustomFieldControlsToState()
@@ -848,120 +800,6 @@ void FlyScoreDock::syncCustomFieldControlsToState()
 
 	saveState();
 }
-// ------------------------------------------------------------
-// Single stats quick controls
-// ------------------------------------------------------------
-
-void FlyScoreDock::clearAllSingleStatRows()
-{
-	for (auto &ui : singleStats_) {
-		if (singleStatsLayout_ && ui.row)
-			singleStatsLayout_->removeWidget(ui.row);
-		if (ui.row)
-			ui.row->deleteLater();
-	}
-	singleStats_.clear();
-}
-
-void FlyScoreDock::loadSingleStatControlsFromState()
-{
-	clearAllSingleStatRows();
-	if (!singleStatsLayout_)
-		return;
-
-	singleStats_.reserve(st_.single_stats.size());
-
-	auto makeEmojiBtn = [](const QString &emoji, const QString &tooltip, QWidget *parent) {
-		auto *btn = new QPushButton(parent);
-		btn->setText(emoji);
-		btn->setToolTip(tooltip);
-		btn->setCursor(Qt::PointingHandCursor);
-		btn->setStyleSheet("QPushButton {"
-				   "  font-family:'Segoe UI Emoji','Noto Color Emoji','Apple Color Emoji',sans-serif;"
-				   "  font-size:12px;"
-				   "  padding:0;"
-				   "}");
-		return btn;
-	};
-
-	for (int i = 0; i < st_.single_stats.size(); ++i) {
-		const auto &ss = st_.single_stats[i];
-		FlySingleStatUi ui;
-
-		auto *row = new QWidget(this);
-		auto *lay = new QHBoxLayout(row);
-		lay->setContentsMargins(0, 0, 0, 0);
-		lay->setSpacing(6);
-
-		auto *visibleCheck = new QCheckBox(row);
-		visibleCheck->setChecked(ss.visible);
-
-		auto *labelLbl = new QLabel(ss.label.isEmpty() ? tr("Single stat %1").arg(i + 1) : ss.label, row);
-		labelLbl->setMinimumWidth(120);
-
-		auto *valueSpin = new QSpinBox(row);
-		valueSpin->setRange(-9999, 9999);
-		valueSpin->setValue(ss.value);
-		valueSpin->setMinimumWidth(60);
-
-		auto *minusBtn = makeEmojiBtn(QStringLiteral("➖"), tr("%1 -1").arg(labelLbl->text()), row);
-		auto *plusBtn = makeEmojiBtn(QStringLiteral("➕"), tr("%1 +1").arg(labelLbl->text()), row);
-
-		const int h = valueSpin->sizeHint().height();
-		minusBtn->setFixedSize(h, h);
-		plusBtn->setFixedSize(h, h);
-
-		lay->addWidget(visibleCheck, 0, Qt::AlignVCenter);
-		lay->addWidget(labelLbl);
-		lay->addStretch(1);
-		lay->addWidget(minusBtn, 0, Qt::AlignVCenter);
-		lay->addWidget(valueSpin, 0, Qt::AlignVCenter);
-		lay->addWidget(plusBtn, 0, Qt::AlignVCenter);
-
-		singleStatsLayout_->addWidget(row);
-
-		ui.row = row;
-		ui.visibleCheck = visibleCheck;
-		ui.labelLbl = labelLbl;
-		ui.valueSpin = valueSpin;
-		ui.minusBtn = minusBtn;
-		ui.plusBtn = plusBtn;
-
-		auto sync = [this]() {
-			syncSingleStatControlsToState();
-		};
-		connect(visibleCheck, &QCheckBox::toggled, this, [sync](bool) { sync(); });
-		connect(valueSpin, qOverload<int>(&QSpinBox::valueChanged), this, [sync](int) { sync(); });
-		connect(minusBtn, &QPushButton::clicked, this, [valueSpin, sync]() {
-			valueSpin->setValue(valueSpin->value() - 1);
-			sync();
-		});
-		connect(plusBtn, &QPushButton::clicked, this, [valueSpin, sync]() {
-			valueSpin->setValue(valueSpin->value() + 1);
-			sync();
-		});
-
-		singleStats_.push_back(ui);
-	}
-
-	singleStatsLayout_->addStretch(1);
-}
-
-void FlyScoreDock::syncSingleStatControlsToState()
-{
-	st_.single_stats.clear();
-	st_.single_stats.reserve(singleStats_.size());
-
-	for (const auto &ui : singleStats_) {
-		FlySingleStat ss;
-		ss.label = ui.labelLbl ? ui.labelLbl->text() : QString();
-		ss.value = ui.valueSpin ? ui.valueSpin->value() : 0;
-		ss.visible = ui.visibleCheck ? ui.visibleCheck->isChecked() : true;
-		st_.single_stats.push_back(ss);
-	}
-
-	saveState();
-}
 
 // ------------------------------------------------------------
 // Timers quick controls (same logic you already had)
@@ -969,21 +807,12 @@ void FlyScoreDock::syncSingleStatControlsToState()
 
 void FlyScoreDock::clearAllTimerRows()
 {
-	// IMPORTANT:
-	// The timers UI is rebuilt frequently (play/pause, reset, dialog changes).
-	// If we only remove the row widgets but leave QSpacerItems (stretches)
-	// behind, subsequent rebuilds will append new rows *after* the spacer,
-	// visually pushing the rows to the bottom. This is exactly the "row jumps
-	// to bottom when pressing play/pause" symptom.
-	if (timersLayout_) {
-		QLayoutItem *it = nullptr;
-		while ((it = timersLayout_->takeAt(0)) != nullptr) {
-			if (QWidget *w = it->widget())
-				w->deleteLater();
-			delete it; // also deletes spacer items
-		}
+	for (auto &ui : timers_) {
+		if (timersLayout_ && ui.row)
+			timersLayout_->removeWidget(ui.row);
+		if (ui.row)
+			ui.row->deleteLater();
 	}
-	// Also clear our UI bookkeeping.
 	timers_.clear();
 }
 
@@ -1001,24 +830,10 @@ void FlyScoreDock::loadTimerControlsFromState()
 		main.initial_ms = 0;
 		main.remaining_ms = 0;
 		main.last_tick_ms = 0;
-		main.visible = true;
 		st_.timers.push_back(main);
 	}
 
 	timers_.reserve(st_.timers.size());
-
-	auto makeEmojiBtn = [](const QString &emoji, const QString &tooltip, QWidget *parent) {
-		auto *btn = new QPushButton(parent);
-		btn->setText(emoji);
-		btn->setToolTip(tooltip);
-		btn->setCursor(Qt::PointingHandCursor);
-		btn->setStyleSheet("QPushButton {"
-				   "  font-family:'Segoe UI Emoji','Noto Color Emoji','Apple Color Emoji',sans-serif;"
-				   "  font-size:12px;"
-				   "  padding:0;"
-				   "}");
-		return btn;
-	};
 
 	for (int i = 0; i < st_.timers.size(); ++i) {
 		const auto &tm = st_.timers[i];
@@ -1042,6 +857,20 @@ void FlyScoreDock::loadTimerControlsFromState()
 		timeEdit->setMinimumWidth(60);
 		timeEdit->setText(fly_format_ms_mmss(tm.remaining_ms));
 
+		auto makeEmojiBtn = [](const QString &emoji, const QString &tooltip, QWidget *parent) {
+			auto *btn = new QPushButton(parent);
+			btn->setText(emoji);
+			btn->setToolTip(tooltip);
+			btn->setCursor(Qt::PointingHandCursor);
+			btn->setStyleSheet(
+				"QPushButton {"
+				"  font-family:'Segoe UI Emoji','Noto Color Emoji','Apple Color Emoji',sans-serif;"
+				"  font-size:12px;"
+				"  padding:0;"
+				"}");
+			return btn;
+		};
+
 		auto *startStopBtn =
 			makeEmojiBtn(tm.running ? QStringLiteral("⏸️") : QStringLiteral("▶️"),
 				     tm.running ? QStringLiteral("Pause timer") : QStringLiteral("Start timer"), row);
@@ -1059,8 +888,6 @@ void FlyScoreDock::loadTimerControlsFromState()
 		lay->addWidget(startStopBtn, 0, Qt::AlignVCenter);
 		lay->addWidget(resetBtn, 0, Qt::AlignVCenter);
 
-		// Keep rows pinned to top: rows must not expand vertically.
-		row->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 		timersLayout_->addWidget(row);
 
 		ui.row = row;
@@ -1101,6 +928,7 @@ void FlyScoreDock::loadTimerControlsFromState()
 
 		connect(startStopBtn, &QPushButton::clicked, this, [this, i]() {
 			toggleTimerRunning(i);
+			refreshUiFromState(false);
 		});
 
 		connect(resetBtn, &QPushButton::clicked, this, [this, i]() {
@@ -1122,7 +950,6 @@ void FlyScoreDock::loadTimerControlsFromState()
 
 		timers_.push_back(ui);
 	}
-	timersLayout_->addStretch(1);
 }
 
 // ------------------------------------------------------------
@@ -1173,30 +1000,6 @@ void FlyScoreDock::toggleCustomFieldVisible(int index)
 
 	st_.custom_fields[index].visible = !st_.custom_fields[index].visible;
 	saveState();
-}
-
-void FlyScoreDock::bumpSingleStat(int idx, int delta)
-{
-	if (idx < 0 || idx >= st_.single_stats.size())
-		return;
-
-	FlySingleStat &ss = st_.single_stats[idx];
-	ss.value += delta;
-
-	saveState();
-	loadSingleStatControlsFromState();
-}
-
-void FlyScoreDock::toggleSingleStatVisible(int idx)
-{
-	if (idx < 0 || idx >= st_.single_stats.size())
-		return;
-
-	FlySingleStat &ss = st_.single_stats[idx];
-	ss.visible = !ss.visible;
-
-	saveState();
-	loadSingleStatControlsFromState();
 }
 
 void FlyScoreDock::toggleSwap()
@@ -1263,6 +1066,35 @@ void FlyScoreDock::toggleTimerRunning(int index)
 // Dialogs
 // ------------------------------------------------------------
 
+void FlyScoreDock::onAddCustomFieldQuick()
+{
+	bool ok = false;
+	QString label =
+		QInputDialog::getText(this, tr("Add stat"), tr("Stat name:"), QLineEdit::Normal, QString(), &ok);
+
+	if (!ok)
+		return;
+
+	label = label.trimmed();
+	if (label.isEmpty())
+		label = tr("Stat %1").arg(st_.custom_fields.size() + 1);
+
+	FlyCustomField cf;
+	cf.label = label;
+	cf.home = 0;
+	cf.away = 0;
+	cf.visible = true;
+
+	st_.custom_fields.push_back(cf);
+
+	saveState();
+	refreshUiFromState(false);
+
+	// Hotkeys need to be rebuilt so the new field gets bindings.
+	hotkeyBindings_ = buildMergedHotkeyBindings();
+	applyHotkeyBindings(hotkeyBindings_);
+}
+
 void FlyScoreDock::onOpenCustomFieldsDialog()
 {
 	FlyFieldsDialog dlg(dataDir_, st_, this);
@@ -1310,71 +1142,68 @@ void FlyScoreDock::ensureResourcesDefaults()
 
 static QWidget *g_dockContent = nullptr;
 
-
 FlyScoreDock::~FlyScoreDock()
 {
-    if (obsSignalsConnected_ && obsSignalHandler_) {
-        auto *sh = static_cast<signal_handler_t *>(obsSignalHandler_);
-        signal_handler_disconnect(sh, "source_create", fly_on_source_list_changed, this);
-        signal_handler_disconnect(sh, "source_destroy", fly_on_source_list_changed, this);
-        obsSignalsConnected_ = false;
-        obsSignalHandler_ = nullptr;
-    }
+	if (obsSignalsConnected_ && obsSignalHandler_) {
+		auto *sh = static_cast<signal_handler_t *>(obsSignalHandler_);
+		signal_handler_disconnect(sh, "source_create", fly_on_source_list_changed, this);
+		signal_handler_disconnect(sh, "source_destroy", fly_on_source_list_changed, this);
+		obsSignalsConnected_ = false;
+		obsSignalHandler_ = nullptr;
+	}
 }
 
 QString FlyScoreDock::selectedBrowserSourceName() const
 {
-    if (!browserSourceCombo_ || !browserSourceCombo_->isEnabled())
-        return QString();
+	if (!browserSourceCombo_ || !browserSourceCombo_->isEnabled())
+		return QString();
 
-    const QString kSelectPlaceholder = QStringLiteral("-> Select Browser Source <-");
-    const QString name = browserSourceCombo_->currentText().trimmed();
-    if (name.isEmpty() || name == kSelectPlaceholder)
-        return QString();
+	const QString kSelectPlaceholder = QStringLiteral("-> Select Browser Source <-");
+	const QString name = browserSourceCombo_->currentText().trimmed();
+	if (name.isEmpty() || name == kSelectPlaceholder)
+		return QString();
 
-    return name;
+	return name;
 }
 
 void FlyScoreDock::refreshBrowserSourceCombo(bool preserveSelection)
 {
-    if (!browserSourceCombo_)
-        return;
+	if (!browserSourceCombo_)
+		return;
 
-    QString prev = preserveSelection ? browserSourceCombo_->currentText() : QString();
+	QString prev = preserveSelection ? browserSourceCombo_->currentText() : QString();
 
-    // If the combo is not yet initialized (e.g., first run after OBS restart),
-    // try to restore the last persisted selection.
-    if (preserveSelection && prev.trimmed().isEmpty())
-        prev = fly_load_saved_browser_source_name();
+	// If the combo is not yet initialized (e.g., first run after OBS restart),
+	// try to restore the last persisted selection.
+	if (preserveSelection && prev.trimmed().isEmpty())
+		prev = fly_load_saved_browser_source_name();
 
-    QSignalBlocker block(browserSourceCombo_);
-    browserSourceCombo_->clear();
+	QSignalBlocker block(browserSourceCombo_);
+	browserSourceCombo_->clear();
 
+	// Default placeholder option (allows re-selecting / resetting)
+	const QString kSelectPlaceholder = QStringLiteral("-> Select Browser Source <-");
+	browserSourceCombo_->addItem(kSelectPlaceholder, QVariant(QString()));
+	const QStringList names = fly_list_browser_sources();
+	if (names.isEmpty()) {
+		browserSourceCombo_->clear();
+		browserSourceCombo_->addItem(tr("No Browser Sources"));
+		browserSourceCombo_->setEnabled(false);
+		return;
+	}
 
-    // Default placeholder option (allows re-selecting / resetting)
-    const QString kSelectPlaceholder = QStringLiteral("-> Select Browser Source <-");
-    browserSourceCombo_->addItem(kSelectPlaceholder, QVariant(QString()));
-    const QStringList names = fly_list_browser_sources();
-    if (names.isEmpty()) {
-        browserSourceCombo_->clear();
-        browserSourceCombo_->addItem(tr("No Browser Sources"));
-        browserSourceCombo_->setEnabled(false);
-        return;
-    }
+	browserSourceCombo_->setEnabled(true);
+	for (const auto &n : names)
+		browserSourceCombo_->addItem(n);
 
-    browserSourceCombo_->setEnabled(true);
-    for (const auto &n : names)
-        browserSourceCombo_->addItem(n);
+	int idx = preserveSelection ? browserSourceCombo_->findText(prev) : -1;
+	if (idx < 0)
+		idx = browserSourceCombo_->findText(QString::fromUtf8(kBrowserSourceName));
+	if (idx < 0)
+		idx = 0; // placeholder
 
-    int idx = preserveSelection ? browserSourceCombo_->findText(prev) : -1;
-    if (idx < 0)
-        idx = browserSourceCombo_->findText(QString::fromUtf8(kBrowserSourceName));
-    if (idx < 0)
-        idx = 0; // placeholder
-
-    browserSourceCombo_->setCurrentIndex(idx);
+	browserSourceCombo_->setCurrentIndex(idx);
 }
-
 
 void fly_create_dock()
 {

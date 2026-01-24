@@ -11,7 +11,6 @@ class QPushButton;
 class QSpinBox;
 class QLineEdit;
 class QCheckBox;
-class QComboBox;
 class QVBoxLayout;
 class QLabel;
 class QShortcut;
@@ -28,16 +27,6 @@ struct FlyCustomFieldUi {
 	QPushButton *minusAway = nullptr;
 	QPushButton *plusAway = nullptr;
 };
-
-struct FlySingleStatUi {
-	QWidget *row = nullptr;
-	QCheckBox *visibleCheck = nullptr;
-	QLabel *labelLbl = nullptr;
-	QSpinBox *valueSpin = nullptr;
-	QPushButton *minusBtn = nullptr;
-	QPushButton *plusBtn = nullptr;
-};
-
 
 // UI bundle for a single timer row in the dock
 struct FlyTimerUi {
@@ -56,23 +45,13 @@ class FlyScoreDock : public QWidget {
 	Q_OBJECT
 public:
 	explicit FlyScoreDock(QWidget *parent = nullptr);
-	~FlyScoreDock() override;
 	bool init();
-
-	// Browser Source selector
-	void refreshBrowserSourceCombo(bool preserveSelection = true);
-	QString selectedBrowserSourceName() const;
-
 
 public slots:
 	// Match stats from hotkeys
 	void bumpCustomFieldHome(int index, int delta);
 	void bumpCustomFieldAway(int index, int delta);
 	void toggleCustomFieldVisible(int index);
-
-	// Single stats from hotkeys
-	void bumpSingleStat(int index, int delta);
-	void toggleSingleStatVisible(int index);
 
 	// Timers from hotkeys
 	void toggleTimerRunning(int index);
@@ -94,6 +73,8 @@ private slots:
 	void onOpenTimersDialog();
 	void onOpenTeamsDialog();
 
+	void onAddCustomFieldQuick();
+
 	void onSetResourcesPath();
 	void onOpenResourcesFolder();
 
@@ -106,11 +87,6 @@ private:
 	void clearAllCustomFieldRows();
 	void loadCustomFieldControlsFromState();
 	void syncCustomFieldControlsToState();
-
-	// Single stats quick controls
-	void clearAllSingleStatRows();
-	void loadSingleStatControlsFromState();
-	void syncSingleStatControlsToState();
 
 	// Timers quick controls
 	void clearAllTimerRows();
@@ -134,6 +110,7 @@ private:
 	QCheckBox *showScoreboard_ = nullptr;
 
 	QPushButton *teamsBtn_ = nullptr;
+	QPushButton *addFieldBtn_ = nullptr;
 	QPushButton *editFieldsBtn_ = nullptr;
 	QPushButton *editTimersBtn_ = nullptr;
 
@@ -141,18 +118,10 @@ private:
 	QVBoxLayout *customFieldsLayout_ = nullptr;
 	QList<FlyCustomFieldUi> customFields_;
 
-	QVBoxLayout *singleStatsLayout_ = nullptr;
-	QList<FlySingleStatUi> singleStats_;
-
 	QVBoxLayout *timersLayout_ = nullptr;
 	QList<FlyTimerUi> timers_;
 
-	// OBS signal handler wiring (to keep source selector in sync)
-	void *obsSignalHandler_ = nullptr;
-	bool obsSignalsConnected_ = false;
-
-	// Footer controls
-	QComboBox *browserSourceCombo_ = nullptr;
+	// Footer buttons
 	QPushButton *setResourcesPathBtn_ = nullptr;
 	QPushButton *openResourcesFolderBtn_ = nullptr;
 

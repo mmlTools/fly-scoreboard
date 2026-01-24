@@ -77,25 +77,6 @@ static void ensureDefaultCustomFields(FlyState &st)
 	ensureAt(1, QStringLiteral("Score"));
 }
 
-
-static void ensureDefaultSingleStats(FlyState &st)
-{
-	// Single stats are independent from Home/Guests (e.g., Period/Round).
-	auto ensureAt = [&](int index, const QString &label) {
-		if (st.single_stats.size() <= index)
-			st.single_stats.resize(index + 1);
-
-		FlySingleStat &ss = st.single_stats[index];
-		if (ss.label.isEmpty())
-			ss.label = label;
-	};
-
-	ensureAt(0, QStringLiteral("PERIOD"));
-	ensureAt(1, QStringLiteral("ROUND"));
-}
-
-
-
 static QJsonObject timerToJson(const FlyTimer &t)
 {
 	QJsonObject o;
@@ -127,10 +108,9 @@ static QJsonObject toJson(const FlyState &stIn)
     FlyState st = stIn;
 
     ensureDefaultCustomFields(st);
-    ensureDefaultSingleStats(st);
 
     QJsonObject j;
-    j["version"] = 4;
+    j["version"] = 3;
 
     // ---------------------------------------------------------------------
     // Server
@@ -171,19 +151,6 @@ static QJsonObject toJson(const FlyState &stIn)
         cfArr.append(o);
     }
     j["custom_fields"] = cfArr;
-
-    // -----------------------------
-    // Single stats
-    // -----------------------------
-    QJsonArray ssArr;
-    for (const auto &ss : st.single_stats) {
-        QJsonObject o;
-        o["label"] = ss.label;
-        o["value"] = ss.value;
-        o["visible"] = ss.visible;
-        ssArr.append(o);
-    }
-    j["single_stats"] = ssArr;
 
     // ---------------------------------------------------------------------
     // Timers
@@ -270,33 +237,6 @@ static bool fromJson(const QJsonObject &j, FlyState &st)
             st.custom_fields.push_back(cf);
         }
     }
-
-    // ---------------------------------------------------------------------
-    // Single Stats
-    // ---------------------------------------------------------------------
-    st.single_stats.clear();
-
-    const QJsonValue ssVal = j.value("single_stats");
-    if (ssVal.isArray()) {
-        const QJsonArray ssArr = ssVal.toArray();
-        st.single_stats.reserve(ssArr.size());
-
-        for (const QJsonValue v : ssArr) {
-            if (!v.isObject())
-                continue;
-
-            const QJsonObject o = v.toObject();
-
-            FlySingleStat ss;
-            ss.label   = o.value("label").toString();
-            ss.value   = o.value("value").toInt(0);
-            ss.visible = o.value("visible").toBool(true);
-
-            st.single_stats.push_back(ss);
-        }
-    }
-
-    ensureDefaultSingleStats(st);
 
     ensureDefaultCustomFields(st);
 
@@ -399,11 +339,9 @@ FlyState fly_state_make_defaults()
 	st.show_scoreboard = true;
 
 	st.custom_fields.clear();
-	st.single_stats.clear();
 	st.timers.clear();
 
 	ensureDefaultCustomFields(st);
-	ensureDefaultSingleStats(st);
 
 	st.timers.push_back(makeDefaultMainTimer());
 
