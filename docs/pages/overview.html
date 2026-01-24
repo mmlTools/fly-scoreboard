@@ -1,0 +1,44 @@
+<h1>Overview</h1>
+<p class="lead">
+Fly Scoreboard is an OBS Studio plugin that writes a live <code>plugin.json</code> state file and ships a lightweight overlay runtime that renders your scoreboard by replacing template placeholders ({{…}}) in HTML.
+</p>
+
+<div class="card-grid">
+  <section class="card">
+    <h3>What you get</h3>
+    <ul>
+      <li>A dock UI to manage teams, scores, timers, and single stats.</li>
+      <li>A ready-to-use overlay (<code>index.html</code>, <code>style.css</code>, <code>script.js</code>).</li>
+      <li>A small templating engine: write <code>{{home.title}}</code>, <code>{{timers[0].mmss}}</code>, etc.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h3>How it works</h3>
+    <ol>
+      <li>The plugin updates <code>plugin.json</code> (your “source of truth”).</li>
+      <li>The overlay fetches <code>plugin.json</code> once per second (no-cache).</li>
+      <li>An animation loop renders timers smoothly and applies template replacements every frame.</li>
+    </ol>
+  </section>
+</div>
+
+<h2>Quick start</h2>
+<ol>
+  <li>Install the plugin.</li>
+  <li>Add a <strong>Browser Source</strong> in OBS and point it to the overlay <code>index.html</code>.</li>
+  <li>In the Fly Scoreboard dock, select that Browser Source (so the plugin can keep it in sync).</li>
+  <li>Customize teams, add custom fields (scores), set timers, and go live.</li>
+</ol>
+
+<div class="note">
+  <strong>Tip:</strong> Keep <code>index.html</code>, <code>style.css</code>, <code>script.js</code> and <code>plugin.json</code> in the same folder.
+  The default overlay runtime fetches <code>plugin.json</code> by a relative path.
+</div>
+
+<h2>Where to go next</h2>
+<ul>
+  <li><a href="pages/download-install.html">Download & Install</a></li>
+  <li><a href="pages/setup.html">How to Setup in OBS</a></li>
+  <li><a href="pages/templating.html">Templating System ({{…}} and fs-if)</a></li>
+</ul>
