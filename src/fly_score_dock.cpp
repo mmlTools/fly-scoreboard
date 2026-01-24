@@ -29,6 +29,28 @@
 #include <QFileInfo>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QSettings>
+
+static inline QString fly_settings_org_name() { return QStringLiteral("MMLTech"); }
+static inline QString fly_settings_app_name() { return QStringLiteral("fly-scoreboard"); }
+static inline QString fly_settings_key_browser_source() { return QStringLiteral("dock/browser_source_name"); }
+
+static QString fly_load_saved_browser_source_name()
+{
+    QSettings s(fly_settings_org_name(), fly_settings_app_name());
+    return s.value(fly_settings_key_browser_source()).toString().trimmed();
+}
+
+static void fly_save_browser_source_name(const QString &name)
+{
+    QSettings s(fly_settings_org_name(), fly_settings_app_name());
+    if (name.trimmed().isEmpty()) {
+        s.remove(fly_settings_key_browser_source());
+    } else {
+        s.setValue(fly_settings_key_browser_source(), name.trimmed());
+    }
+    s.sync();
+}
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHash>
@@ -436,7 +458,21 @@ bool FlyScoreDock::init()
 	// ---------------------------------------------------------------------
 	refreshBrowserSourceCombo();
 	connect(browserSourceCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-		[this](int) { updateBrowserSourceToCurrentResources(); });
+        [this](int idx) {
+            const QString name = selectedBrowserSourceName();
+
+            // Placeholder selected: clear persisted selection and reset state so user can re-select and re-sync.
+            if (idx <= 0 || name.isEmpty()) {
+                fly_save_browser_source_name(QString());
+                onClearTeamsAndReset();
+                return;
+            }
+
+            // Persist selection so it survives OBS restarts.
+            fly_save_browser_source_name(name);
+
+            updateBrowserSourceToCurrentResources();
+        });
 
 	// Keep the Browser Source selector up-to-date when sources are created/destroyed.
 	obsSignalHandler_ = obs_get_signal_handler();
@@ -488,6 +524,10 @@ bool FlyScoreDock::init()
 
 void FlyScoreDock::updateBrowserSourceToCurrentResources()
 {
+    const QString bsName = selectedBrowserSourceName();
+    if (bsName.isEmpty())
+        return;
+
 	const QString overlayRoot = fly_get_data_root_no_ui();
 	if (overlayRoot.isEmpty()) {
 		LOGW("Resources folder is empty; cannot update browser source");
@@ -505,7 +545,7 @@ void FlyScoreDock::updateBrowserSourceToCurrentResources()
 	}
 
 	// Must update existing source or create if missing
-	fly_ensure_browser_source_in_current_scene(indexPath, selectedBrowserSourceName());
+	fly_ensure_browser_source_in_current_scene(indexPath, bsName);
 
 	LOGI("Browser source synced to: %s", indexPath.toUtf8().constData());
 }
@@ -1285,10 +1325,14 @@ FlyScoreDock::~FlyScoreDock()
 QString FlyScoreDock::selectedBrowserSourceName() const
 {
     if (!browserSourceCombo_ || !browserSourceCombo_->isEnabled())
-        return QString::fromUtf8(kBrowserSourceName);
+        return QString();
 
+    const QString kSelectPlaceholder = QStringLiteral("-> Select Browser Source <-");
     const QString name = browserSourceCombo_->currentText().trimmed();
-    return name.isEmpty() ? QString::fromUtf8(kBrowserSourceName) : name;
+    if (name.isEmpty() || name == kSelectPlaceholder)
+        return QString();
+
+    return name;
 }
 
 void FlyScoreDock::refreshBrowserSourceCombo(bool preserveSelection)
@@ -1296,13 +1340,23 @@ void FlyScoreDock::refreshBrowserSourceCombo(bool preserveSelection)
     if (!browserSourceCombo_)
         return;
 
-    const QString prev = preserveSelection ? browserSourceCombo_->currentText() : QString();
+    QString prev = preserveSelection ? browserSourceCombo_->currentText() : QString();
+
+    // If the combo is not yet initialized (e.g., first run after OBS restart),
+    // try to restore the last persisted selection.
+    if (preserveSelection && prev.trimmed().isEmpty())
+        prev = fly_load_saved_browser_source_name();
 
     QSignalBlocker block(browserSourceCombo_);
     browserSourceCombo_->clear();
 
+
+    // Default placeholder option (allows re-selecting / resetting)
+    const QString kSelectPlaceholder = QStringLiteral("-> Select Browser Source <-");
+    browserSourceCombo_->addItem(kSelectPlaceholder, QVariant(QString()));
     const QStringList names = fly_list_browser_sources();
     if (names.isEmpty()) {
+        browserSourceCombo_->clear();
         browserSourceCombo_->addItem(tr("No Browser Sources"));
         browserSourceCombo_->setEnabled(false);
         return;
@@ -1316,7 +1370,7 @@ void FlyScoreDock::refreshBrowserSourceCombo(bool preserveSelection)
     if (idx < 0)
         idx = browserSourceCombo_->findText(QString::fromUtf8(kBrowserSourceName));
     if (idx < 0)
-        idx = 0;
+        idx = 0; // placeholder
 
     browserSourceCombo_->setCurrentIndex(idx);
 }
