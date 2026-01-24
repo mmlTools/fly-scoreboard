@@ -14,6 +14,26 @@
 #endif
 
 #include <QUrl>
+
+
+static void refreshSourceSettings(obs_source_t *s)
+{
+	if (!s)
+		return;
+
+	obs_data_t *data = obs_source_get_settings(s);
+	obs_source_update(s, data);
+	obs_data_release(data);
+
+	if (strcmp(obs_source_get_id(s), "browser_source") == 0) {
+		obs_properties_t *sourceProperties = obs_source_properties(s);
+		obs_property_t *property = obs_properties_get(sourceProperties, "refreshnocache");
+		if (property)
+			obs_property_button_clicked(property, s);
+		obs_properties_destroy(sourceProperties);
+	}
+}
+
 #include <QUrlQuery>
 #include <QString>
 #include <QFileInfo>
@@ -37,7 +57,7 @@ static obs_scene_t *fly_get_current_scene()
 }
 #endif
 
-bool fly_ensure_browser_source_in_current_scene(const QString &urlOrLocalIndex)
+bool fly_ensure_browser_source_in_current_scene(const QString &urlOrLocalIndex, const QString &browserSourceName)
 {
 #ifdef ENABLE_FRONTEND_API
 	obs_source_t *sceneSource = obs_frontend_get_current_scene();
@@ -62,23 +82,34 @@ bool fly_ensure_browser_source_in_current_scene(const QString &urlOrLocalIndex)
     obs_sceneitem_t *item = nullptr;
     obs_source_t *br = nullptr;
 
-    obs_scene_enum_items(
-	    scene,
-	    [](obs_scene_t *, obs_sceneitem_t *it, void *param) {
-		    auto **outItem = static_cast<obs_sceneitem_t **>(param);
-		    obs_source_t *src = obs_sceneitem_get_source(it);
-		    if (!src)
-			    return true;
-		    if (strcmp(obs_source_get_name(src), kBrowserSourceName) == 0 &&
-			strcmp(obs_source_get_id(src), kBrowserSourceId) == 0) {
-			    *outItem = it;
-			    return false;
-		    }
-		    return true;
-	    },
-	    &item);
+    QByteArray bsNameUtf8 = browserSourceName.toUtf8();
 
-    // NOTE: obs_sceneitem_get_source returns a borrowed pointer; obtain a ref-counted one.
+	struct FindCtx {
+		const char *name = nullptr;
+		obs_sceneitem_t **outItem = nullptr;
+	};
+
+	FindCtx ctx;
+	ctx.name = bsNameUtf8.constData();
+	ctx.outItem = &item;
+
+	obs_scene_enum_items(
+		scene,
+		[](obs_scene_t *, obs_sceneitem_t *it, void *param) {
+			auto *c = static_cast<FindCtx *>(param);
+			obs_source_t *src = obs_sceneitem_get_source(it);
+			if (!src)
+				return true;
+			if (strcmp(obs_source_get_id(src), kBrowserSourceId) != 0)
+				return true;
+			if (strcmp(obs_source_get_name(src), c->name) == 0) {
+				*(c->outItem) = it;
+				return false;
+			}
+			return true;
+		},
+		&ctx);
+// NOTE: obs_sceneitem_get_source returns a borrowed pointer; obtain a ref-counted one.
     if (item) {
 	    obs_source_t *borrowed = obs_sceneitem_get_source(item);
 	    if (borrowed)
@@ -105,7 +136,8 @@ bool fly_ensure_browser_source_in_current_scene(const QString &urlOrLocalIndex)
 
     if (br) {
 	    obs_source_update(br, settings);
-	    LOGI("Updated Browser Source '%s' -> %s", kBrowserSourceName,
+		refreshSourceSettings(br);
+	    LOGI("Updated Browser Source '%s' -> %s", browserSourceName.toUtf8().constData(),
 		 isLocal ? localIndex.toUtf8().constData() : url.toUtf8().constData());
 	    obs_source_release(br);
 	    obs_data_release(settings);
@@ -114,7 +146,7 @@ bool fly_ensure_browser_source_in_current_scene(const QString &urlOrLocalIndex)
     }
 
     // Create
-    br = obs_source_create_private(kBrowserSourceId, kBrowserSourceName, settings);
+    br = obs_source_create_private(kBrowserSourceId, browserSourceName.toUtf8().constData(), settings);
     if (!br) {
 	    LOGW("Failed to create Browser Source");
 	    obs_data_release(settings);
@@ -124,11 +156,14 @@ bool fly_ensure_browser_source_in_current_scene(const QString &urlOrLocalIndex)
 
     item = obs_scene_add(scene, br);
 
+    // Force refresh/no-cache for browser source
+    refreshSourceSettings(br);
+
     // Position
     vec2 pos = {40.0f, 40.0f};
     obs_sceneitem_set_pos(item, &pos);
 
-    LOGI("Created Browser Source '%s' -> %s", kBrowserSourceName,
+    LOGI("Created Browser Source '%s' -> %s", browserSourceName.toUtf8().constData(),
 	 isLocal ? localIndex.toUtf8().constData() : url.toUtf8().constData());
     obs_source_release(br);
     obs_data_release(settings);
@@ -139,4 +174,33 @@ bool fly_ensure_browser_source_in_current_scene(const QString &urlOrLocalIndex)
 	LOGW("Frontend API not available; cannot create Browser Source.");
 	return false;
 #endif
+}
+
+QStringList fly_list_browser_sources()
+{
+    QStringList names;
+
+    obs_enum_sources(
+        [](void *param, obs_source_t *src) {
+            if (!src)
+                return true;
+            auto *out = static_cast<QStringList *>(param);
+            const char *id = obs_source_get_id(src);
+            if (!id)
+                return true;
+            if (strcmp(id, kBrowserSourceId) != 0)
+                return true;
+
+            const char *nm = obs_source_get_name(src);
+            if (!nm || !*nm)
+                return true;
+
+            out->push_back(QString::fromUtf8(nm));
+            return true;
+        },
+        &names);
+
+    names.removeDuplicates();
+    names.sort(Qt::CaseInsensitive);
+    return names;
 }
