@@ -28,11 +28,43 @@
 #include <QFileInfo>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QSettings>
+
+static inline QString fly_settings_org_name()
+{
+	return QStringLiteral("MMLTech");
+}
+static inline QString fly_settings_app_name()
+{
+	return QStringLiteral("fly-scoreboard");
+}
+static inline QString fly_settings_key_browser_source()
+{
+	return QStringLiteral("dock/browser_source_name");
+}
+
+static QString fly_load_saved_browser_source_name()
+{
+	QSettings s(fly_settings_org_name(), fly_settings_app_name());
+	return s.value(fly_settings_key_browser_source()).toString().trimmed();
+}
+
+static void fly_save_browser_source_name(const QString &name)
+{
+	QSettings s(fly_settings_org_name(), fly_settings_app_name());
+	if (name.trimmed().isEmpty()) {
+		s.remove(fly_settings_key_browser_source());
+	} else {
+		s.setValue(fly_settings_key_browser_source(), name.trimmed());
+	}
+	s.sync();
+}
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHash>
 #include <QLabel>
 #include <QLineEdit>
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QShortcut>
@@ -252,51 +284,54 @@ bool FlyScoreDock::init()
 	mainVBox->setContentsMargins(8, 8, 8, 8);
 	mainVBox->setSpacing(6);
 
-	// Header row (buttons)
+	// Top controls row (toggles + Teams)
 	{
-		auto *headerRow = new QHBoxLayout();
-		headerRow->setContentsMargins(0, 0, 0, 0);
-		headerRow->setSpacing(6);
-
-		teamsBtn_ = new QPushButton(QStringLiteral("Teams"), mainBox);
-		teamsBtn_->setMinimumWidth(110);
-		teamsBtn_->setMaximumWidth(130);
-		teamsBtn_->setCursor(Qt::PointingHandCursor);
-
-		editFieldsBtn_ = new QPushButton(QStringLiteral("Stats…"), mainBox);
-		editFieldsBtn_->setMinimumWidth(110);
-		editFieldsBtn_->setMaximumWidth(130);
-		editFieldsBtn_->setCursor(Qt::PointingHandCursor);
-		editFieldsBtn_->setToolTip(QStringLiteral("Configure match stats fields"));
-
-		editTimersBtn_ = new QPushButton(QStringLiteral("Timers…"), mainBox);
-		editTimersBtn_->setMinimumWidth(110);
-		editTimersBtn_->setMaximumWidth(130);
-		editTimersBtn_->setCursor(Qt::PointingHandCursor);
-		editTimersBtn_->setToolTip(QStringLiteral("Configure timers"));
-
-		headerRow->addWidget(teamsBtn_);
-		headerRow->addWidget(editFieldsBtn_);
-		headerRow->addWidget(editTimersBtn_);
-		headerRow->addStretch(1);
-
-		mainVBox->addLayout(headerRow);
-	}
-
-	// Toggles row (below buttons)
-	{
-		auto *togglesRow = new QHBoxLayout();
-		togglesRow->setContentsMargins(0, 0, 0, 0);
-		togglesRow->setSpacing(10);
+		auto *topRow = new QHBoxLayout();
+		topRow->setContentsMargins(0, 0, 0, 0);
+		topRow->setSpacing(10);
 
 		swapSides_ = new QCheckBox(QStringLiteral("Swap Home ↔ Guests"), mainBox);
 		showScoreboard_ = new QCheckBox(QStringLiteral("Show scoreboard"), mainBox);
 
-		togglesRow->addWidget(swapSides_);
-		togglesRow->addWidget(showScoreboard_);
-		togglesRow->addStretch(1);
+		teamsBtn_ = new QPushButton(QStringLiteral("Teams…"), mainBox);
+		teamsBtn_->setCursor(Qt::PointingHandCursor);
+		teamsBtn_->setToolTip(QStringLiteral("Edit team names, logos and colors"));
 
-		mainVBox->addLayout(togglesRow);
+		topRow->addWidget(swapSides_);
+		topRow->addWidget(showScoreboard_);
+		topRow->addStretch(1);
+		topRow->addWidget(teamsBtn_);
+
+		mainVBox->addLayout(topRow);
+	}
+
+	// Match stats header row (Add + Manage)
+	{
+		auto *statsRow = new QHBoxLayout();
+		statsRow->setContentsMargins(0, 0, 0, 0);
+		statsRow->setSpacing(6);
+
+		auto *lbl = new QLabel(QStringLiteral("Match stats"), mainBox);
+		lbl->setStyleSheet(QStringLiteral("font-weight:600;"));
+
+		addFieldBtn_ = new QPushButton(QStringLiteral("＋"), mainBox);
+		addFieldBtn_->setCursor(Qt::PointingHandCursor);
+		addFieldBtn_->setToolTip(QStringLiteral("Add a new stat"));
+
+		editFieldsBtn_ = new QPushButton(QStringLiteral("Manage…"), mainBox);
+		editFieldsBtn_->setCursor(Qt::PointingHandCursor);
+		editFieldsBtn_->setToolTip(QStringLiteral("Manage match stats fields"));
+
+		addFieldBtn_->setFixedSize(32, 26);
+		editFieldsBtn_->setFixedHeight(26);
+		editFieldsBtn_->setMinimumWidth(90);
+
+		statsRow->addWidget(lbl);
+		statsRow->addStretch(1);
+		statsRow->addWidget(addFieldBtn_);
+		statsRow->addWidget(editFieldsBtn_);
+
+		mainVBox->addLayout(statsRow);
 	}
 
 	// Stats quick controls (custom fields)
@@ -305,11 +340,26 @@ bool FlyScoreDock::init()
 	customFieldsLayout_->setSpacing(4);
 	mainVBox->addLayout(customFieldsLayout_);
 
-	// Divider label for timers
+	// Timers header row (Manage)
 	{
+		auto *timersRow = new QHBoxLayout();
+		timersRow->setContentsMargins(0, 0, 0, 0);
+		timersRow->setSpacing(6);
+
 		auto *lbl = new QLabel(QStringLiteral("Timers"), mainBox);
 		lbl->setStyleSheet(QStringLiteral("font-weight:600; margin-top:6px;"));
-		mainVBox->addWidget(lbl);
+
+		editTimersBtn_ = new QPushButton(QStringLiteral("Manage…"), mainBox);
+		editTimersBtn_->setCursor(Qt::PointingHandCursor);
+		editTimersBtn_->setToolTip(QStringLiteral("Manage timers"));
+		editTimersBtn_->setFixedHeight(26);
+		editTimersBtn_->setMinimumWidth(90);
+
+		timersRow->addWidget(lbl);
+		timersRow->addStretch(1);
+		timersRow->addWidget(editTimersBtn_);
+
+		mainVBox->addLayout(timersRow);
 	}
 
 	// Timers quick controls
@@ -363,6 +413,34 @@ bool FlyScoreDock::init()
 	// ---------------------------------------------------------------------
 	// Connections
 	// ---------------------------------------------------------------------
+	refreshBrowserSourceCombo();
+	connect(browserSourceCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
+		const QString name = selectedBrowserSourceName();
+
+		// Placeholder selected: clear persisted selection and reset state so user can re-select and re-sync.
+		if (idx <= 0 || name.isEmpty()) {
+			fly_save_browser_source_name(QString());
+			onClearTeamsAndReset();
+			return;
+		}
+
+		// Persist selection so it survives OBS restarts.
+		fly_save_browser_source_name(name);
+
+		updateBrowserSourceToCurrentResources();
+	});
+
+	// Keep the Browser Source selector up-to-date when sources are created/destroyed.
+	obsSignalHandler_ = obs_get_signal_handler();
+	if (obsSignalHandler_) {
+		auto *sh = static_cast<signal_handler_t *>(obsSignalHandler_);
+		signal_handler_connect(sh, "source_create", fly_on_source_list_changed, this);
+
+		signal_handler_connect(sh, "source_destroy", fly_on_source_list_changed, this);
+
+		obsSignalsConnected_ = true;
+	}
+
 	connect(swapSides_, &QCheckBox::toggled, this, [this](bool on) {
 		st_.swap_sides = on;
 		saveState();
@@ -380,6 +458,7 @@ bool FlyScoreDock::init()
 	connect(setResourcesPathBtn_, &QPushButton::clicked, this, &FlyScoreDock::onSetResourcesPath);
 	connect(openResourcesFolderBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenResourcesFolder);
 
+	connect(addFieldBtn_, &QPushButton::clicked, this, &FlyScoreDock::onAddCustomFieldQuick);
 	connect(editFieldsBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenCustomFieldsDialog);
 	connect(editTimersBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenTimersDialog);
 	connect(teamsBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenTeamsDialog);
@@ -403,6 +482,10 @@ bool FlyScoreDock::init()
 
 void FlyScoreDock::updateBrowserSourceToCurrentResources()
 {
+	const QString bsName = selectedBrowserSourceName();
+	if (bsName.isEmpty())
+		return;
+
 	const QString overlayRoot = fly_get_data_root_no_ui();
 	if (overlayRoot.isEmpty()) {
 		LOGW("Resources folder is empty; cannot update browser source");
@@ -420,7 +503,7 @@ void FlyScoreDock::updateBrowserSourceToCurrentResources()
 	}
 
 	// Must update existing source or create if missing
-	fly_ensure_browser_source_in_current_scene(indexPath);
+	fly_ensure_browser_source_in_current_scene(indexPath, bsName);
 
 	LOGI("Browser source synced to: %s", indexPath.toUtf8().constData());
 }
@@ -983,6 +1066,35 @@ void FlyScoreDock::toggleTimerRunning(int index)
 // Dialogs
 // ------------------------------------------------------------
 
+void FlyScoreDock::onAddCustomFieldQuick()
+{
+	bool ok = false;
+	QString label =
+		QInputDialog::getText(this, tr("Add stat"), tr("Stat name:"), QLineEdit::Normal, QString(), &ok);
+
+	if (!ok)
+		return;
+
+	label = label.trimmed();
+	if (label.isEmpty())
+		label = tr("Stat %1").arg(st_.custom_fields.size() + 1);
+
+	FlyCustomField cf;
+	cf.label = label;
+	cf.home = 0;
+	cf.away = 0;
+	cf.visible = true;
+
+	st_.custom_fields.push_back(cf);
+
+	saveState();
+	refreshUiFromState(false);
+
+	// Hotkeys need to be rebuilt so the new field gets bindings.
+	hotkeyBindings_ = buildMergedHotkeyBindings();
+	applyHotkeyBindings(hotkeyBindings_);
+}
+
 void FlyScoreDock::onOpenCustomFieldsDialog()
 {
 	FlyFieldsDialog dlg(dataDir_, st_, this);
@@ -1029,6 +1141,69 @@ void FlyScoreDock::ensureResourcesDefaults()
 // ------------------------------------------------------------
 
 static QWidget *g_dockContent = nullptr;
+
+FlyScoreDock::~FlyScoreDock()
+{
+	if (obsSignalsConnected_ && obsSignalHandler_) {
+		auto *sh = static_cast<signal_handler_t *>(obsSignalHandler_);
+		signal_handler_disconnect(sh, "source_create", fly_on_source_list_changed, this);
+		signal_handler_disconnect(sh, "source_destroy", fly_on_source_list_changed, this);
+		obsSignalsConnected_ = false;
+		obsSignalHandler_ = nullptr;
+	}
+}
+
+QString FlyScoreDock::selectedBrowserSourceName() const
+{
+	if (!browserSourceCombo_ || !browserSourceCombo_->isEnabled())
+		return QString();
+
+	const QString kSelectPlaceholder = QStringLiteral("-> Select Browser Source <-");
+	const QString name = browserSourceCombo_->currentText().trimmed();
+	if (name.isEmpty() || name == kSelectPlaceholder)
+		return QString();
+
+	return name;
+}
+
+void FlyScoreDock::refreshBrowserSourceCombo(bool preserveSelection)
+{
+	if (!browserSourceCombo_)
+		return;
+
+	QString prev = preserveSelection ? browserSourceCombo_->currentText() : QString();
+
+	// If the combo is not yet initialized (e.g., first run after OBS restart),
+	// try to restore the last persisted selection.
+	if (preserveSelection && prev.trimmed().isEmpty())
+		prev = fly_load_saved_browser_source_name();
+
+	QSignalBlocker block(browserSourceCombo_);
+	browserSourceCombo_->clear();
+
+	// Default placeholder option (allows re-selecting / resetting)
+	const QString kSelectPlaceholder = QStringLiteral("-> Select Browser Source <-");
+	browserSourceCombo_->addItem(kSelectPlaceholder, QVariant(QString()));
+	const QStringList names = fly_list_browser_sources();
+	if (names.isEmpty()) {
+		browserSourceCombo_->clear();
+		browserSourceCombo_->addItem(tr("No Browser Sources"));
+		browserSourceCombo_->setEnabled(false);
+		return;
+	}
+
+	browserSourceCombo_->setEnabled(true);
+	for (const auto &n : names)
+		browserSourceCombo_->addItem(n);
+
+	int idx = preserveSelection ? browserSourceCombo_->findText(prev) : -1;
+	if (idx < 0)
+		idx = browserSourceCombo_->findText(QString::fromUtf8(kBrowserSourceName));
+	if (idx < 0)
+		idx = 0; // placeholder
+
+	browserSourceCombo_->setCurrentIndex(idx);
+}
 
 void fly_create_dock()
 {

@@ -37,8 +37,8 @@
         }
     },
     "name": "fly-scoreboard",
-    "displayName": "Scoreboard Plugin for OBS Studio",
-    "version": "3.0.0",
+    "displayName": "Fly Score",
+    "version": "4.0.0",
     "author": "MML Tech",
     "website": "https://ko-fi.com/mmltech",
     "email": "contact@obscountdown.com"

@@ -73,6 +73,8 @@ private slots:
 	void onOpenTimersDialog();
 	void onOpenTeamsDialog();
 
+	void onAddCustomFieldQuick();
+
 	void onSetResourcesPath();
 	void onOpenResourcesFolder();
 
@@ -108,6 +110,7 @@ private:
 	QCheckBox *showScoreboard_ = nullptr;
 
 	QPushButton *teamsBtn_ = nullptr;
+	QPushButton *addFieldBtn_ = nullptr;
 	QPushButton *editFieldsBtn_ = nullptr;
 	QPushButton *editTimersBtn_ = nullptr;
 

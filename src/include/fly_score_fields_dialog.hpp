@@ -10,6 +10,7 @@ class QVBoxLayout;
 class QPushButton;
 class QLineEdit;
 class QSpinBox;
+class QCheckBox;
 
 class FlyFieldsDialog : public QDialog {
 	Q_OBJECT
@@ -18,6 +19,7 @@ public:
 
 private slots:
 	void onAddField();
+	void onAddSingle();
 	void onAccept();
 
 private:
@@ -30,10 +32,19 @@ private:
 		bool canRemove = true;
 	};
 
+	struct SingleRow {
+		QWidget *row = nullptr;
+		QLineEdit *labelEdit = nullptr;
+		QSpinBox *valueSpin = nullptr;
+		QPushButton *remove = nullptr;
+		QCheckBox *visible = nullptr;
+	};
+
 	void buildUi();
 	void loadFromState();
 	void saveToState();
 	Row addRow(const FlyCustomField &cf, bool canRemove);
+	SingleRow addSingleRow(const FlySingleStat &ss);
 
 private:
 	QString dataDir_;
@@ -42,6 +53,10 @@ private:
 	QVBoxLayout *fieldsLayout_ = nullptr;
 	QPushButton *addFieldBtn_ = nullptr;
 	QVector<Row> rows_;
+
+	QVBoxLayout *singleLayout_ = nullptr;
+	QPushButton *addSingleBtn_ = nullptr;
+	QVector<SingleRow> singles_;
 
 	QVector<bool> vis_;
 };

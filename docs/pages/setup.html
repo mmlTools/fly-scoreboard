@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Overview • Fly Scoreboard</title>
+  <title>How to Setup • Fly Scoreboard</title>
   <meta name="description" content="OBS Studio scoreboard plugin documentation" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/site.css" />
+  <link rel="stylesheet" href="../assets/css/site.css" />
 </head>
 <body>
   <a class="skip-link" href="#content">Skip to content</a>
@@ -16,7 +16,7 @@
   <div class="layout">
     <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
       <div class="brand">
-        <a class="brand__title" href="index.html">Fly Scoreboard</a>
+        <a class="brand__title" href="../index.html">Fly Scoreboard</a>
         <div class="brand__tag">OBS Studio scoreboard plugin documentation</div>
 
         <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
@@ -30,17 +30,17 @@
       </div>
 
       <nav class="nav" aria-label="Documentation">
-      <a class="nav__link" href="index.html" data-nav="index">Overview</a>
+      <a class="nav__link" href="../index.html" data-nav="index">Overview</a>
       <div class="nav__section">Getting Started</div>
-      <a class="nav__link" href="pages/download-install.html" data-nav="download-install">Download & Install</a>
-      <a class="nav__link" href="pages/setup.html" data-nav="setup">How to Setup</a>
+      <a class="nav__link" href="../pages/download-install.html" data-nav="download-install">Download & Install</a>
+      <a class="nav__link" href="../pages/setup.html" data-nav="setup">How to Setup</a>
       <div class="nav__section">Using Fly Scoreboard</div>
-      <a class="nav__link" href="pages/usage.html" data-nav="usage">How to Use</a>
-      <a class="nav__link" href="pages/add-scores.html" data-nav="add-scores">Add New Scores</a>
-      <a class="nav__link" href="pages/add-timers.html" data-nav="add-timers">Add New Timers</a>
+      <a class="nav__link" href="../pages/usage.html" data-nav="usage">How to Use</a>
+      <a class="nav__link" href="../pages/add-scores.html" data-nav="add-scores">Add New Scores</a>
+      <a class="nav__link" href="../pages/add-timers.html" data-nav="add-timers">Add New Timers</a>
       <div class="nav__section">Overlay Development</div>
-      <a class="nav__link" href="pages/templating.html" data-nav="templating">Templating System</a>
-      <a class="nav__link" href="pages/ai-prompt.html" data-nav="ai-prompt">AI Prompt</a>
+      <a class="nav__link" href="../pages/templating.html" data-nav="templating">Templating System</a>
+      <a class="nav__link" href="../pages/ai-prompt.html" data-nav="ai-prompt">AI Prompt</a>
     </nav>
 
       <div class="sidebar-footer">
@@ -67,10 +67,10 @@
 
     <main class="content" id="content" tabindex="-1">
       <header class="content-header">
-        <div class="content-header__title">Overview</div>
+        <div class="content-header__title">How to Setup</div>
         <div class="content-header__actions">
-          <a class="btn btn--ghost" href="pages/ai-prompt.html">AI Prompt</a>
-          <a class="btn btn--primary" href="pages/download-install.html">Get Started</a>
+          <a class="btn btn--ghost" href="../pages/ai-prompt.html">AI Prompt</a>
+          <a class="btn btn--primary" href="../pages/download-install.html">Get Started</a>
         </div>
       </header>
 
@@ -91,49 +91,43 @@
 
       <article class="doc">
         
-<h1>Overview</h1>
-<p class="lead">
-Fly Scoreboard is an OBS Studio plugin that writes a live <code>plugin.json</code> state file and ships a lightweight overlay runtime that renders your scoreboard by replacing template placeholders ({{…}}) in HTML.
-</p>
+<h1>How to Setup</h1>
+<p class="lead">Connect Fly Scoreboard to a Browser Source and point that source to the included overlay.</p>
 
-<div class="card-grid">
-  <section class="card">
-    <h3>What you get</h3>
-    <ul>
-      <li>A dock UI to manage teams, scores, timers, and single stats.</li>
-      <li>A ready-to-use overlay (<code>index.html</code>, <code>style.css</code>, <code>script.js</code>).</li>
-      <li>A small templating engine: write <code>{{home.title}}</code>, <code>{{timers[0].mmss}}</code>, etc.</li>
-    </ul>
-  </section>
-
-  <section class="card">
-    <h3>How it works</h3>
-    <ol>
-      <li>The plugin updates <code>plugin.json</code> (your “source of truth”).</li>
-      <li>The overlay fetches <code>plugin.json</code> once per second (no-cache).</li>
-      <li>An animation loop renders timers smoothly and applies template replacements every frame.</li>
-    </ol>
-  </section>
-</div>
-
-<h2>Quick start</h2>
+<h2>Step-by-step in OBS</h2>
 <ol>
-  <li>Install the plugin.</li>
-  <li>Add a <strong>Browser Source</strong> in OBS and point it to the overlay <code>index.html</code>.</li>
-  <li>In the Fly Scoreboard dock, select that Browser Source (so the plugin can keep it in sync).</li>
-  <li>Customize teams, add custom fields (scores), set timers, and go live.</li>
+  <li><strong>Create a Browser Source</strong> in your scene (Sources → + → Browser).</li>
+  <li>Enable <strong>Local file</strong> and select the overlay <code>index.html</code>.</li>
+  <li>Set a sensible width/height (example: 1920×1080, or match your canvas).</li>
+  <li>Disable “Shutdown source when not visible” if you want timers to continue updating off-screen.</li>
+  <li>Open the Fly Scoreboard dock and <strong>select the Browser Source</strong> used for the overlay.</li>
 </ol>
 
+<h2>Recommended Browser Source settings</h2>
+<ul>
+  <li><strong>Custom CSS</strong>: leave empty (use your overlay <code>style.css</code> instead).</li>
+  <li><strong>Refresh cache of current page</strong>: useful after editing files.</li>
+  <li><strong>FPS</strong>: 30 is usually enough; 60 if you animate heavily.</li>
+</ul>
+
 <div class="note">
-  <strong>Tip:</strong> Keep <code>index.html</code>, <code>style.css</code>, <code>script.js</code> and <code>plugin.json</code> in the same folder.
-  The default overlay runtime fetches <code>plugin.json</code> by a relative path.
+  The overlay runtime fetches <code>plugin.json</code> with <code>cache: "no-store"</code> once per second. If your overlay looks “stuck”, force-refresh the Browser Source.
 </div>
 
-<h2>Where to go next</h2>
+<h2>Folder placement rule</h2>
+<p>
+In the default overlay runtime (<code>script.js</code>), the state file is loaded as:
+</p>
+<pre><code>fetch("plugin.json", { cache: "no-store" })</code></pre>
+<p>
+That means <code>plugin.json</code> must be reachable at the same relative path as <code>index.html</code>.
+</p>
+
+<h2>Common troubleshooting</h2>
 <ul>
-  <li><a href="pages/download-install.html">Download & Install</a></li>
-  <li><a href="pages/setup.html">How to Setup in OBS</a></li>
-  <li><a href="pages/templating.html">Templating System ({{…}} and fs-if)</a></li>
+  <li><strong>Blank overlay</strong>: confirm the Browser Source is pointing to the correct <code>index.html</code>.</li>
+  <li><strong>No updates</strong>: ensure <code>plugin.json</code> is in the same folder, and refresh the Browser Source.</li>
+  <li><strong>Wrong teams left/right</strong>: check the <code>swap_sides</code> toggle (template uses <code>team_x</code>/<code>team_y</code>).</li>
 </ul>
 
       </article>
@@ -151,6 +145,6 @@ Fly Scoreboard is an OBS Studio plugin that writes a live <code>plugin.json</cod
     </main>
   </div>
 
-  <script src="assets/js/site.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
 </body>
 </html>
