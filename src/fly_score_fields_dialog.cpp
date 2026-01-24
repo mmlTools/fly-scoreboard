@@ -16,6 +16,8 @@
 #include <QSpinBox>
 #include <QPushButton>
 #include <QStyle>
+#include <QTabWidget>
+#include <QCheckBox>
 
 FlyFieldsDialog::FlyFieldsDialog(const QString &dataDir, FlyState &state, QWidget *parent)
 	: QDialog(parent),
@@ -43,18 +45,20 @@ void FlyFieldsDialog::buildUi()
 	// -----------------------------------------------------------------
 	// Info box
 	// -----------------------------------------------------------------
-	auto *infoBox = new QGroupBox(QStringLiteral("Match stats"), this);
+	auto *infoBox = new QGroupBox(QStringLiteral("Stats"), this);
 	infoBox->setObjectName(QStringLiteral("fieldsInfoGroup"));
 
 	auto *infoLayout = new QVBoxLayout(infoBox);
 	infoLayout->setContentsMargins(10, 10, 10, 10);
 	infoLayout->setSpacing(8);
 
-	auto *hintLbl = new QLabel(QStringLiteral("Configure all your custom numeric fields.\n"
-						  "Example labels: Corners, Penalties, Shots on goal, etc.\n\n"
-						  "Note: The first two fields are reserved for the main scoreboard "
-						  "(Home/Away points and Home/Away score) and cannot be removed."),
-				   infoBox);
+	auto *hintLbl = new QLabel(QStringLiteral(
+		"Configure the stats shown in your overlay.\n\n"
+		"Team stats are paired values (Home/Guests) like Corners, Fouls, Shots, etc.\n"
+		"Single stats are one value only (e.g. Possession %, Period, Downs, Power Plays, etc.).\n\n"
+		"Note: The first two Team stats are reserved for the main scoreboard "
+		"(Home/Away points and Home/Away score) and cannot be removed."),
+		infoBox);
 	hintLbl->setObjectName(QStringLiteral("fieldsHint"));
 	hintLbl->setWordWrap(true);
 	infoLayout->addWidget(hintLbl);
@@ -63,29 +67,57 @@ void FlyFieldsDialog::buildUi()
 	root->addWidget(infoBox);
 
 	// -----------------------------------------------------------------
-	// Rows box – same structure as timers dialog (no scroll area)
+	// Tabs: Team Stats | Single Stats
 	// -----------------------------------------------------------------
-	auto *rowsBox = new QGroupBox(QString(), this);
-	rowsBox->setObjectName(QStringLiteral("fieldsGroup"));
+	auto *tabs = new QTabWidget(this);
+	tabs->setObjectName(QStringLiteral("flyFieldsTabs"));
+	tabs->setDocumentMode(true);
+	tabs->setMovable(false);
+	tabs->setUsesScrollButtons(true);
 
-	auto *rowsLayout = new QVBoxLayout(rowsBox);
-	rowsLayout->setContentsMargins(10, 10, 10, 10);
-	rowsLayout->setSpacing(8);
+	// -----------------------------
+	// Team Stats tab
+	// -----------------------------
+	auto *teamTab = new QWidget(tabs);
+	auto *teamRoot = new QVBoxLayout(teamTab);
+	teamRoot->setContentsMargins(10, 10, 10, 10);
+	teamRoot->setSpacing(8);
 
 	fieldsLayout_ = new QVBoxLayout();
 	fieldsLayout_->setContentsMargins(0, 4, 0, 0);
 	fieldsLayout_->setSpacing(6);
-	// Make sure rows hug the top of the groupbox
 	fieldsLayout_->setAlignment(Qt::AlignTop);
+	teamRoot->addLayout(fieldsLayout_);
 
-	rowsLayout->addLayout(fieldsLayout_);
-
-	addFieldBtn_ = new QPushButton(QStringLiteral("＋ Add stat"), rowsBox);
+	addFieldBtn_ = new QPushButton(QStringLiteral("+ Add team stat"), teamTab);
 	addFieldBtn_->setCursor(Qt::PointingHandCursor);
-	rowsLayout->addWidget(addFieldBtn_, 0, Qt::AlignLeft);
+	teamRoot->addWidget(addFieldBtn_, 0, Qt::AlignLeft);
 
-	rowsBox->setLayout(rowsLayout);
-	root->addWidget(rowsBox);
+	teamTab->setLayout(teamRoot);
+
+	// -----------------------------
+	// Single Stats tab
+	// -----------------------------
+	auto *singleTab = new QWidget(tabs);
+	auto *singleRoot = new QVBoxLayout(singleTab);
+	singleRoot->setContentsMargins(10, 10, 10, 10);
+	singleRoot->setSpacing(8);
+
+	singleLayout_ = new QVBoxLayout();
+	singleLayout_->setContentsMargins(0, 4, 0, 0);
+	singleLayout_->setSpacing(6);
+	singleLayout_->setAlignment(Qt::AlignTop);
+	singleRoot->addLayout(singleLayout_);
+
+	addSingleBtn_ = new QPushButton(QStringLiteral("+ Add single stat"), singleTab);
+	addSingleBtn_->setCursor(Qt::PointingHandCursor);
+	singleRoot->addWidget(addSingleBtn_, 0, Qt::AlignLeft);
+
+	singleTab->setLayout(singleRoot);
+
+	tabs->addTab(teamTab, QStringLiteral("Team Stats"));
+	tabs->addTab(singleTab, QStringLiteral("Single Stats"));
+	root->addWidget(tabs);
 
 	// -----------------------------------------------------------------
 	// OK / Cancel buttons
@@ -94,8 +126,79 @@ void FlyFieldsDialog::buildUi()
 	root->addWidget(btnBox);
 
 	connect(addFieldBtn_, &QPushButton::clicked, this, &FlyFieldsDialog::onAddField);
+	connect(addSingleBtn_, &QPushButton::clicked, this, &FlyFieldsDialog::onAddSingle);
 	connect(btnBox, &QDialogButtonBox::accepted, this, &FlyFieldsDialog::onAccept);
 	connect(btnBox, &QDialogButtonBox::rejected, this, &FlyFieldsDialog::reject);
+}
+
+FlyFieldsDialog::SingleRow FlyFieldsDialog::addSingleRow(const FlySingleStat &ss)
+{
+	SingleRow r;
+
+	auto *row = new QWidget(this);
+	auto *lay = new QHBoxLayout(row);
+	lay->setContentsMargins(0, 0, 0, 0);
+	lay->setSpacing(8);
+
+	auto *visible = new QCheckBox(row);
+	visible->setChecked(ss.visible);
+	visible->setToolTip(QStringLiteral("Visible in overlay"));
+
+	auto *labelEdit = new QLineEdit(row);
+	labelEdit->setPlaceholderText(QStringLiteral("Label (e.g. Possession %%)"));
+	labelEdit->setText(ss.label);
+	labelEdit->setMinimumWidth(220);
+	labelEdit->setMaximumWidth(320);
+
+	auto *valueSpin = new QSpinBox(row);
+	valueSpin->setRange(-9999, 9999);
+	valueSpin->setValue(ss.value);
+	valueSpin->setMinimumWidth(70);
+	valueSpin->setMaximumWidth(90);
+
+	auto *removeBtn = new QPushButton(row);
+	removeBtn->setText(QStringLiteral("❌"));
+	removeBtn->setToolTip(QStringLiteral("Remove this single stat"));
+	removeBtn->setCursor(Qt::PointingHandCursor);
+
+	const int h = valueSpin->sizeHint().height();
+	removeBtn->setFixedSize(h, h);
+	removeBtn->setStyleSheet("QPushButton {"
+			 "  font-family:'Segoe UI Emoji','Noto Color Emoji','Apple Color Emoji',sans-serif;"
+			 "  font-size:12px;"
+			 "  padding:0;"
+			 "}");
+
+	lay->addWidget(visible, 0, Qt::AlignVCenter);
+	lay->addWidget(labelEdit, 1, Qt::AlignVCenter);
+	lay->addWidget(new QLabel(QStringLiteral("Value:"), row), 0, Qt::AlignVCenter);
+	lay->addWidget(valueSpin, 0, Qt::AlignVCenter);
+	lay->addWidget(removeBtn, 0, Qt::AlignVCenter);
+
+	row->setLayout(lay);
+	if (singleLayout_)
+		singleLayout_->addWidget(row);
+
+	r.row = row;
+	r.labelEdit = labelEdit;
+	r.valueSpin = valueSpin;
+	r.remove = removeBtn;
+	r.visible = visible;
+
+	connect(removeBtn, &QPushButton::clicked, this, [this, row]() {
+		for (int i = 0; i < singles_.size(); ++i) {
+			if (singles_[i].row == row) {
+				auto rr = singles_[i];
+				singles_.removeAt(i);
+				if (singleLayout_)
+					singleLayout_->removeWidget(rr.row);
+				rr.row->deleteLater();
+				break;
+			}
+		}
+	});
+
+	return r;
 }
 
 FlyFieldsDialog::Row FlyFieldsDialog::addRow(const FlyCustomField &cf, bool canRemove)
@@ -180,6 +283,7 @@ FlyFieldsDialog::Row FlyFieldsDialog::addRow(const FlyCustomField &cf, bool canR
 
 void FlyFieldsDialog::loadFromState()
 {
+	// Clear team rows
 	for (auto &r : rows_) {
 		if (fieldsLayout_ && r.row)
 			fieldsLayout_->removeWidget(r.row);
@@ -189,7 +293,16 @@ void FlyFieldsDialog::loadFromState()
 	rows_.clear();
 	vis_.clear();
 
-	if (!fieldsLayout_)
+	// Clear single rows
+	for (auto &r : singles_) {
+		if (singleLayout_ && r.row)
+			singleLayout_->removeWidget(r.row);
+		if (r.row)
+			r.row->deleteLater();
+	}
+	singles_.clear();
+
+	if (!fieldsLayout_ || !singleLayout_)
 		return;
 
 	rows_.reserve(st_.custom_fields.size());
@@ -201,6 +314,14 @@ void FlyFieldsDialog::loadFromState()
 		Row r = addRow(cf, canRemove);
 		rows_.push_back(r);
 		vis_.push_back(cf.visible);
+	}
+
+	// Load single stats
+	singles_.reserve(st_.single_stats.size());
+	for (int i = 0; i < st_.single_stats.size(); ++i) {
+		const FlySingleStat &ss = st_.single_stats[i];
+		SingleRow r = addSingleRow(ss);
+		singles_.push_back(r);
 	}
 }
 
@@ -221,6 +342,17 @@ void FlyFieldsDialog::saveToState()
 		st_.custom_fields.push_back(cf);
 	}
 
+	// Save single stats
+	st_.single_stats.clear();
+	st_.single_stats.reserve(singles_.size());
+	for (const auto &r : singles_) {
+		FlySingleStat ss;
+		ss.label = r.labelEdit ? r.labelEdit->text() : QString();
+		ss.value = r.valueSpin ? r.valueSpin->value() : 0;
+		ss.visible = r.visible ? r.visible->isChecked() : true;
+		st_.single_stats.push_back(ss);
+	}
+
 	fly_state_save(dataDir_, st_);
 }
 
@@ -235,6 +367,17 @@ void FlyFieldsDialog::onAddField()
 	Row r = addRow(cf, /*canRemove=*/true);
 	rows_.push_back(r);
 	vis_.push_back(true);
+}
+
+void FlyFieldsDialog::onAddSingle()
+{
+	FlySingleStat ss;
+	ss.label = QString();
+	ss.value = 0;
+	ss.visible = true;
+
+	SingleRow r = addSingleRow(ss);
+	singles_.push_back(r);
 }
 
 void FlyFieldsDialog::onAccept()

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI Prompt • Fly Scoreboard</title>
+  <meta name="description" content="OBS Studio scoreboard plugin documentation" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/site.css" />
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+      <div class="brand">
+        <a class="brand__title" href="../index.html">Fly Scoreboard</a>
+        <div class="brand__tag">OBS Studio scoreboard plugin documentation</div>
+
+        <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+          <span aria-hidden="true">☰</span>
+        </button>
+      </div>
+
+      <div class="sidebar-search">
+        <label class="sr-only" for="navSearch">Search documentation navigation</label>
+        <input id="navSearch" class="sidebar-search__input" type="search" placeholder="Search docs…" autocomplete="off" />
+      </div>
+
+      <nav class="nav" aria-label="Documentation">
+      <a class="nav__link" href="../index.html" data-nav="index">Overview</a>
+      <div class="nav__section">Getting Started</div>
+      <a class="nav__link" href="../pages/download-install.html" data-nav="download-install">Download & Install</a>
+      <a class="nav__link" href="../pages/setup.html" data-nav="setup">How to Setup</a>
+      <div class="nav__section">Using Fly Scoreboard</div>
+      <a class="nav__link" href="../pages/usage.html" data-nav="usage">How to Use</a>
+      <a class="nav__link" href="../pages/add-scores.html" data-nav="add-scores">Add New Scores</a>
+      <a class="nav__link" href="../pages/add-timers.html" data-nav="add-timers">Add New Timers</a>
+      <div class="nav__section">Overlay Development</div>
+      <a class="nav__link" href="../pages/templating.html" data-nav="templating">Templating System</a>
+      <a class="nav__link" href="../pages/ai-prompt.html" data-nav="ai-prompt">AI Prompt</a>
+    </nav>
+
+      <div class="sidebar-footer">
+  <div class="sidebar-footer__section">
+    <div class="sidebar-footer__title">Community</div>
+    <ul class="sidebar-links">
+      <li><a href="https://discord.gg/2yD6B2PTuQ" target="_blank" rel="noopener">💬 Discord</a></li>
+      <li><a href="https://www.facebook.com/groups/freestreamerspromotion" target="_blank" rel="noopener">📘 Facebook Group</a></li>
+      <li><a href="https://mastodon.social/@obscountdown" target="_blank" rel="me noopener">🐘 Mastodon</a></li>
+      <li><a href="https://x.com/streamcd_net" target="_blank" rel="noopener">🐦 X (Twitter)</a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer__section">
+    <div class="sidebar-footer__title">Support</div>
+    <ul class="sidebar-links">
+      <li><a href="https://ko-fi.com/mmltech" target="_blank" rel="noopener">☕ Ko‑fi (MMLTech)</a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer__meta">
+    <span class="muted">Made for OBSCountdown ecosystem</span>
+  </div>
+</div>
+    </aside>
+
+    <main class="content" id="content" tabindex="-1">
+      <header class="content-header">
+        <div class="content-header__title">AI Prompt</div>
+        <div class="content-header__actions">
+          <a class="btn btn--ghost" href="../pages/ai-prompt.html">AI Prompt</a>
+          <a class="btn btn--primary" href="../pages/download-install.html">Get Started</a>
+        </div>
+      </header>
+
+      <div class="ad ad--responsive" aria-label="Advertisement">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8021810602774098"
+     crossorigin="anonymous"></script>
+  <!-- OBS_W_HORIZONTAL_RESPONSIVE -->
+  <ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8021810602774098"
+     data-ad-slot="7434839058"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+  <script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+      <article class="doc">
+        
+<h1>AI Prompt</h1>
+<p class="lead">
+Use this prompt with ChatGPT (or any LLM) to generate a custom scoreboard overlay that is compatible with Fly Scoreboard’s templating runtime.
+</p>
+
+<div class="warn">
+  Keep the output strictly to markup/CSS as requested. The runtime that performs template replacement is already provided by <code>script.js</code>.
+</div>
+
+<h2>Copy/paste prompt</h2>
+<pre><code>ROLE: You are a senior frontend engineer building an OBS Browser Source scoreboard overlay.
+
+TARGET SYSTEM: Fly Scoreboard plugin overlay runtime.
+- Data comes from plugin.json (same folder as index.html).
+- The runtime replaces {{ ... }} placeholders in text and attributes.
+- Conditional visibility uses fs-if="boolean expression".
+- No loops are available; author fixed slots and guard them with fs-if.
+- Prefer swap-safe helpers provided by the runtime:
+  - team_x / team_y (left/right teams based on swap_sides)
+  - fields_xy[i].x / fields_xy[i].y (left/right values for custom_fields)
+  - timers[i].mmss and timers[i].label (timer display)
+
+OUTPUT REQUIREMENTS:
+1) Output ONLY the scoreboard layout markup (no &lt;html&gt;, no &lt;head&gt;), unless explicitly asked.
+2) Do NOT include external libraries, frameworks, or CDN scripts.
+3) Use semantic, class-based HTML that can be styled with plain CSS.
+4) Include placeholders for:
+   - team_x.title, team_x.subtitle, team_x.logo
+   - team_y.title, team_y.subtitle, team_y.logo
+   - at least 3 custom field rows using fields_xy[0..2]
+   - at least 2 timers using timers[0..1]
+   - at least 2 single stats using single_stats[0..1]
+5) Add fs-if guards for every optional index:
+   - fs-if="fields_xy[2] &amp;&amp; fields_xy[2].visible"
+   - fs-if="timers[1] &amp;&amp; timers[1].visible"
+   - fs-if="single_stats[1] &amp;&amp; single_stats[1].visible"
+6) Provide a short CSS block (optional) that matches a modern broadcast style.
+
+CONTEXT (Data shape examples):
+- team_x.title (string), team_x.logo (string path), team_x.color (hex string)
+- fields_xy[i].label (string), fields_xy[i].x (number/string), fields_xy[i].y (number/string), fields_xy[i].visible (bool)
+- timers[i].label (string), timers[i].mmss (string), timers[i].visible (bool)
+- single_stats[i].label (string), single_stats[i].value (string/number), single_stats[i].visible (bool)
+
+NOW: Generate the layout for a compact lower-third scoreboard aligned top-left, with a clean hierarchy and good readability.</code></pre>
+
+<h2>Example placeholders you can reference</h2>
+<ul>
+  <li><code>{{show_scoreboard ? 'board' : 'board is-hidden'}}</code> (attribute ternary)</li>
+  <li><code>{{team_x.title}}</code>, <code>{{team_y.title}}</code></li>
+  <li><code>{{fields_xy[0].x}}</code>, <code>{{fields_xy[0].y}}</code></li>
+  <li><code>{{timers[0].mmss}}</code>, <code>{{timers[1].label}}</code></li>
+</ul>
+
+      </article>
+
+      <footer class="footer">
+        <div class="footer__inner">
+          <div class="footer__left">
+            <span class="muted">© 2026 • Fly Scoreboard documentation</span>
+          </div>
+          <div class="footer__right">
+            <a href="https://obscountdown.com" target="_blank" rel="noopener">obscountdown.com</a>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../assets/js/site.js" defer></script>
+</body>
+</html>

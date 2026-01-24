@@ -1,1 +1,105 @@
-{"away":{"color":"16777215","logo":"guest-07cad246.png","subtitle":"Team 2","title":"Guests"},"custom_fields":[{"away":0,"home":0,"label":"Score","visible":true},{"away":0,"home":0,"label":"Round","visible":true},{"away":0,"home":0,"label":"2-Min Susp.","visible":true},{"away":0,"home":0,"label":"Yellow Cards","visible":true},{"away":0,"home":0,"label":"Red Cards","visible":true},{"away":0,"home":0,"label":"Shots","visible":true},{"away":0,"home":0,"label":"Saves","visible":true}],"home":{"color":"16777215","logo":"home-07cad246.png","subtitle":"Team 1","title":"Home"},"server":{"port":8089},"show_scoreboard":true,"swap_sides":false,"timers":[{"initial_ms":"0","label":"First Half","last_tick_ms":"0","mode":"countup","remaining_ms":"0","running":false,"visible":true},{"initial_ms":"0","label":"Second Half","last_tick_ms":"0","mode":"countup","remaining_ms":"0","running":false,"visible":true},{"initial_ms":"0","label":"Timeout","last_tick_ms":"0","mode":"countdown","remaining_ms":"0","running":false,"visible":true}],"version":3}
+{
+  "away": {
+    "color": "16777215",
+    "logo": "guest-07cad246.png",
+    "subtitle": "Team 2",
+    "title": "Guests"
+  },
+  "custom_fields": [
+    {
+      "away": 0,
+      "home": 0,
+      "label": "Score",
+      "visible": true
+    },
+    {
+      "away": 0,
+      "home": 0,
+      "label": "Round",
+      "visible": true
+    },
+    {
+      "away": 0,
+      "home": 0,
+      "label": "2-Min Susp.",
+      "visible": true
+    },
+    {
+      "away": 0,
+      "home": 0,
+      "label": "Yellow Cards",
+      "visible": true
+    },
+    {
+      "away": 0,
+      "home": 0,
+      "label": "Red Cards",
+      "visible": true
+    },
+    {
+      "away": 0,
+      "home": 0,
+      "label": "Shots",
+      "visible": true
+    },
+    {
+      "away": 0,
+      "home": 0,
+      "label": "Saves",
+      "visible": true
+    }
+  ],
+  "home": {
+    "color": "16777215",
+    "logo": "home-07cad246.png",
+    "subtitle": "Team 1",
+    "title": "Home"
+  },
+  "server": {
+    "port": 8089
+  },
+  "show_scoreboard": true,
+  "swap_sides": false,
+  "timers": [
+    {
+      "initial_ms": "0",
+      "label": "First Half",
+      "last_tick_ms": "0",
+      "mode": "countup",
+      "remaining_ms": "0",
+      "running": false,
+      "visible": true
+    },
+    {
+      "initial_ms": "0",
+      "label": "Second Half",
+      "last_tick_ms": "0",
+      "mode": "countup",
+      "remaining_ms": "0",
+      "running": false,
+      "visible": true
+    },
+    {
+      "initial_ms": "0",
+      "label": "Timeout",
+      "last_tick_ms": "0",
+      "mode": "countdown",
+      "remaining_ms": "0",
+      "running": false,
+      "visible": true
+    }
+  ],
+  "version": 4,
+  "single_stats": [
+    {
+      "label": "PERIOD",
+      "value": 1,
+      "visible": true
+    },
+    {
+      "label": "ROUND",
+      "value": 1,
+      "visible": false
+    }
+  ]
+}

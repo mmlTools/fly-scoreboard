@@ -1,1 +1,232 @@
-[{"id":"swap_sides","label":"Swap Home ↔ Guests","seq":""},{"id":"toggle_scoreboard","label":"Show / Hide Scoreboard","seq":""},{"id":"field_0_toggle","label":"Custom: Score - Toggle visibility","seq":""},{"id":"field_0_home_inc","label":"Custom: Score - Home +1","seq":""},{"id":"field_0_home_dec","label":"Custom: Score - Home -1","seq":""},{"id":"field_0_away_inc","label":"Custom: Score - Guests +1","seq":""},{"id":"field_0_away_dec","label":"Custom: Score - Guests -1","seq":""},{"id":"field_1_toggle","label":"Custom: Round - Toggle visibility","seq":""},{"id":"field_1_home_inc","label":"Custom: Round - Home +1","seq":""},{"id":"field_1_home_dec","label":"Custom: Round - Home -1","seq":""},{"id":"field_1_away_inc","label":"Custom: Round - Guests +1","seq":""},{"id":"field_1_away_dec","label":"Custom: Round - Guests -1","seq":""},{"id":"field_2_toggle","label":"Custom: 2-Min Susp. - Toggle visibility","seq":""},{"id":"field_2_home_inc","label":"Custom: 2-Min Susp. - Home +1","seq":""},{"id":"field_2_home_dec","label":"Custom: 2-Min Susp. - Home -1","seq":""},{"id":"field_2_away_inc","label":"Custom: 2-Min Susp. - Guests +1","seq":""},{"id":"field_2_away_dec","label":"Custom: 2-Min Susp. - Guests -1","seq":""},{"id":"field_3_toggle","label":"Custom: Yellow Cards - Toggle visibility","seq":""},{"id":"field_3_home_inc","label":"Custom: Yellow Cards - Home +1","seq":""},{"id":"field_3_home_dec","label":"Custom: Yellow Cards - Home -1","seq":""},{"id":"field_3_away_inc","label":"Custom: Yellow Cards - Guests +1","seq":""},{"id":"field_3_away_dec","label":"Custom: Yellow Cards - Guests -1","seq":""},{"id":"field_4_toggle","label":"Custom: Red Cards - Toggle visibility","seq":""},{"id":"field_4_home_inc","label":"Custom: Red Cards - Home +1","seq":""},{"id":"field_4_home_dec","label":"Custom: Red Cards - Home -1","seq":""},{"id":"field_4_away_inc","label":"Custom: Red Cards - Guests +1","seq":""},{"id":"field_4_away_dec","label":"Custom: Red Cards - Guests -1","seq":""},{"id":"field_5_toggle","label":"Custom: Shots - Toggle visibility","seq":""},{"id":"field_5_home_inc","label":"Custom: Shots - Home +1","seq":""},{"id":"field_5_home_dec","label":"Custom: Shots - Home -1","seq":""},{"id":"field_5_away_inc","label":"Custom: Shots - Guests +1","seq":""},{"id":"field_5_away_dec","label":"Custom: Shots - Guests -1","seq":""},{"id":"field_6_toggle","label":"Custom: Saves - Toggle visibility","seq":""},{"id":"field_6_home_inc","label":"Custom: Saves - Home +1","seq":""},{"id":"field_6_home_dec","label":"Custom: Saves - Home -1","seq":""},{"id":"field_6_away_inc","label":"Custom: Saves - Guests +1","seq":""},{"id":"field_6_away_dec","label":"Custom: Saves - Guests -1","seq":""},{"id":"timer_0_toggle","label":"Timer: First Half - Start/Pause","seq":""},{"id":"timer_1_toggle","label":"Timer: Second Half - Start/Pause","seq":""},{"id":"timer_2_toggle","label":"Timer: Timeout - Start/Pause","seq":""}]
+[
+  {
+    "id": "swap_sides",
+    "label": "Swap Home \u2194 Guests",
+    "seq": ""
+  },
+  {
+    "id": "toggle_scoreboard",
+    "label": "Show / Hide Scoreboard",
+    "seq": ""
+  },
+  {
+    "id": "field_0_toggle",
+    "label": "Custom: Score - Toggle visibility",
+    "seq": ""
+  },
+  {
+    "id": "field_0_home_inc",
+    "label": "Custom: Score - Home +1",
+    "seq": ""
+  },
+  {
+    "id": "field_0_home_dec",
+    "label": "Custom: Score - Home -1",
+    "seq": ""
+  },
+  {
+    "id": "field_0_away_inc",
+    "label": "Custom: Score - Guests +1",
+    "seq": ""
+  },
+  {
+    "id": "field_0_away_dec",
+    "label": "Custom: Score - Guests -1",
+    "seq": ""
+  },
+  {
+    "id": "field_1_toggle",
+    "label": "Custom: Round - Toggle visibility",
+    "seq": ""
+  },
+  {
+    "id": "field_1_home_inc",
+    "label": "Custom: Round - Home +1",
+    "seq": ""
+  },
+  {
+    "id": "field_1_home_dec",
+    "label": "Custom: Round - Home -1",
+    "seq": ""
+  },
+  {
+    "id": "field_1_away_inc",
+    "label": "Custom: Round - Guests +1",
+    "seq": ""
+  },
+  {
+    "id": "field_1_away_dec",
+    "label": "Custom: Round - Guests -1",
+    "seq": ""
+  },
+  {
+    "id": "field_2_toggle",
+    "label": "Custom: 2-Min Susp. - Toggle visibility",
+    "seq": ""
+  },
+  {
+    "id": "field_2_home_inc",
+    "label": "Custom: 2-Min Susp. - Home +1",
+    "seq": ""
+  },
+  {
+    "id": "field_2_home_dec",
+    "label": "Custom: 2-Min Susp. - Home -1",
+    "seq": ""
+  },
+  {
+    "id": "field_2_away_inc",
+    "label": "Custom: 2-Min Susp. - Guests +1",
+    "seq": ""
+  },
+  {
+    "id": "field_2_away_dec",
+    "label": "Custom: 2-Min Susp. - Guests -1",
+    "seq": ""
+  },
+  {
+    "id": "field_3_toggle",
+    "label": "Custom: Yellow Cards - Toggle visibility",
+    "seq": ""
+  },
+  {
+    "id": "field_3_home_inc",
+    "label": "Custom: Yellow Cards - Home +1",
+    "seq": ""
+  },
+  {
+    "id": "field_3_home_dec",
+    "label": "Custom: Yellow Cards - Home -1",
+    "seq": ""
+  },
+  {
+    "id": "field_3_away_inc",
+    "label": "Custom: Yellow Cards - Guests +1",
+    "seq": ""
+  },
+  {
+    "id": "field_3_away_dec",
+    "label": "Custom: Yellow Cards - Guests -1",
+    "seq": ""
+  },
+  {
+    "id": "field_4_toggle",
+    "label": "Custom: Red Cards - Toggle visibility",
+    "seq": ""
+  },
+  {
+    "id": "field_4_home_inc",
+    "label": "Custom: Red Cards - Home +1",
+    "seq": ""
+  },
+  {
+    "id": "field_4_home_dec",
+    "label": "Custom: Red Cards - Home -1",
+    "seq": ""
+  },
+  {
+    "id": "field_4_away_inc",
+    "label": "Custom: Red Cards - Guests +1",
+    "seq": ""
+  },
+  {
+    "id": "field_4_away_dec",
+    "label": "Custom: Red Cards - Guests -1",
+    "seq": ""
+  },
+  {
+    "id": "field_5_toggle",
+    "label": "Custom: Shots - Toggle visibility",
+    "seq": ""
+  },
+  {
+    "id": "field_5_home_inc",
+    "label": "Custom: Shots - Home +1",
+    "seq": ""
+  },
+  {
+    "id": "field_5_home_dec",
+    "label": "Custom: Shots - Home -1",
+    "seq": ""
+  },
+  {
+    "id": "field_5_away_inc",
+    "label": "Custom: Shots - Guests +1",
+    "seq": ""
+  },
+  {
+    "id": "field_5_away_dec",
+    "label": "Custom: Shots - Guests -1",
+    "seq": ""
+  },
+  {
+    "id": "field_6_toggle",
+    "label": "Custom: Saves - Toggle visibility",
+    "seq": ""
+  },
+  {
+    "id": "field_6_home_inc",
+    "label": "Custom: Saves - Home +1",
+    "seq": ""
+  },
+  {
+    "id": "field_6_home_dec",
+    "label": "Custom: Saves - Home -1",
+    "seq": ""
+  },
+  {
+    "id": "field_6_away_inc",
+    "label": "Custom: Saves - Guests +1",
+    "seq": ""
+  },
+  {
+    "id": "field_6_away_dec",
+    "label": "Custom: Saves - Guests -1",
+    "seq": ""
+  },
+  {
+    "id": "timer_0_toggle",
+    "label": "Timer: First Half - Start/Pause",
+    "seq": ""
+  },
+  {
+    "id": "timer_1_toggle",
+    "label": "Timer: Second Half - Start/Pause",
+    "seq": ""
+  },
+  {
+    "id": "timer_2_toggle",
+    "label": "Timer: Timeout - Start/Pause",
+    "seq": ""
+  },
+  {
+    "id": "single_0_toggle",
+    "label": "Single: PERIOD - Toggle visibility",
+    "seq": ""
+  },
+  {
+    "id": "single_0_inc",
+    "label": "Single: PERIOD +1",
+    "seq": ""
+  },
+  {
+    "id": "single_0_dec",
+    "label": "Single: PERIOD -1",
+    "seq": ""
+  },
+  {
+    "id": "single_1_toggle",
+    "label": "Single: ROUND - Toggle visibility",
+    "seq": ""
+  },
+  {
+    "id": "single_1_inc",
+    "label": "Single: ROUND +1",
+    "seq": ""
+  },
+  {
+    "id": "single_1_dec",
+    "label": "Single: ROUND -1",
+    "seq": ""
+  }
+]

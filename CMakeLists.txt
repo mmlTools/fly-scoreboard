@@ -125,6 +125,8 @@ set(OBS_FLY_SCORE_SRC
 list(APPEND OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_dock.cpp
   ${FS_INC_DIR}/fly_score_dock.hpp
+  ${FS_SRC_DIR}/widget.cpp
+  ${FS_INC_DIR}/widget.hpp
   ${FS_SRC_DIR}/fly_score_teams_dialog.cpp
   ${FS_INC_DIR}/fly_score_teams_dialog.hpp
   ${FS_SRC_DIR}/fly_score_fields_dialog.cpp

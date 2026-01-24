@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Templating System • Fly Scoreboard</title>
+  <meta name="description" content="OBS Studio scoreboard plugin documentation" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/site.css" />
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+      <div class="brand">
+        <a class="brand__title" href="../index.html">Fly Scoreboard</a>
+        <div class="brand__tag">OBS Studio scoreboard plugin documentation</div>
+
+        <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+          <span aria-hidden="true">☰</span>
+        </button>
+      </div>
+
+      <div class="sidebar-search">
+        <label class="sr-only" for="navSearch">Search documentation navigation</label>
+        <input id="navSearch" class="sidebar-search__input" type="search" placeholder="Search docs…" autocomplete="off" />
+      </div>
+
+      <nav class="nav" aria-label="Documentation">
+      <a class="nav__link" href="../index.html" data-nav="index">Overview</a>
+      <div class="nav__section">Getting Started</div>
+      <a class="nav__link" href="../pages/download-install.html" data-nav="download-install">Download & Install</a>
+      <a class="nav__link" href="../pages/setup.html" data-nav="setup">How to Setup</a>
+      <div class="nav__section">Using Fly Scoreboard</div>
+      <a class="nav__link" href="../pages/usage.html" data-nav="usage">How to Use</a>
+      <a class="nav__link" href="../pages/add-scores.html" data-nav="add-scores">Add New Scores</a>
+      <a class="nav__link" href="../pages/add-timers.html" data-nav="add-timers">Add New Timers</a>
+      <div class="nav__section">Overlay Development</div>
+      <a class="nav__link" href="../pages/templating.html" data-nav="templating">Templating System</a>
+      <a class="nav__link" href="../pages/ai-prompt.html" data-nav="ai-prompt">AI Prompt</a>
+    </nav>
+
+      <div class="sidebar-footer">
+  <div class="sidebar-footer__section">
+    <div class="sidebar-footer__title">Community</div>
+    <ul class="sidebar-links">
+      <li><a href="https://discord.gg/2yD6B2PTuQ" target="_blank" rel="noopener">💬 Discord</a></li>
+      <li><a href="https://www.facebook.com/groups/freestreamerspromotion" target="_blank" rel="noopener">📘 Facebook Group</a></li>
+      <li><a href="https://mastodon.social/@obscountdown" target="_blank" rel="me noopener">🐘 Mastodon</a></li>
+      <li><a href="https://x.com/streamcd_net" target="_blank" rel="noopener">🐦 X (Twitter)</a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer__section">
+    <div class="sidebar-footer__title">Support</div>
+    <ul class="sidebar-links">
+      <li><a href="https://ko-fi.com/mmltech" target="_blank" rel="noopener">☕ Ko‑fi (MMLTech)</a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer__meta">
+    <span class="muted">Made for OBSCountdown ecosystem</span>
+  </div>
+</div>
+    </aside>
+
+    <main class="content" id="content" tabindex="-1">
+      <header class="content-header">
+        <div class="content-header__title">Templating System</div>
+        <div class="content-header__actions">
+          <a class="btn btn--ghost" href="../pages/ai-prompt.html">AI Prompt</a>
+          <a class="btn btn--primary" href="../pages/download-install.html">Get Started</a>
+        </div>
+      </header>
+
+      <div class="ad ad--responsive" aria-label="Advertisement">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8021810602774098"
+     crossorigin="anonymous"></script>
+  <!-- OBS_W_HORIZONTAL_RESPONSIVE -->
+  <ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8021810602774098"
+     data-ad-slot="7434839058"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+  <script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+      <article class="doc">
+        
+<h1>Templating System</h1>
+<p class="lead">
+The overlay runtime (<code>script.js</code>) scans your HTML for template placeholders <code>{{…}}</code> and replaces them from <code>plugin.json</code>. It also supports conditional rendering with <code>fs-if</code>.
+</p>
+
+<h2>Data source: plugin.json</h2>
+<p>
+The plugin writes state to <code>plugin.json</code>. The default schema includes:
+</p>
+<ul>
+  <li><code>home</code> and <code>away</code> objects (title, subtitle, logo, color)</li>
+  <li><code>custom_fields[]</code> (label, home, away, visible)</li>
+  <li><code>timers[]</code> (label, mode, remaining_ms, last_tick_ms, running, visible)</li>
+  <li><code>single_stats[]</code> (label, value, visible)</li>
+  <li><code>swap_sides</code>, <code>show_scoreboard</code></li>
+</ul>
+
+<h2>Derived view model (team_x / team_y / fields_xy)</h2>
+<p>
+Before applying templates, the runtime builds a “view model” so you can design for left/right without duplicating swap logic:
+</p>
+<ul>
+  <li><code>team_x</code> – left team (home or away depending on <code>swap_sides</code>)</li>
+  <li><code>team_y</code> – right team</li>
+  <li><code>fields_xy[]</code> – each custom field mapped to left/right as <code>x</code>/<code>y</code></li>
+</ul>
+
+<div class="note">
+  If you use <code>custom_fields[0].home</code> directly, you must handle swap logic yourself. Prefer <code>fields_xy[0].x</code> and <code>fields_xy[0].y</code>.
+</div>
+
+<h2>{{ … }} placeholders</h2>
+<p>
+Placeholders can appear in text nodes or any attribute value. The expression is a <strong>path</strong> into the JSON/view model, with optional array indexing.
+</p>
+
+<pre><code>&lt;div class="team-name"&gt;{{team_x.title}}&lt;/div&gt;
+&lt;img src="{{team_x.logo}}" alt="" /&gt;
+&lt;div class="score"&gt;{{fields_xy[0].x}}&lt;/div&gt;
+&lt;div class="clock"&gt;{{timers[0].mmss}}&lt;/div&gt;</code></pre>
+
+<h3>Ternary in attributes</h3>
+<p>
+For simple attribute switching, the runtime supports a ternary with quoted literals:
+</p>
+<pre><code>&lt;div class="{{show_scoreboard ? 'board' : 'board is-hidden'}}"&gt;...&lt;/div&gt;</code></pre>
+
+<h2>fs-if (conditional visibility)</h2>
+<p>
+Use <code>fs-if</code> to show/hide an element based on a boolean expression:
+</p>
+<pre><code>&lt;div fs-if="timers[0] &amp;&amp; timers[0].visible"&gt;
+  {{timers[0].mmss}}
+&lt;/div&gt;</code></pre>
+
+<p>
+Supported operators:
+</p>
+<ul>
+  <li><code>!</code> (NOT), <code>&amp;&amp;</code> (AND), <code>||</code> (OR)</li>
+  <li>parentheses <code>( ... )</code> for grouping</li>
+</ul>
+
+<h2>Timer rendering details</h2>
+<p>
+To keep timers smooth, the runtime computes <code>timers[i].live_ms</code> every frame based on:
+</p>
+<ul>
+  <li><code>remaining_ms</code> – the last value written by the plugin</li>
+  <li><code>last_tick_ms</code> – the last update timestamp (milliseconds)</li>
+  <li><code>running</code> and <code>mode</code> (<code>countup</code> / <code>countdown</code>)</li>
+</ul>
+
+<pre><code>// Simplified:
+if (!running || !last_tick_ms) return remaining_ms;
+delta = now - last_tick_ms;
+return mode === "countup" ? remaining_ms + delta : max(0, remaining_ms - delta);</code></pre>
+
+<h2>Overlay authoring checklist</h2>
+<ul>
+  <li>Keep <code>index.html</code>, <code>script.js</code>, and <code>plugin.json</code> aligned (paths matter).</li>
+  <li>Prefer <code>team_x</code>/<code>team_y</code> and <code>fields_xy</code> for swap-safe designs.</li>
+  <li>Guard optional items with <code>fs-if</code> to avoid “undefined” placeholders.</li>
+</ul>
+
+      </article>
+
+      <footer class="footer">
+        <div class="footer__inner">
+          <div class="footer__left">
+            <span class="muted">© 2026 • Fly Scoreboard documentation</span>
+          </div>
+          <div class="footer__right">
+            <a href="https://obscountdown.com" target="_blank" rel="noopener">obscountdown.com</a>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="../assets/js/site.js" defer></script>
+</body>
+</html>
