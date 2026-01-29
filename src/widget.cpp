@@ -372,12 +372,12 @@ void show_troubleshooting_dialog(QWidget *parent)
         cl->addWidget(make_link_card(
             content, QString::fromUtf8("🐘"), QObject::tr("Mastodon"),
             QObject::tr("Federated updates and community posts."),
-            QObject::tr("Open Mastodon"), QUrl(QStringLiteral("https://mastodon.social/@obscountdown"))));
+            QObject::tr("Open Mastodon"), QUrl(QStringLiteral("https://mastodon.social/@streamrsc"))));
 
         cl->addWidget(make_link_card(
             content, QString::fromUtf8("📸"), QObject::tr("Instagram"),
             QObject::tr("Design previews, templates, and behind-the-scenes."),
-            QObject::tr("Open Instagram"), QUrl(QStringLiteral("https://www.instagram.com/obscountdown/"))));
+            QObject::tr("Open Instagram"), QUrl(QStringLiteral("https://www.instagram.com/streamrsc/"))));
     }
 
     // Video guides

@@ -33,12 +33,12 @@
     },
     "platformConfig": {
         "macos": {
-            "bundleId": "com.example.fly-scoreboard"
+            "bundleId": "com.streamrsc.fly-scoreboard"
         }
     },
     "name": "fly-scoreboard",
     "displayName": "Fly Score",
-    "version": "4.1.0",
+    "version": "4.2.0",
     "author": "MML Tech",
     "website": "https://ko-fi.com/mmltech",
     "email": "contact@streamrsc.com"
