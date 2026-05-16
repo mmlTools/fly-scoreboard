@@ -2,7 +2,6 @@
 param(
     [ValidateSet('x64')]
     [string] $Target = 'x64',
-
     [ValidateSet('Debug', 'RelWithDebInfo', 'Release', 'MinSizeRel')]
     [string] $Configuration = 'RelWithDebInfo'
 )
@@ -10,7 +9,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 if ( $DebugPreference -eq 'Continue' ) {
-    $VerbosePreference     = 'Continue'
+    $VerbosePreference = 'Continue'
     $InformationPreference = 'Continue'
 }
 
@@ -18,7 +17,7 @@ if ( $env:CI -eq $null ) {
     throw "Package-Windows.ps1 requires CI environment"
 }
 
-if ( -not [System.Environment]::Is64BitOperatingSystem ) {
+if ( ! ( [System.Environment]::Is64BitOperatingSystem ) ) {
     throw "Packaging script requires a 64-bit system to build and run."
 }
 
@@ -33,63 +32,67 @@ function Package {
         exit 2
     }
 
-    $ScriptHome  = $PSScriptRoot
+    $ScriptHome = $PSScriptRoot
     $ProjectRoot = Resolve-Path -Path "$PSScriptRoot/../.."
+    $BuildSpecFile = "${ProjectRoot}/buildspec.json"
 
-    # Load helper functions for Log-Group
-    $UtilityFunctions = Get-ChildItem -Path "$ScriptHome/utils.pwsh/*.ps1" -Recurse
-    foreach ($Utility in $UtilityFunctions) {
+    $UtilityFunctions = Get-ChildItem -Path $PSScriptRoot/utils.pwsh/*.ps1 -Recurse
+
+    foreach( $Utility in $UtilityFunctions ) {
         Write-Debug "Loading $($Utility.FullName)"
         . $Utility.FullName
     }
 
-    $BuildSpecFile = Join-Path $ProjectRoot "buildspec.json"
-    if (-not (Test-Path $BuildSpecFile)) {
-        throw "Buildspec not found at ${BuildSpecFile}"
-    }
-
-    $BuildSpec      = Get-Content -Path $BuildSpecFile -Raw | ConvertFrom-Json
-    $ProductName    = $BuildSpec.name
+    $BuildSpec = Get-Content -Path ${BuildSpecFile} -Raw | ConvertFrom-Json
+    $ProductName = $BuildSpec.name
     $ProductVersion = $BuildSpec.version
 
-    if (-not $ProductName -or -not $ProductVersion) {
-        throw "buildspec.json must contain 'name' and 'version'."
-    }
-
     $OutputName = "${ProductName}-${ProductVersion}-windows-${Target}"
+    $ArchiveRootName = 'fly-score'
+    $ArchivePluginDataName = 'fly-score'
+    $PackageStage = "${ProjectRoot}/release/.windows-package-${Target}"
+    $ArchiveRoot = "${PackageStage}/${ArchiveRootName}"
+    $ArchiveDataRoot = "${ArchiveRoot}/data/obs-plugins/${ArchivePluginDataName}"
+    $ArchiveBinaryRoot = "${ArchiveRoot}/obs-plugins/64bit"
+    $InstallDataRoot = "${ProjectRoot}/release/${Configuration}/${ProductName}/data"
+    $BuildBinary = "${ProjectRoot}/build_${Target}/${Configuration}/${ProductName}.dll"
 
-    # Clean old zips (keep installers)
     $RemoveArgs = @{
         ErrorAction = 'SilentlyContinue'
-        Path        = @(
-            "${ProjectRoot}/release/${ProductName}-*-windows-*.zip"
+        Force = $true
+        Path = @(
+            "${ProjectRoot}/release/${ProductName}-*-windows-*.zip",
+            $PackageStage
         )
+        Recurse = $true
     }
+
     Remove-Item @RemoveArgs
 
-    $ReleaseConfigDir = Join-Path $ProjectRoot "release/${Configuration}"
-    if (-not (Test-Path $ReleaseConfigDir)) {
-        throw "Release directory not found: ${ReleaseConfigDir}. Did you run Build-Windows.ps1 first?"
+    if ( ! ( Test-Path -LiteralPath $InstallDataRoot -PathType Container ) ) {
+        throw "Installed plugin data folder not found: ${InstallDataRoot}"
     }
 
-    Log-Group "Archiving ${ProductName} (ZIP)..."
+    if ( ! ( Test-Path -LiteralPath $BuildBinary -PathType Leaf ) ) {
+        throw "Built plugin DLL not found: ${BuildBinary}"
+    }
 
-    $ZipPath = "${ProjectRoot}/release/${OutputName}.zip"
+    Log-Group "Archiving ${ProductName}..."
+    New-Item -ItemType Directory -Path $ArchiveDataRoot, $ArchiveBinaryRoot -Force | Out-Null
+
+    Copy-Item -LiteralPath "${InstallDataRoot}/locale" -Destination "${ArchiveDataRoot}/locale" -Recurse -Force
+    Copy-Item -LiteralPath "${InstallDataRoot}/overlay" -Destination "${ArchiveDataRoot}/overlay" -Recurse -Force
+    Copy-Item -LiteralPath $BuildBinary -Destination "${ArchiveBinaryRoot}/${ProductName}.dll" -Force
 
     $CompressArgs = @{
-        Path             = (Get-ChildItem -Path $ReleaseConfigDir -Exclude "${OutputName}*.*")
+        Path = $ArchiveRoot
         CompressionLevel = 'Optimal'
-        DestinationPath  = $ZipPath
-        Verbose          = ($Env:CI -ne $null)
+        DestinationPath = "${ProjectRoot}/release/${OutputName}.zip"
+        Verbose = ($Env:CI -ne $null)
     }
-
     Compress-Archive -Force @CompressArgs
-
+    Remove-Item -LiteralPath $PackageStage -Recurse -Force
     Log-Group
-
-    Write-Host "Packaging complete:"
-    Write-Host "  - ZIP: $ZipPath"
-    Write-Host "  - Installer (already built in Build step, if NSIS was available)"
 }
 
 Package

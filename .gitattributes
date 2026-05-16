@@ -1,0 +1,8 @@
+*.sh text eol=lf
+*.zsh text eol=lf
+.github/scripts/** text eol=lf
+.functions/* text eol=lf
+run-clang-format text eol=lf
+run-gersemi text eol=lf
+run-swift-format text eol=lf
+.run-format.zsh text eol=lf

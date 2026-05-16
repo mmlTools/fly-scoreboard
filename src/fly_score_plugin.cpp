@@ -13,6 +13,7 @@
 #include "fly_score_state.hpp"
 #include "fly_score_dock.hpp"
 #include "fly_score_const.hpp"
+#include "fly_score_i18n.hpp"
 
 OBS_DECLARE_MODULE();
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
@@ -24,7 +25,7 @@ MODULE_EXPORT const char *obs_module_name(void)
 
 MODULE_EXPORT const char *obs_module_description(void)
 {
-	return "Fly Scoreboard real-time sports/e-sports streaming scoreboard plugin and overlay.";
+	return obs_module_text("Plugin.Description");
 }
 
 bool obs_module_load(void)

@@ -4,6 +4,7 @@
 #include "fly_score_log.hpp"
 
 #include "fly_score_timers_dialog.hpp"
+#include "fly_score_i18n.hpp"
 #include "fly_score_state.hpp"
 #include "fly_score_qt_helpers.hpp"
 
@@ -23,7 +24,7 @@ FlyTimersDialog::FlyTimersDialog(const QString &dataDir, FlyState &state, QWidge
 	  st_(state)
 {
 	setObjectName(QStringLiteral("FlyTimersDialog"));
-	setWindowTitle(QStringLiteral("Fly Scoreboard – Timers"));
+	setWindowTitle(fly_i18n("Timers.Title"));
 	setModal(true);
 	resize(560, 420);
 	setSizeGripEnabled(false);
@@ -38,15 +39,14 @@ void FlyTimersDialog::buildUi()
 	root->setContentsMargins(14, 14, 14, 14);
 	root->setSpacing(10);
 
-	auto *infoBox = new QGroupBox(QStringLiteral("Timers"), this);
+	auto *infoBox = new QGroupBox(fly_i18n("Common.Timers"), this);
 	infoBox->setObjectName(QStringLiteral("timersInfoGroup"));
 
 	auto *infoLayout = new QVBoxLayout(infoBox);
 	infoLayout->setContentsMargins(10, 10, 10, 10);
 	infoLayout->setSpacing(8);
 
-	auto *hintLbl = new QLabel(QStringLiteral("Configure all timers used by the overlay.\n"
-						  "Timer 1 is the main match timer and cannot be removed."),
+	auto *hintLbl = new QLabel(fly_i18n("Timers.Hint"),
 				   infoBox);
 	hintLbl->setObjectName(QStringLiteral("timersHint"));
 	hintLbl->setWordWrap(true);
@@ -69,7 +69,7 @@ void FlyTimersDialog::buildUi()
 
 	rowsLayout->addLayout(timersLayout_);
 
-	addTimerBtn_ = new QPushButton(QStringLiteral("＋ Add timer"), rowsBox);
+	addTimerBtn_ = new QPushButton(fly_i18n("Timers.AddTimer"), rowsBox);
 	addTimerBtn_->setCursor(Qt::PointingHandCursor);
 	rowsLayout->addWidget(addTimerBtn_, 0, Qt::AlignLeft);
 
@@ -94,7 +94,7 @@ FlyTimersDialog::Row FlyTimersDialog::addRow(const FlyTimer &tm, bool canRemove)
 	lay->setSpacing(8);
 
 	auto *labelEdit = new QLineEdit(row);
-	labelEdit->setPlaceholderText(QStringLiteral("Timer label (e.g. First Half, Extra time)"));
+	labelEdit->setPlaceholderText(fly_i18n("Timers.LabelPlaceholder"));
 	labelEdit->setText(tm.label);
 	labelEdit->setMinimumWidth(160);
 	labelEdit->setMaximumWidth(260);
@@ -118,8 +118,8 @@ FlyTimersDialog::Row FlyTimersDialog::addRow(const FlyTimer &tm, bool canRemove)
 
 	auto *removeBtn = new QPushButton(row);
 	removeBtn->setText(QStringLiteral("❌"));
-	removeBtn->setToolTip(canRemove ? QStringLiteral("Remove this timer")
-					: QStringLiteral("This timer cannot be removed"));
+	removeBtn->setToolTip(canRemove ? fly_i18n("Timers.RemoveTimer")
+					: fly_i18n("Timers.TimerCannotBeRemoved"));
 	removeBtn->setCursor(canRemove ? Qt::PointingHandCursor : Qt::ArrowCursor);
 
 	const int h = timeEdit->sizeHint().height();
@@ -133,9 +133,9 @@ FlyTimersDialog::Row FlyTimersDialog::addRow(const FlyTimer &tm, bool canRemove)
 				 "}");
 
 	lay->addWidget(labelEdit, 1, Qt::AlignVCenter);
-	lay->addWidget(new QLabel(QStringLiteral("Time:"), row), 0, Qt::AlignVCenter);
+	lay->addWidget(new QLabel(fly_i18n("Common.TimeColon"), row), 0, Qt::AlignVCenter);
 	lay->addWidget(timeEdit, 0, Qt::AlignVCenter);
-	lay->addWidget(new QLabel(QStringLiteral("Type:"), row), 0, Qt::AlignVCenter);
+	lay->addWidget(new QLabel(fly_i18n("Common.TypeColon"), row), 0, Qt::AlignVCenter);
 	lay->addWidget(modeCombo, 0, Qt::AlignVCenter);
 	lay->addWidget(removeBtn, 0, Qt::AlignVCenter);
 
@@ -181,7 +181,7 @@ void FlyTimersDialog::loadFromState()
 
 	if (st_.timers.isEmpty()) {
 		FlyTimer main;
-		main.label = QStringLiteral("First Half");
+		main.label = fly_i18n("Default.Timer.FirstHalf");
 		main.mode = QStringLiteral("countdown");
 		main.running = false;
 		main.initial_ms = 0;
@@ -238,7 +238,7 @@ void FlyTimersDialog::saveToState()
 
 	if (st_.timers.isEmpty()) {
 		FlyTimer main;
-		main.label = QStringLiteral("First Half");
+		main.label = fly_i18n("Default.Timer.FirstHalf");
 		main.mode = QStringLiteral("countdown");
 		main.running = false;
 		main.initial_ms = 0;

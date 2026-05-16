@@ -346,11 +346,10 @@ void show_troubleshooting_dialog(QWidget *parent)
 		secTitle->setStyleSheet(QStringLiteral("font-weight:700;"));
 		cl->addWidget(secTitle);
 
-		cl->addWidget(make_link_card(
-			content, QString::fromUtf8("🌐"), QObject::tr("Visit the Website"),
-			QObject::tr("Downloads, updates, documentation, and templates."),
-			QObject::tr("Open streamrsc.com"),
-			QUrl(QStringLiteral("https://streamrsc.com/streaming-resource/smart-lower-thirds"))));
+		cl->addWidget(make_link_card(content, QString::fromUtf8("🌐"), QObject::tr("Visit the Website"),
+					     QObject::tr("Downloads, updates, documentation, and templates."),
+					     QObject::tr("Open streamrsc.com"),
+					     QUrl(QStringLiteral("https://streamrsc.com/search?q=lower+third"))));
 
 		cl->addWidget(make_link_card(content, QString::fromUtf8("💬"), QObject::tr("Join Discord"),
 					     QObject::tr("Community support, feedback, and announcements."),
@@ -359,8 +358,7 @@ void show_troubleshooting_dialog(QWidget *parent)
 
 		cl->addWidget(make_link_card(content, QString::fromUtf8("𝕏"), QObject::tr("Follow on X (Twitter)"),
 					     QObject::tr("Release notes, feature previews, and tips."),
-					     QObject::tr("Open X"),
-					     QUrl(QStringLiteral("https://x.com/streamcd_net"))));
+					     QObject::tr("Open X"), QUrl(QStringLiteral("https://x.com/mmltechYT"))));
 
 		cl->addWidget(
 			make_link_card(content, QString::fromUtf8("👥"), QObject::tr("Facebook Group"),

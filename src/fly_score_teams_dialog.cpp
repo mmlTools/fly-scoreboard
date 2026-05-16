@@ -5,6 +5,7 @@
 #include "fly_score_log.hpp"
 
 #include "fly_score_logo_helpers.hpp"
+#include "fly_score_i18n.hpp"
 #include "fly_score_qt_helpers.hpp"
 #include "fly_score_state.hpp"
 
@@ -44,7 +45,7 @@ FlyTeamsDialog::FlyTeamsDialog(const QString &dataDir, FlyState &state, QWidget 
 	  state_(state)
 {
 	setObjectName(QStringLiteral("FlyTeamsDialog"));
-	setWindowTitle(QStringLiteral("Fly Scoreboard – Teams & logos"));
+	setWindowTitle(fly_i18n("Teams.Title"));
 	setModal(false);
 
 	setMinimumWidth(480);
@@ -55,15 +56,13 @@ FlyTeamsDialog::FlyTeamsDialog(const QString &dataDir, FlyState &state, QWidget 
 	root->setContentsMargins(14, 14, 14, 14);
 	root->setSpacing(10);
 
-	auto *hint = new QLabel(QStringLiteral(
-        "Configure display names, colors and logos for the home and guests teams.\n"
-		"Logos should be paths relative to the overlay folder."),
+	auto *hint = new QLabel(fly_i18n("Teams.Hint"),
 		this);
 	hint->setObjectName(QStringLiteral("teamsHint"));
 	hint->setWordWrap(true);
 	root->addWidget(hint);
 
-	auto *gbHome = new QGroupBox(QStringLiteral("Home team"), this);
+	auto *gbHome = new QGroupBox(fly_i18n("Teams.HomeTeam"), this);
 	gbHome->setObjectName(QStringLiteral("homeGroup"));
 
 	auto *hb = new QGridLayout(gbHome);
@@ -80,33 +79,33 @@ FlyTeamsDialog::FlyTeamsDialog(const QString &dataDir, FlyState &state, QWidget 
 		const QIcon openIcon = fly_themed_icon(this, "folder-open", QStyle::SP_DirOpenIcon);
 		homeBrowse_->setText(QString());
 		homeBrowse_->setIcon(openIcon);
-		homeBrowse_->setToolTip(QStringLiteral("Browse logo…"));
+		homeBrowse_->setToolTip(fly_i18n("Teams.BrowseLogo"));
 		homeBrowse_->setAutoRaise(false);
 		homeBrowse_->setCursor(Qt::PointingHandCursor);
 
 		homeColor_->setText(QStringLiteral("#FFFFFF"));
-		homeColor_->setToolTip(QStringLiteral("Pick team color…"));
+		homeColor_->setToolTip(fly_i18n("Teams.PickTeamColor"));
 		homeColor_->setAutoRaise(false);
 		homeColor_->setCursor(Qt::PointingHandCursor);
 		homeColor_->setMinimumWidth(90);
 	}
 
-	hb->addWidget(new QLabel(QStringLiteral("Title:"), gbHome), 0, 0);
+	hb->addWidget(new QLabel(fly_i18n("Common.TitleColon"), gbHome), 0, 0);
 	hb->addWidget(homeTitle_, 0, 1, 1, 2);
 
-	hb->addWidget(new QLabel(QStringLiteral("Subtitle:"), gbHome), 1, 0);
+	hb->addWidget(new QLabel(fly_i18n("Common.SubtitleColon"), gbHome), 1, 0);
 	hb->addWidget(homeSub_, 1, 1, 1, 2);
 
-	hb->addWidget(new QLabel(QStringLiteral("Logo:"), gbHome), 2, 0);
+	hb->addWidget(new QLabel(fly_i18n("Common.LogoColon"), gbHome), 2, 0);
 	hb->addWidget(homeLogo_, 2, 1);
 	hb->addWidget(homeBrowse_, 2, 2);
 
-    hb->addWidget(new QLabel(QStringLiteral("Color:"), gbHome), 3, 0);
+    hb->addWidget(new QLabel(fly_i18n("Common.ColorColon"), gbHome), 3, 0);
     hb->addWidget(homeColor_, 3, 1, 1, 2);
 
 	gbHome->setLayout(hb);
 
-	auto *gbAway = new QGroupBox(QStringLiteral("Guests team"), this);
+	auto *gbAway = new QGroupBox(fly_i18n("Teams.GuestsTeam"), this);
 	gbAway->setObjectName(QStringLiteral("awayGroup"));
 
 	auto *ab = new QGridLayout(gbAway);
@@ -123,28 +122,28 @@ FlyTeamsDialog::FlyTeamsDialog(const QString &dataDir, FlyState &state, QWidget 
 		const QIcon openIcon = fly_themed_icon(this, "folder-open", QStyle::SP_DirOpenIcon);
 		awayBrowse_->setText(QString());
 		awayBrowse_->setIcon(openIcon);
-		awayBrowse_->setToolTip(QStringLiteral("Browse logo…"));
+		awayBrowse_->setToolTip(fly_i18n("Teams.BrowseLogo"));
 		awayBrowse_->setAutoRaise(false);
 		awayBrowse_->setCursor(Qt::PointingHandCursor);
 
 		awayColor_->setText(QStringLiteral("#FFFFFF"));
-		awayColor_->setToolTip(QStringLiteral("Pick team color…"));
+		awayColor_->setToolTip(fly_i18n("Teams.PickTeamColor"));
 		awayColor_->setAutoRaise(false);
 		awayColor_->setCursor(Qt::PointingHandCursor);
 		awayColor_->setMinimumWidth(90);
 	}
 
-	ab->addWidget(new QLabel(QStringLiteral("Title:"), gbAway), 0, 0);
+	ab->addWidget(new QLabel(fly_i18n("Common.TitleColon"), gbAway), 0, 0);
 	ab->addWidget(awayTitle_, 0, 1, 1, 2);
 
-	ab->addWidget(new QLabel(QStringLiteral("Subtitle:"), gbAway), 1, 0);
+	ab->addWidget(new QLabel(fly_i18n("Common.SubtitleColon"), gbAway), 1, 0);
 	ab->addWidget(awaySub_, 1, 1, 1, 2);
 
-	ab->addWidget(new QLabel(QStringLiteral("Logo:"), gbAway), 2, 0);
+	ab->addWidget(new QLabel(fly_i18n("Common.LogoColon"), gbAway), 2, 0);
 	ab->addWidget(awayLogo_, 2, 1);
 	ab->addWidget(awayBrowse_, 2, 2);
 
-    ab->addWidget(new QLabel(QStringLiteral("Color:"), gbAway), 3, 0);
+    ab->addWidget(new QLabel(fly_i18n("Common.ColorColon"), gbAway), 3, 0);
     ab->addWidget(awayColor_, 3, 1, 1, 2);
 
 	gbAway->setLayout(ab);
@@ -155,8 +154,8 @@ FlyTeamsDialog::FlyTeamsDialog(const QString &dataDir, FlyState &state, QWidget 
 
 	buttonsRow->addStretch(1);
 
-	applyBtn_ = new QPushButton(QStringLiteral("Save && Close"), this);
-	auto *closeBtn = new QPushButton(QStringLiteral("Close"), this);
+	applyBtn_ = new QPushButton(fly_i18n("Common.SaveAndClose"), this);
+	auto *closeBtn = new QPushButton(fly_i18n("Common.Close"), this);
 
 	applyBtn_->setCursor(Qt::PointingHandCursor);
 	closeBtn->setCursor(Qt::PointingHandCursor);
@@ -245,7 +244,7 @@ void FlyTeamsDialog::onPickHomeColor()
 {
     QColor start = colorFromU32(state_.home.color);
     QColor chosen =
-	    QColorDialog::getColor(start, this, QStringLiteral("Pick Home Team Color"), QColorDialog::ShowAlphaChannel);
+	    QColorDialog::getColor(start, this, fly_i18n("Teams.PickHomeColor"), QColorDialog::ShowAlphaChannel);
 
     if (!chosen.isValid())
         return;
@@ -260,7 +259,7 @@ void FlyTeamsDialog::onPickAwayColor()
 {
     QColor start = colorFromU32(state_.away.color);
     QColor chosen = QColorDialog::getColor(
-        start, this, QStringLiteral("Pick Guests Team Color"),
+        start, this, fly_i18n("Teams.PickGuestsColor"),
         QColorDialog::ShowAlphaChannel
     );
 
@@ -275,15 +274,15 @@ void FlyTeamsDialog::onPickAwayColor()
 
 void FlyTeamsDialog::onBrowseHomeLogo()
 {
-	const QString p = QFileDialog::getOpenFileName(this, QStringLiteral("Select Home Logo"), {},
-						       QStringLiteral("Images (*.png *.jpg *.jpeg *.webp *.svg)"));
+	const QString p = QFileDialog::getOpenFileName(this, fly_i18n("Teams.SelectHomeLogo"), {},
+						       fly_i18n("Common.ImageFilter"));
 	if (p.isEmpty())
 		return;
 
 	const QString rel = fly_copy_logo_to_overlay(dataDir_, p, QStringLiteral("home"));
 	if (rel.isEmpty()) {
-		QMessageBox::warning(this, QStringLiteral("Fly Score Teams"),
-				     QStringLiteral("Failed to copy logo to overlay folder."));
+		QMessageBox::warning(this, fly_i18n("Teams.MessageTitle"),
+				     fly_i18n("Teams.CopyLogoFailed"));
 		return;
 	}
 
@@ -298,15 +297,15 @@ void FlyTeamsDialog::onBrowseHomeLogo()
 
 void FlyTeamsDialog::onBrowseAwayLogo()
 {
-	const QString p = QFileDialog::getOpenFileName(this, QStringLiteral("Select Guests Logo"), {},
-						       QStringLiteral("Images (*.png *.jpg *.jpeg *.webp *.svg)"));
+	const QString p = QFileDialog::getOpenFileName(this, fly_i18n("Teams.SelectGuestsLogo"), {},
+						       fly_i18n("Common.ImageFilter"));
 	if (p.isEmpty())
 		return;
 
 	const QString rel = fly_copy_logo_to_overlay(dataDir_, p, QStringLiteral("guest"));
 	if (rel.isEmpty()) {
-		QMessageBox::warning(this, QStringLiteral("Fly Score Teams"),
-				     QStringLiteral("Failed to copy logo to overlay folder."));
+		QMessageBox::warning(this, fly_i18n("Teams.MessageTitle"),
+				     fly_i18n("Teams.CopyLogoFailed"));
 		return;
 	}
 

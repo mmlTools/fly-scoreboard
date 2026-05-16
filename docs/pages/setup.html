@@ -1,5 +1,5 @@
 <h1>How to Setup</h1>
-<p class="lead">Connect Fly Scoreboard to a Browser Source and point that source to the included overlay.</p>
+<p class="lead">Connect Fly Scoreboard to a Browser Source and point that source to the included overlay or one of your template folders.</p>
 
 <h2>Step-by-step in OBS</h2>
 <ol>
@@ -18,21 +18,44 @@
 </ul>
 
 <div class="note">
-  The overlay runtime fetches <code>plugin.json</code> with <code>cache: "no-store"</code> once per second. If your overlay looks “stuck”, force-refresh the Browser Source.
+  The overlay runtime connects to <code>ws://127.0.0.1:4457</code> for instant updates. If the socket is unavailable, it fetches <code>plugin.json</code> with <code>cache: "no-store"</code> once per second.
 </div>
+
+<h2>Template folders</h2>
+<p>
+Use the dock <strong>Template</strong> row to select a parent folder that contains scoreboard templates. Each template is a subfolder with at least:
+</p>
+<pre><code>My Templates/
+  Soccer Lower Third/
+    index.html
+    style.css
+    script.js</code></pre>
+<p>
+After choosing the parent folder, select a template from the dropdown. The plugin points the selected Browser Source at that template's <code>index.html</code> and creates <code>plugin.json</code> there if it is missing.
+</p>
 
 <h2>Folder placement rule</h2>
 <p>
-In the default overlay runtime (<code>script.js</code>), the state file is loaded as:
+In the default overlay runtime (<code>script.js</code>), fallback state is loaded as:
 </p>
 <pre><code>fetch("plugin.json", { cache: "no-store" })</code></pre>
 <p>
 That means <code>plugin.json</code> must be reachable at the same relative path as <code>index.html</code>.
 </p>
 
+<h2>WebSocket endpoint</h2>
+<p>
+The dock starts a local-only WebSocket server at:
+</p>
+<pre><code>ws://127.0.0.1:4457</code></pre>
+<p>
+To use another endpoint in a custom Browser Source URL, pass it as a query parameter:
+</p>
+<pre><code>index.html?ws=ws://127.0.0.1:4457</code></pre>
+
 <h2>Common troubleshooting</h2>
 <ul>
   <li><strong>Blank overlay</strong>: confirm the Browser Source is pointing to the correct <code>index.html</code>.</li>
-  <li><strong>No updates</strong>: ensure <code>plugin.json</code> is in the same folder, and refresh the Browser Source.</li>
+  <li><strong>No updates</strong>: check the dock WebSocket status, ensure <code>plugin.json</code> is in the same folder, and refresh the Browser Source.</li>
   <li><strong>Wrong teams left/right</strong>: check the <code>swap_sides</code> toggle (template uses <code>team_x</code>/<code>team_y</code>).</li>
 </ul>

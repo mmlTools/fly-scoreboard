@@ -83,12 +83,12 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_FRONTEND_API=1)
 # ---------------------------------------------------------------------------
 # Qt (dock & dialogs) – REQUIRED
 # ---------------------------------------------------------------------------
-find_package(Qt6 COMPONENTS Core Widgets QUIET)
+find_package(Qt6 COMPONENTS Core Widgets Network QUIET)
 if(Qt6_FOUND)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt6::Core Qt6::Widgets)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
 else()
-  find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets)
+  find_package(Qt5 COMPONENTS Core Widgets Network REQUIRED)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets Qt5::Network)
 endif()
 
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
@@ -119,7 +119,10 @@ set(OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_qt_helpers.cpp
   ${FS_SRC_DIR}/fly_score_obs_helpers.cpp
   ${FS_SRC_DIR}/fly_score_logo_helpers.cpp
+  ${FS_INC_DIR}/fly_score_i18n.hpp
   ${FS_SRC_DIR}/fly_score_paths.cpp
+  ${FS_SRC_DIR}/fly_score_websocket_server.cpp
+  ${FS_INC_DIR}/fly_score_websocket_server.hpp
 )
 
 list(APPEND OBS_FLY_SCORE_SRC

@@ -14,6 +14,13 @@ async function fetchState() {
   return await res.json();
 }
 
+function normalizeIncomingState(payload) {
+  if (!payload) return null;
+  if (payload.type === "state" && payload.state) return payload.state;
+  if (payload.home || payload.away || payload.custom_fields) return payload;
+  return null;
+}
+
 function liveTimerMs(timer) {
   if (!timer) return 0;
 
@@ -380,6 +387,9 @@ function applyIfBindings(data) {
 // Rendering
 // -----------------------------------------------------------------------------
 let currentJsonState = null;
+let socket = null;
+let socketRetryTimer = null;
+let lastSocketStateAt = 0;
 
 function renderFrame() {
   if (!currentJsonState) return;
@@ -445,13 +455,65 @@ function renderFrame() {
 // -----------------------------------------------------------------------------
 async function pollLoop() {
   try {
-    const st = await fetchState();
-    currentJsonState = st;
+    if (!socket || socket.readyState !== WebSocket.OPEN || Date.now() - lastSocketStateAt > 3000) {
+      const st = await fetchState();
+      currentJsonState = st;
+    }
   } catch (e) {
     // ignore; keep last state
   } finally {
     setTimeout(pollLoop, 1000);
   }
+}
+
+function connectSocket() {
+  if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const wsUrl = params.get("ws") || "ws://127.0.0.1:4457";
+
+  try {
+    socket = new WebSocket(wsUrl);
+  } catch (e) {
+    scheduleSocketReconnect();
+    return;
+  }
+
+  socket.addEventListener("open", () => {
+    socket.send(JSON.stringify({ type: "get_state" }));
+  });
+
+  socket.addEventListener("message", (event) => {
+    try {
+      const payload = JSON.parse(event.data);
+      const st = normalizeIncomingState(payload);
+      if (st) {
+        currentJsonState = st;
+        lastSocketStateAt = Date.now();
+      }
+    } catch (e) {
+      // ignore malformed remote messages
+    }
+  });
+
+  socket.addEventListener("close", scheduleSocketReconnect);
+  socket.addEventListener("error", () => {
+    try {
+      socket.close();
+    } catch (e) {
+      scheduleSocketReconnect();
+    }
+  });
+}
+
+function scheduleSocketReconnect() {
+  if (socketRetryTimer) return;
+  socketRetryTimer = setTimeout(() => {
+    socketRetryTimer = null;
+    connectSocket();
+  }, 1000);
 }
 
 function animationLoop() {
@@ -463,5 +525,6 @@ function animationLoop() {
 // Boot
 // -----------------------------------------------------------------------------
 collectTemplateBindings();
+connectSocket();
 pollLoop();
 animationLoop();

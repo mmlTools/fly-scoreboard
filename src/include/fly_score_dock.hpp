@@ -16,6 +16,8 @@ class QComboBox;
 class QVBoxLayout;
 class QLabel;
 class QShortcut;
+class QJsonObject;
+class FlyScoreWebSocketServer;
 
 struct FlyCustomFieldUi {
 	QWidget *row = nullptr;
@@ -80,6 +82,7 @@ private slots:
 
 	void onSetResourcesPath();
 	void onOpenResourcesFolder();
+	void onSetTemplatesRoot();
 
 private:
 	void loadState();
@@ -98,6 +101,13 @@ private:
 	void applyHotkeyBindings(const QList<FlyHotkeyBinding> &bindings);
 	void clearAllShortcuts();
 	void updateBrowserSourceToCurrentResources();
+	void refreshTemplateCombo(bool preserveSelection = true);
+	QString selectedTemplateName() const;
+	QString selectedTemplatePath() const;
+	void loadTemplateByPath(const QString &path);
+	void broadcastCurrentState();
+	void updateWebSocketStatus();
+	void handleRemoteCommand(const QJsonObject &command);
 	QWidget *widgetCarousel_ = nullptr;
 	QPushButton *toggleCarouselBtn_ = nullptr;
 	void toggleWidgetCarouselVisible();
@@ -120,8 +130,12 @@ private:
 	void *obsSignalHandler_ = nullptr;
 	bool obsSignalsConnected_ = false;
 	QComboBox *browserSourceCombo_ = nullptr;
+	QComboBox *templateCombo_ = nullptr;
+	QLabel *webSocketStatus_ = nullptr;
 	QPushButton *setResourcesPathBtn_ = nullptr;
 	QPushButton *openResourcesFolderBtn_ = nullptr;
+	QPushButton *setTemplatesRootBtn_ = nullptr;
+	FlyScoreWebSocketServer *webSocketServer_ = nullptr;
 	QList<FlyHotkeyBinding> hotkeyBindings_;
 	QList<QShortcut *> shortcuts_;
 };

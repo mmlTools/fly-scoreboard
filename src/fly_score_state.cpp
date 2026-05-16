@@ -3,6 +3,7 @@
 #define LOG_TAG "[" PLUGIN_NAME "][state]"
 #include "fly_score_log.hpp"
 
+#include "fly_score_i18n.hpp"
 #include "fly_score_state.hpp"
 
 #include <obs-module.h>
@@ -52,7 +53,7 @@ bool fly_ensure_webroot(QString *outBaseDir)
 static FlyTimer makeDefaultMainTimer()
 {
 	FlyTimer t;
-	t.label = QStringLiteral("First Half");
+	t.label = fly_i18n("Default.Timer.FirstHalf");
 	t.mode = QStringLiteral("countdown");
 	t.running = false;
 	t.initial_ms = 0;
@@ -66,7 +67,7 @@ static void ensureDefaultCustomFields(FlyState &st)
 {
 	if (st.custom_fields.isEmpty()) {
 		FlyCustomField cf;
-		cf.label = QStringLiteral("Points");
+		cf.label = fly_i18n("Default.Field.Points");
 		cf.home = 0;
 		cf.away = 0;
 		cf.visible = true;
@@ -75,14 +76,14 @@ static void ensureDefaultCustomFields(FlyState &st)
 	}
 
 	if (st.custom_fields[0].label.isEmpty())
-		st.custom_fields[0].label = QStringLiteral("Points");
+		st.custom_fields[0].label = fly_i18n("Default.Field.Points");
 }
 
 static void ensureDefaultSingleStats(FlyState &st)
 {
 	if (st.single_stats.isEmpty()) {
 		FlySingleStat ss;
-		ss.label = QStringLiteral("PERIOD");
+		ss.label = fly_i18n("Default.Single.Period");
 		ss.value = 0;
 		ss.visible = true;
 		st.single_stats.push_back(ss);
@@ -90,7 +91,7 @@ static void ensureDefaultSingleStats(FlyState &st)
 	}
 
 	if (st.single_stats[0].label.isEmpty())
-		st.single_stats[0].label = QStringLiteral("PERIOD");
+		st.single_stats[0].label = fly_i18n("Default.Single.Period");
 }
 
 static QJsonObject timerToJson(const FlyTimer &t)
@@ -119,7 +120,7 @@ static FlyTimer timerFromJson(const QJsonObject &o)
 	return t;
 }
 
-static QJsonObject toJson(const FlyState &stIn)
+QJsonObject fly_state_to_json_object(const FlyState &stIn)
 {
     FlyState st = stIn;
 
@@ -178,7 +179,7 @@ static QJsonObject toJson(const FlyState &stIn)
     return j;
 }
 
-static bool fromJson(const QJsonObject &j, FlyState &st)
+bool fly_state_from_json_object(const QJsonObject &j, FlyState &st)
 {
 	auto readColor = [](const QJsonObject &o, const char *key, uint32_t def = 0xFFFFFF) -> uint32_t {
 		const QJsonValue v = o.value(key);
@@ -334,14 +335,20 @@ bool fly_state_load(const QString &base_dir, FlyState &out)
 	if (!doc.isObject())
 		return false;
 
-	return fromJson(doc.object(), out);
+	return fly_state_from_json_object(doc.object(), out);
 }
 
 bool fly_state_save(const QString &base_dir, const FlyState &st)
 {
-	const QJsonDocument doc(toJson(st));
+	const QJsonDocument doc(fly_state_to_json_object(st));
 	const QString path = overlay_plugin_json(base_dir);
 	return write_one_json(path, doc);
+}
+
+QByteArray fly_state_to_json_bytes(const FlyState &st, bool compact)
+{
+	const QJsonDocument doc(fly_state_to_json_object(st));
+	return doc.toJson(compact ? QJsonDocument::Compact : QJsonDocument::Indented);
 }
 
 FlyState fly_state_make_defaults()

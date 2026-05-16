@@ -1,6 +1,6 @@
 <h1>Overview</h1>
 <p class="lead">
-Fly Scoreboard is an OBS Studio plugin that writes a live <code>plugin.json</code> state file and ships a lightweight overlay runtime that renders your scoreboard by replacing template placeholders ({{…}}) in HTML.
+Fly Scoreboard is an OBS Studio plugin that broadcasts live scoreboard state over a local WebSocket, keeps a <code>plugin.json</code> fallback on disk, and ships a lightweight overlay runtime that renders your scoreboard by replacing template placeholders ({{…}}) in HTML.
 </p>
 
 <div class="card-grid">
@@ -9,6 +9,7 @@ Fly Scoreboard is an OBS Studio plugin that writes a live <code>plugin.json</cod
     <ul>
       <li>A dock UI to manage teams, scores, timers, and single stats.</li>
       <li>A ready-to-use overlay (<code>index.html</code>, <code>style.css</code>, <code>script.js</code>).</li>
+      <li>Local remote control through <code>ws://127.0.0.1:4457</code>.</li>
       <li>A small templating engine: write <code>{{home.title}}</code>, <code>{{timers[0].mmss}}</code>, etc.</li>
     </ul>
   </section>
@@ -16,8 +17,8 @@ Fly Scoreboard is an OBS Studio plugin that writes a live <code>plugin.json</cod
   <section class="card">
     <h3>How it works</h3>
     <ol>
-      <li>The plugin updates <code>plugin.json</code> (your “source of truth”).</li>
-      <li>The overlay fetches <code>plugin.json</code> once per second (no-cache).</li>
+      <li>The plugin updates state in memory and writes <code>plugin.json</code>.</li>
+      <li>The overlay receives pushes from the local WebSocket, then falls back to polling <code>plugin.json</code> if needed.</li>
       <li>An animation loop renders timers smoothly and applies template replacements every frame.</li>
     </ol>
   </section>
@@ -28,12 +29,13 @@ Fly Scoreboard is an OBS Studio plugin that writes a live <code>plugin.json</cod
   <li>Install the plugin.</li>
   <li>Add a <strong>Browser Source</strong> in OBS and point it to the overlay <code>index.html</code>.</li>
   <li>In the Fly Scoreboard dock, select that Browser Source (so the plugin can keep it in sync).</li>
+  <li>Optional: choose a templates folder, then load any template from the dock dropdown.</li>
   <li>Customize teams, add custom fields (scores), set timers, and go live.</li>
 </ol>
 
 <div class="note">
   <strong>Tip:</strong> Keep <code>index.html</code>, <code>style.css</code>, <code>script.js</code> and <code>plugin.json</code> in the same folder.
-  The default overlay runtime fetches <code>plugin.json</code> by a relative path.
+  The default overlay runtime connects to <code>ws://127.0.0.1:4457</code> first and fetches <code>plugin.json</code> by relative path as a fallback.
 </div>
 
 <h2>Where to go next</h2>

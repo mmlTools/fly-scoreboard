@@ -1,4 +1,5 @@
 #include "fly_score_hotkeys_dialog.hpp"
+#include "fly_score_i18n.hpp"
 
 #include <QAbstractButton>
 #include <QDialogButtonBox>
@@ -22,7 +23,7 @@
 FlyHotkeysDialog::FlyHotkeysDialog(const QVector<FlyHotkeyBinding> &initial, QWidget *parent) : QDialog(parent)
 {
 	setObjectName(QStringLiteral("FlyHotkeysDialog"));
-	setWindowTitle(tr("Fly Scoreboard Hotkeys"));
+	setWindowTitle(fly_i18n("Hotkeys.Title"));
 	setModal(true);
 	resize(720, 520);
 	setMinimumSize(640, 420);
@@ -37,11 +38,10 @@ void FlyHotkeysDialog::buildUi(const QVector<FlyHotkeyBinding> &initial)
 	root->setContentsMargins(14, 14, 14, 14);
 	root->setSpacing(10);
 
-	auto *titleLabel = new QLabel(tr("Keyboard shortcuts for Fly Scoreboard"), this);
+	auto *titleLabel = new QLabel(fly_i18n("Hotkeys.Header"), this);
 	titleLabel->setStyleSheet(QStringLiteral("font-size: 14px; font-weight: 600;"));
 
-	auto *subtitleLabel = new QLabel(tr("Assign keyboard shortcuts for Fly Scoreboard actions. "
-					    "Leave a shortcut empty to disable it."),
+	auto *subtitleLabel = new QLabel(fly_i18n("Hotkeys.Subtitle"),
 					 this);
 	subtitleLabel->setWordWrap(true);
 	subtitleLabel->setStyleSheet(QStringLiteral("color: #999; font-size: 11px;"));
@@ -62,13 +62,13 @@ void FlyHotkeysDialog::buildUi(const QVector<FlyHotkeyBinding> &initial)
 	navLayout->setContentsMargins(10, 10, 10, 10);
 	navLayout->setSpacing(6);
 
-	auto *navTitle = new QLabel(tr("Sections"), navPanel);
+	auto *navTitle = new QLabel(fly_i18n("Hotkeys.Sections"), navPanel);
 	navTitle->setStyleSheet(QStringLiteral("font-weight: 600;"));
 	navLayout->addWidget(navTitle);
 
-	btnNavScore_ = new QPushButton(tr("Scoreboard"), navPanel);
-	btnNavFields_ = new QPushButton(tr("Match stats"), navPanel);
-	btnNavTimers_ = new QPushButton(tr("Timers"), navPanel);
+	btnNavScore_ = new QPushButton(fly_i18n("Common.Scoreboard"), navPanel);
+	btnNavFields_ = new QPushButton(fly_i18n("Common.MatchStats"), navPanel);
+	btnNavTimers_ = new QPushButton(fly_i18n("Common.Timers"), navPanel);
 
 	btnNavScore_->setCheckable(true);
 	btnNavFields_->setCheckable(true);
@@ -107,9 +107,9 @@ void FlyHotkeysDialog::buildUi(const QVector<FlyHotkeyBinding> &initial)
 			scoreboard.push_back(b);
 	}
 
-	QWidget *scorePage = createSectionPage(tr("Scoreboard"), scoreboard, 0);
-	QWidget *fieldsPage = createSectionPage(tr("Match stats"), fields, 1);
-	QWidget *timersPage = createSectionPage(tr("Timers"), timers, 2);
+	QWidget *scorePage = createSectionPage(fly_i18n("Common.Scoreboard"), scoreboard, 0);
+	QWidget *fieldsPage = createSectionPage(fly_i18n("Common.MatchStats"), fields, 1);
+	QWidget *timersPage = createSectionPage(fly_i18n("Common.Timers"), timers, 2);
 
 	stack_->addWidget(scorePage);
 	stack_->addWidget(fieldsPage);
@@ -123,7 +123,7 @@ void FlyHotkeysDialog::buildUi(const QVector<FlyHotkeyBinding> &initial)
 
 	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
 
-	btnResetAll_ = buttons->addButton(tr("Reset to Defaults"), QDialogButtonBox::ResetRole);
+	btnResetAll_ = buttons->addButton(fly_i18n("Common.ResetToDefaults"), QDialogButtonBox::ResetRole);
 	btnResetAll_->setCursor(Qt::PointingHandCursor);
 
 	connect(btnResetAll_, &QAbstractButton::clicked, this, [this]() {
@@ -155,7 +155,7 @@ QWidget *FlyHotkeysDialog::createSectionPage(const QString &title, const QVector
 	cardLayout->setSpacing(6);
 
 	if (items.isEmpty()) {
-		auto *emptyLbl = new QLabel(tr("No actions available in this category yet."), group);
+		auto *emptyLbl = new QLabel(fly_i18n("Hotkeys.NoActions"), group);
 		emptyLbl->setWordWrap(true);
 		cardLayout->addWidget(emptyLbl);
 	} else {
@@ -172,7 +172,7 @@ QWidget *FlyHotkeysDialog::createSectionPage(const QString &title, const QVector
 			edit->setClearButtonEnabled(true);
 			edit->setMaximumWidth(260);
 
-			auto *clearBtn = new QPushButton(tr("Clear"), rowWidget);
+			auto *clearBtn = new QPushButton(fly_i18n("Common.Clear"), rowWidget);
 			clearBtn->setAutoDefault(false);
 			clearBtn->setDefault(false);
 			clearBtn->setCursor(Qt::PointingHandCursor);

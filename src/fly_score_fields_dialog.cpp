@@ -4,6 +4,7 @@
 #include "fly_score_log.hpp"
 
 #include "fly_score_fields_dialog.hpp"
+#include "fly_score_i18n.hpp"
 #include "fly_score_state.hpp"
 #include "fly_score_qt_helpers.hpp"
 
@@ -19,6 +20,7 @@
 #include <QTabWidget>
 #include <QCheckBox>
 #include <QMessageBox>
+#include <limits>
 
 FlyFieldsDialog::FlyFieldsDialog(const QString &dataDir, FlyState &state, QWidget *parent)
 	: QDialog(parent),
@@ -26,7 +28,7 @@ FlyFieldsDialog::FlyFieldsDialog(const QString &dataDir, FlyState &state, QWidge
 	  st_(state)
 {
 	setObjectName(QStringLiteral("FlyFieldsDialog"));
-	setWindowTitle(QStringLiteral("Fly Scoreboard Match stats"));
+	setWindowTitle(fly_i18n("Fields.Title"));
 	setModal(true);
 
 	resize(520, 400);
@@ -42,7 +44,7 @@ void FlyFieldsDialog::buildUi()
 	root->setContentsMargins(14, 14, 14, 14);
 	root->setSpacing(10);
 
-	auto *infoBox = new QGroupBox(QStringLiteral("Stats"), this);
+	auto *infoBox = new QGroupBox(fly_i18n("Fields.Stats"), this);
 	infoBox->setObjectName(QStringLiteral("fieldsInfoGroup"));
 
 	auto *infoLayout = new QVBoxLayout(infoBox);
@@ -50,11 +52,7 @@ void FlyFieldsDialog::buildUi()
 	infoLayout->setSpacing(8);
 
 	auto *hintLbl = new QLabel(
-		QStringLiteral(
-			"Configure the stats shown in your overlay.\n\n"
-			"Team stats are paired values (Home/Guests) like Corners, Fouls, Shots, etc.\n"
-			"Single stats are one value only (e.g. Possession %%, Period, Downs, Power Plays, etc.).\n\n"
-			"You must keep at least one Team stat and at least one Single stat."),
+		fly_i18n("Fields.Hint"),
 		infoBox);
 	hintLbl->setObjectName(QStringLiteral("fieldsHint"));
 	hintLbl->setWordWrap(true);
@@ -80,7 +78,7 @@ void FlyFieldsDialog::buildUi()
 	fieldsLayout_->setAlignment(Qt::AlignTop);
 	teamRoot->addLayout(fieldsLayout_);
 
-	addFieldBtn_ = new QPushButton(QStringLiteral("+ Add team stat"), teamTab);
+	addFieldBtn_ = new QPushButton(fly_i18n("Fields.AddTeamStat"), teamTab);
 	addFieldBtn_->setCursor(Qt::PointingHandCursor);
 	teamRoot->addWidget(addFieldBtn_, 0, Qt::AlignLeft);
 
@@ -97,14 +95,14 @@ void FlyFieldsDialog::buildUi()
 	singleLayout_->setAlignment(Qt::AlignTop);
 	singleRoot->addLayout(singleLayout_);
 
-	addSingleBtn_ = new QPushButton(QStringLiteral("+ Add single stat"), singleTab);
+	addSingleBtn_ = new QPushButton(fly_i18n("Fields.AddSingleStat"), singleTab);
 	addSingleBtn_->setCursor(Qt::PointingHandCursor);
 	singleRoot->addWidget(addSingleBtn_, 0, Qt::AlignLeft);
 
 	singleTab->setLayout(singleRoot);
 
-	tabs->addTab(teamTab, QStringLiteral("Team Stats"));
-	tabs->addTab(singleTab, QStringLiteral("Single Stats"));
+	tabs->addTab(teamTab, fly_i18n("Common.TeamStats"));
+	tabs->addTab(singleTab, fly_i18n("Common.SingleStats"));
 	root->addWidget(tabs);
 
 	auto *btnBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
@@ -127,10 +125,10 @@ FlyFieldsDialog::SingleRow FlyFieldsDialog::addSingleRow(const FlySingleStat &ss
 
 	auto *visible = new QCheckBox(row);
 	visible->setChecked(ss.visible);
-	visible->setToolTip(QStringLiteral("Visible in overlay"));
+	visible->setToolTip(fly_i18n("Fields.VisibleInOverlay"));
 
 	auto *labelEdit = new QLineEdit(row);
-	labelEdit->setPlaceholderText(QStringLiteral("Label (e.g. Possession %%)"));
+	labelEdit->setPlaceholderText(fly_i18n("Fields.SingleLabelPlaceholder"));
 	labelEdit->setText(ss.label);
 	labelEdit->setMinimumWidth(220);
 	labelEdit->setMaximumWidth(320);
@@ -143,7 +141,7 @@ FlyFieldsDialog::SingleRow FlyFieldsDialog::addSingleRow(const FlySingleStat &ss
 
 	auto *removeBtn = new QPushButton(row);
 	removeBtn->setText(QStringLiteral("❌"));
-	removeBtn->setToolTip(QStringLiteral("Remove this single stat"));
+	removeBtn->setToolTip(fly_i18n("Fields.RemoveSingleStat"));
 	removeBtn->setCursor(Qt::PointingHandCursor);
 
 	const int h = valueSpin->sizeHint().height();
@@ -156,7 +154,7 @@ FlyFieldsDialog::SingleRow FlyFieldsDialog::addSingleRow(const FlySingleStat &ss
 
 	lay->addWidget(visible, 0, Qt::AlignVCenter);
 	lay->addWidget(labelEdit, 1, Qt::AlignVCenter);
-	lay->addWidget(new QLabel(QStringLiteral("Value:"), row), 0, Qt::AlignVCenter);
+	lay->addWidget(new QLabel(fly_i18n("Common.ValueColon"), row), 0, Qt::AlignVCenter);
 	lay->addWidget(valueSpin, 0, Qt::AlignVCenter);
 	lay->addWidget(removeBtn, 0, Qt::AlignVCenter);
 
@@ -172,8 +170,8 @@ FlyFieldsDialog::SingleRow FlyFieldsDialog::addSingleRow(const FlySingleStat &ss
 
 	connect(removeBtn, &QPushButton::clicked, this, [this, row]() {
 		if (singles_.size() <= 1) {
-			QMessageBox::warning(this, QStringLiteral("Cannot remove"),
-					     QStringLiteral("At least one single stat is required."));
+			QMessageBox::warning(this, fly_i18n("Common.CannotRemove"),
+					     fly_i18n("Fields.OneSingleStatRequired"));
 			return;
 		}
 
@@ -205,27 +203,25 @@ FlyFieldsDialog::Row FlyFieldsDialog::addRow(const FlyCustomField &cf, bool canR
 	lay->setSpacing(8);
 
 	auto *labelEdit = new QLineEdit(row);
-	labelEdit->setPlaceholderText(QStringLiteral("Label (e.g. Corners)"));
+	labelEdit->setPlaceholderText(fly_i18n("Fields.TeamLabelPlaceholder"));
 	labelEdit->setText(cf.label);
 	labelEdit->setMinimumWidth(180);
 	labelEdit->setMaximumWidth(260);
 
 	auto *homeSpin = new QSpinBox(row);
-	homeSpin->setRange(0, 999);
+	homeSpin->setRange(0, std::numeric_limits<int>::max());
 	homeSpin->setValue(std::max(0, cf.home));
-	homeSpin->setMinimumWidth(60);
-	homeSpin->setMaximumWidth(70);
+	homeSpin->setMinimumWidth(90);
 
 	auto *awaySpin = new QSpinBox(row);
-	awaySpin->setRange(0, 999);
+	awaySpin->setRange(0, std::numeric_limits<int>::max());
 	awaySpin->setValue(std::max(0, cf.away));
-	awaySpin->setMinimumWidth(60);
-	awaySpin->setMaximumWidth(70);
+	awaySpin->setMinimumWidth(90);
 
 	auto *removeBtn = new QPushButton(row);
 	removeBtn->setText(QStringLiteral("❌"));
-	removeBtn->setToolTip(canRemove ? QStringLiteral("Remove this field")
-					: QStringLiteral("This field cannot be removed"));
+	removeBtn->setToolTip(canRemove ? fly_i18n("Fields.RemoveField")
+					: fly_i18n("Fields.FieldCannotBeRemoved"));
 	removeBtn->setCursor(canRemove ? Qt::PointingHandCursor : Qt::ArrowCursor);
 
 	const int h = homeSpin->sizeHint().height();
@@ -239,9 +235,9 @@ FlyFieldsDialog::Row FlyFieldsDialog::addRow(const FlyCustomField &cf, bool canR
 				 "}");
 
 	lay->addWidget(labelEdit, 1, Qt::AlignVCenter);
-	lay->addWidget(new QLabel(QStringLiteral("Home:"), row), 0, Qt::AlignVCenter);
+	lay->addWidget(new QLabel(fly_i18n("Common.HomeColon"), row), 0, Qt::AlignVCenter);
 	lay->addWidget(homeSpin, 0, Qt::AlignVCenter);
-	lay->addWidget(new QLabel(QStringLiteral("Guests:"), row), 0, Qt::AlignVCenter);
+	lay->addWidget(new QLabel(fly_i18n("Common.GuestsColon"), row), 0, Qt::AlignVCenter);
 	lay->addWidget(awaySpin, 0, Qt::AlignVCenter);
 	lay->addWidget(removeBtn, 0, Qt::AlignVCenter);
 
@@ -257,8 +253,8 @@ FlyFieldsDialog::Row FlyFieldsDialog::addRow(const FlyCustomField &cf, bool canR
 	if (canRemove) {
 		connect(removeBtn, &QPushButton::clicked, this, [this, row]() {
 			if (rows_.size() <= 1) {
-				QMessageBox::warning(this, QStringLiteral("Cannot remove"),
-						     QStringLiteral("At least one team stat is required."));
+				QMessageBox::warning(this, fly_i18n("Common.CannotRemove"),
+						     fly_i18n("Fields.OneTeamStatRequired"));
 				return;
 			}
 
@@ -333,8 +329,8 @@ void FlyFieldsDialog::refreshRemoveButtons()
 		if (r.remove) {
 			r.remove->setEnabled(canRemoveTeam);
 			r.remove->setCursor(canRemoveTeam ? Qt::PointingHandCursor : Qt::ArrowCursor);
-			r.remove->setToolTip(canRemoveTeam ? QStringLiteral("Remove this field")
-							   : QStringLiteral("At least one team stat is required"));
+			r.remove->setToolTip(canRemoveTeam ? fly_i18n("Fields.RemoveField")
+							   : fly_i18n("Fields.OneTeamStatRequired"));
 		}
 	}
 
@@ -343,8 +339,8 @@ void FlyFieldsDialog::refreshRemoveButtons()
 		if (r.remove) {
 			r.remove->setEnabled(canRemoveSingle);
 			r.remove->setCursor(canRemoveSingle ? Qt::PointingHandCursor : Qt::ArrowCursor);
-			r.remove->setToolTip(canRemoveSingle ? QStringLiteral("Remove this single stat")
-							     : QStringLiteral("At least one single stat is required"));
+			r.remove->setToolTip(canRemoveSingle ? fly_i18n("Fields.RemoveSingleStat")
+							     : fly_i18n("Fields.OneSingleStatRequired"));
 		}
 	}
 }
@@ -410,14 +406,14 @@ void FlyFieldsDialog::onAddSingle()
 void FlyFieldsDialog::onAccept()
 {
 	if (rows_.isEmpty()) {
-		QMessageBox::warning(this, QStringLiteral("Missing team stats"),
-				     QStringLiteral("You must keep at least one team stat."));
+		QMessageBox::warning(this, fly_i18n("Fields.MissingTeamStats"),
+				     fly_i18n("Fields.MustKeepTeamStat"));
 		return;
 	}
 
 	if (singles_.isEmpty()) {
-		QMessageBox::warning(this, QStringLiteral("Missing single stats"),
-				     QStringLiteral("You must keep at least one single stat."));
+		QMessageBox::warning(this, fly_i18n("Fields.MissingSingleStats"),
+				     fly_i18n("Fields.MustKeepSingleStat"));
 		return;
 	}
 

@@ -8,6 +8,7 @@
   <li>Update scores via custom fields.</li>
   <li>Start/stop timers and switch labels as needed.</li>
   <li>Use hotkeys (if configured) to control common actions quickly.</li>
+  <li>Use a WebSocket remote controller for stream decks, phones, or automation tools.</li>
 </ol>
 
 <h2>Understanding the main data groups</h2>
@@ -48,6 +49,20 @@
     </ul>
   </section>
 </div>
+
+<h2>Remote control commands</h2>
+<p>
+Connect to <code>ws://127.0.0.1:4457</code> and send JSON commands. The plugin broadcasts updated state after every accepted command.
+</p>
+<pre><code>{"type":"get_state"}
+{"action":"bump_score","index":0,"side":"home","delta":1}
+{"action":"set_score","index":0,"side":"away","value":12}
+{"action":"timer_start","index":0}
+{"action":"timer_pause","index":0}
+{"action":"timer_reset","index":0}
+{"action":"swap"}
+{"action":"show_scoreboard","value":true}
+{"action":"load_template","name":"Soccer Lower Third"}</code></pre>
 
 <div class="note">
   If you want a fully custom look, copy the overlay folder and edit <code>index.html</code> + <code>style.css</code>. Keep <code>script.js</code> unless you are intentionally changing the runtime.

@@ -2,6 +2,8 @@
 
 #include <QString>
 #include <QVector>
+#include <QJsonObject>
+#include <QByteArray>
 #include <string>
 
 struct FlyTeam {
@@ -49,6 +51,9 @@ struct FlyState {
 
 bool     fly_state_read_json(const std::string &base_dir, std::string &out_json);
 bool     fly_state_write_json(const std::string &base_dir, const std::string &json);
+QJsonObject fly_state_to_json_object(const FlyState &st);
+bool     fly_state_from_json_object(const QJsonObject &j, FlyState &st);
+QByteArray fly_state_to_json_bytes(const FlyState &st, bool compact = true);
 bool     fly_state_load(const QString &base_dir, FlyState &out);
 bool     fly_state_save(const QString &base_dir, const FlyState &st);
 QString  fly_data_dir();

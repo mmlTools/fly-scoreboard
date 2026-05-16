@@ -1,11 +1,11 @@
 <h1>Templating System</h1>
 <p class="lead">
-The overlay runtime (<code>script.js</code>) scans your HTML for template placeholders <code>{{…}}</code> and replaces them from <code>plugin.json</code>. It also supports conditional rendering with <code>fs-if</code>.
+The overlay runtime (<code>script.js</code>) scans your HTML for template placeholders <code>{{…}}</code> and replaces them from live WebSocket state, with <code>plugin.json</code> as a fallback. It also supports conditional rendering with <code>fs-if</code>.
 </p>
 
-<h2>Data source: plugin.json</h2>
+<h2>Data source: WebSocket + plugin.json</h2>
 <p>
-The plugin writes state to <code>plugin.json</code>. The default schema includes:
+The plugin broadcasts state to <code>ws://127.0.0.1:4457</code> and writes the same state to <code>plugin.json</code>. The default schema includes:
 </p>
 <ul>
   <li><code>home</code> and <code>away</code> objects (title, subtitle, logo, color)</li>
@@ -79,6 +79,7 @@ return mode === "countup" ? remaining_ms + delta : max(0, remaining_ms - delta);
 <h2>Overlay authoring checklist</h2>
 <ul>
   <li>Keep <code>index.html</code>, <code>script.js</code>, and <code>plugin.json</code> aligned (paths matter).</li>
+  <li>Put each reusable design in its own folder with an <code>index.html</code>; the dock template dropdown can load it directly.</li>
   <li>Prefer <code>team_x</code>/<code>team_y</code> and <code>fields_xy</code> for swap-safe designs.</li>
   <li>Guard optional items with <code>fs-if</code> to avoid “undefined” placeholders.</li>
 </ul>
