@@ -2126,7 +2126,7 @@ void FlyScoreDock::refreshBrowserSourceCombo(bool preserveSelection)
 
 	browserSourceCombo_->setCurrentIndex(idx);
 	LOGI("Browser source selector restored='%s', selected='%s', listed=%d",
-	     prev.toUtf8().constData(), selectedBrowserSourceName().toUtf8().constData(), names.size());
+	     prev.toUtf8().constData(), selectedBrowserSourceName().toUtf8().constData(), static_cast<int>(names.size()));
 }
 
 void fly_create_dock()
