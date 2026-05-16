@@ -82,6 +82,7 @@ function Package {
 
     Copy-Item -LiteralPath "${InstallDataRoot}/locale" -Destination "${ArchiveDataRoot}/locale" -Recurse -Force
     Copy-Item -LiteralPath "${InstallDataRoot}/overlay" -Destination "${ArchiveDataRoot}/overlay" -Recurse -Force
+    Copy-Item -LiteralPath "${ProjectRoot}/data/websocket-sample.html" -Destination "${ArchiveDataRoot}/websocket-sample.html" -Force
     Copy-Item -LiteralPath $BuildBinary -Destination "${ArchiveBinaryRoot}/${ProductName}.dll" -Force
 
     $CompressArgs = @{

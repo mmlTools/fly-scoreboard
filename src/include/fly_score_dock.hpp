@@ -60,6 +60,7 @@ public:
 
 	void refreshBrowserSourceCombo(bool preserveSelection = true);
 	QString selectedBrowserSourceName() const;
+	void updateBrowserSourceToCurrentResources();
 
 public slots:
 	void bumpCustomFieldHome(int index, int delta);
@@ -80,8 +81,6 @@ private slots:
 	void onOpenTimersDialog();
 	void onOpenTeamsDialog();
 
-	void onSetResourcesPath();
-	void onOpenResourcesFolder();
 	void onSetTemplatesRoot();
 
 private:
@@ -100,7 +99,6 @@ private:
 	QList<FlyHotkeyBinding> buildMergedHotkeyBindings() const;
 	void applyHotkeyBindings(const QList<FlyHotkeyBinding> &bindings);
 	void clearAllShortcuts();
-	void updateBrowserSourceToCurrentResources();
 	void refreshTemplateCombo(bool preserveSelection = true);
 	QString selectedTemplateName() const;
 	QString selectedTemplatePath() const;
@@ -132,8 +130,6 @@ private:
 	QComboBox *browserSourceCombo_ = nullptr;
 	QComboBox *templateCombo_ = nullptr;
 	QLabel *webSocketStatus_ = nullptr;
-	QPushButton *setResourcesPathBtn_ = nullptr;
-	QPushButton *openResourcesFolderBtn_ = nullptr;
 	QPushButton *setTemplatesRootBtn_ = nullptr;
 	FlyScoreWebSocketServer *webSocketServer_ = nullptr;
 	QList<FlyHotkeyBinding> hotkeyBindings_;

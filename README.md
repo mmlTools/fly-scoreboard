@@ -132,16 +132,30 @@ Example:
 ```text
 My Templates/
   Soccer Lower Third/
+    manifest.ini
     index.html
     style.css
     script.js
   Handball Compact/
+    manifest.ini
     index.html
     style.css
     script.js
 ```
 
-When you pick a template, the plugin points the selected Browser Source at that template's `index.html` and ensures a `plugin.json` state file exists there.
+Each valid theme folder must contain `index.html` and `manifest.ini`. The manifest is an INI file because Qt can parse it directly and it is easy for users to edit:
+
+```ini
+title=Soccer Lower Third
+author=Your Name
+author_url=https://example.com
+description=Compact lower-third scoreboard for soccer streams.
+version=1.0.0
+```
+
+The template combo displays the manifest `title` and uses the other fields as theme metadata. When you pick a template, the plugin points the selected Browser Source at that template's `index.html` and ensures a `plugin.json` state file exists there.
+
+The selected template folder is the active resources path. Team logos, state writes, and Browser Source syncing all use that folder, so there is no separate resources-folder control in the dock.
 
 ## Overlay Runtime
 
@@ -245,6 +259,7 @@ data/
     ro-RO.ini
   overlay/
     index.html
+    manifest.ini
     style.css
     script.js
     plugin.json
@@ -273,9 +288,11 @@ src/
 ## Useful Files
 
 - `data/overlay/index.html`: default overlay markup.
+- `data/overlay/manifest.ini`: default theme metadata used by the template picker.
 - `data/overlay/style.css`: default overlay styling.
 - `data/overlay/script.js`: template runtime and WebSocket client.
 - `data/overlay/plugin.json`: default/fallback state.
+- `data/websocket-sample.html`: browser-based sample remote for WebSocket control.
 - `data/locale/*.ini`: OBS locale strings.
 - `.github/scripts/Package-Windows.ps1`: Windows ZIP staging and archive layout.
 

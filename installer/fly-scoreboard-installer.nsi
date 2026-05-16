@@ -81,6 +81,10 @@ Section "Core OBS Plugin" SEC_CORE
   ; --- Locale files (future-proof) ---
   SetOutPath "$OBSDir\data\obs-plugins\fly-scoreboard\locale"
   File /nonfatal /r "${BUILD_ROOT}\data\locale\*.*"
+
+  ; --- Remote-control sample ---
+  SetOutPath "$OBSDir\data\obs-plugins\fly-scoreboard"
+  File /nonfatal "${PROJECT_ROOT}\data\websocket-sample.html"
 SectionEnd
 
 Section "Base Overlay & Web Server Assets" SEC_OVERLAY

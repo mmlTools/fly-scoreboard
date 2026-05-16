@@ -158,6 +158,7 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 if(EMBED_DEFAULT_ASSETS)
   set(EMBED_TEXT_FILES
     "${FS_OVERLAY_DIR}/index.html"
+    "${FS_OVERLAY_DIR}/manifest.ini"
     "${FS_OVERLAY_DIR}/style.css"
     "${FS_OVERLAY_DIR}/script.js"
     "${FS_LOCALE_DIR}/en-US.ini"

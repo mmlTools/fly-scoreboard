@@ -31,10 +31,9 @@
 #include <QBoxLayout>
 #include <QCheckBox>
 #include <QDir>
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QDesktopServices>
-#include <QUrl>
 #include <QSettings>
 #include <QGridLayout>
 #include <QGroupBox>
@@ -51,6 +50,7 @@
 #include <QSizePolicy>
 #include <QSpinBox>
 #include <QTabWidget>
+#include <QTextStream>
 #include <QSpacerItem>
 #include <algorithm>
 #include <limits>
@@ -144,7 +144,10 @@ static void fly_on_source_list_changed(void *data, calldata_t *)
 	auto *self = static_cast<FlyScoreDock *>(data);
 	if (!self)
 		return;
-	QMetaObject::invokeMethod(self, [self]() { self->refreshBrowserSourceCombo(true); }, Qt::QueuedConnection);
+	QMetaObject::invokeMethod(self, [self]() {
+		self->refreshBrowserSourceCombo(true);
+		self->updateBrowserSourceToCurrentResources();
+	}, Qt::QueuedConnection);
 }
 
 FlyScoreDock::FlyScoreDock(QWidget *parent) : QWidget(parent)
@@ -493,14 +496,6 @@ bool FlyScoreDock::init()
 	clearBtn->setCursor(Qt::PointingHandCursor);
 	clearBtn->setToolTip(fly_i18n("Dock.ResetTooltip"));
 
-	setResourcesPathBtn_ = new QPushButton(QStringLiteral("📁"), content);
-	setResourcesPathBtn_->setCursor(Qt::PointingHandCursor);
-	setResourcesPathBtn_->setToolTip(fly_i18n("Dock.SetResourcesTooltip"));
-
-	openResourcesFolderBtn_ = new QPushButton(QStringLiteral("🗂️"), content);
-	openResourcesFolderBtn_->setCursor(Qt::PointingHandCursor);
-	openResourcesFolderBtn_->setToolTip(fly_i18n("Dock.OpenResourcesTooltip"));
-
 	auto *hotkeysBtn = new QPushButton(QStringLiteral("⌨️"), content);
 	hotkeysBtn->setCursor(Qt::PointingHandCursor);
 	hotkeysBtn->setToolTip(fly_i18n("Dock.ConfigureHotkeys"));
@@ -511,8 +506,6 @@ bool FlyScoreDock::init()
 
 	bottomRow->addWidget(browserSourceCombo_, 1);
 	bottomRow->addWidget(clearBtn);
-	bottomRow->addWidget(setResourcesPathBtn_);
-	bottomRow->addWidget(openResourcesFolderBtn_);
 	bottomRow->addStretch(1);
 	bottomRow->addWidget(toggleCarouselBtn_);
 	bottomRow->addWidget(hotkeysBtn);
@@ -523,8 +516,8 @@ bool FlyScoreDock::init()
 	widgetCarousel_ = create_widget_carousel(this);
 	root->addWidget(widgetCarousel_);
 
-	refreshBrowserSourceCombo();
-	refreshTemplateCombo(false);
+	refreshBrowserSourceCombo(true);
+	refreshTemplateCombo(true);
 	connect(browserSourceCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
 		const QString name = selectedBrowserSourceName();
 
@@ -571,8 +564,6 @@ bool FlyScoreDock::init()
 
 	connect(clearBtn, &QPushButton::clicked, this, &FlyScoreDock::onClearTeamsAndReset);
 
-	connect(setResourcesPathBtn_, &QPushButton::clicked, this, &FlyScoreDock::onSetResourcesPath);
-	connect(openResourcesFolderBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenResourcesFolder);
 	connect(setTemplatesRootBtn_, &QPushButton::clicked, this, &FlyScoreDock::onSetTemplatesRoot);
 
 	connect(editFieldsBtn_, &QPushButton::clicked, this, &FlyScoreDock::onOpenCustomFieldsDialog);
@@ -590,6 +581,7 @@ bool FlyScoreDock::init()
 
 	refreshUiFromState(false);
 	refreshWidgetCarouselToggleUi();
+	updateBrowserSourceToCurrentResources();
 	broadcastCurrentState();
 
 	hotkeyBindings_ = buildMergedHotkeyBindings();
@@ -620,7 +612,7 @@ void FlyScoreDock::updateBrowserSourceToCurrentResources()
 
 	const QString overlayRoot = fly_get_data_root_no_ui();
 	if (overlayRoot.isEmpty()) {
-		LOGW("Resources folder is empty; cannot update browser source");
+		LOGW("Active template folder is empty; cannot update browser source");
 		return;
 	}
 
@@ -630,7 +622,7 @@ void FlyScoreDock::updateBrowserSourceToCurrentResources()
 	fly_state_save(overlayRoot, st_);
 
 	if (!QFileInfo::exists(indexPath)) {
-		LOGW("index.html not found in resources folder: %s", indexPath.toUtf8().constData());
+		LOGW("index.html not found in active template folder: %s", indexPath.toUtf8().constData());
 	}
 
 	fly_ensure_browser_source_in_current_scene(indexPath, bsName);
@@ -638,24 +630,188 @@ void FlyScoreDock::updateBrowserSourceToCurrentResources()
 	LOGI("Browser source synced to: %s", indexPath.toUtf8().constData());
 }
 
-void FlyScoreDock::onSetResourcesPath()
+namespace {
+struct FlyThemeManifest {
+	QString title;
+	QString author;
+	QString authorUrl;
+	QString description;
+	QString version;
+};
+
+struct FlyThemeInfo {
+	FlyThemeManifest manifest;
+	QString path;
+	QString folderName;
+	QString error;
+	bool hasIndex = false;
+	bool hasManifest = false;
+	bool valid = false;
+};
+
+static QString fly_theme_manifest_path(const QString &themePath)
 {
-	const QString cur = fly_get_data_root_no_ui();
-	const QString picked = QFileDialog::getExistingDirectory(this, fly_i18n("Dock.SelectResourcesFolder"), cur);
-	if (picked.isEmpty())
+	return QDir(themePath).filePath(QStringLiteral("manifest.ini"));
+}
+
+static QString fly_normalize_manifest_key(QString key, const QString &section)
+{
+	key = key.trimmed().toLower();
+	if (!section.trimmed().isEmpty())
+		key = section.trimmed().toLower() + QStringLiteral("/") + key;
+	return key;
+}
+
+static void fly_apply_manifest_value(FlyThemeManifest &out, const QString &key, const QString &value)
+{
+	const QString k = key.trimmed().toLower();
+	const QString v = value.trimmed();
+	if ((k == QLatin1String("title") || k == QLatin1String("theme/title")) && out.title.isEmpty())
+		out.title = v;
+	else if ((k == QLatin1String("author") || k == QLatin1String("theme/author")) && out.author.isEmpty())
+		out.author = v;
+	else if ((k == QLatin1String("author_url") || k == QLatin1String("theme/author_url")) &&
+		 out.authorUrl.isEmpty())
+		out.authorUrl = v;
+	else if ((k == QLatin1String("description") || k == QLatin1String("theme/description")) &&
+		 out.description.isEmpty())
+		out.description = v;
+	else if ((k == QLatin1String("version") || k == QLatin1String("theme/version")) && out.version.isEmpty())
+		out.version = v;
+}
+
+static void fly_read_theme_manifest_text(const QString &manifestPath, FlyThemeManifest &out)
+{
+	QFile file(manifestPath);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 		return;
 
-	fly_set_data_root(picked);
-	dataDir_ = fly_get_data_root_no_ui();
+	QTextStream stream(&file);
+	QString section;
+	while (!stream.atEnd()) {
+		QString line = stream.readLine().trimmed();
+		if (line.startsWith(QChar(0xFEFF)))
+			line.remove(0, 1);
+		if (line.isEmpty() || line.startsWith(QLatin1Char(';')) || line.startsWith(QLatin1Char('#')))
+			continue;
+		if (line.startsWith(QLatin1Char('[')) && line.endsWith(QLatin1Char(']'))) {
+			section = line.mid(1, line.size() - 2).trimmed();
+			continue;
+		}
 
-	fly_state_ensure_json_exists(dataDir_, &st_);
-	fly_state_save(dataDir_, st_);
+		int pos = line.indexOf(QLatin1Char('='));
+		if (pos < 0)
+			pos = line.indexOf(QLatin1Char(':'));
+		if (pos < 0)
+			continue;
 
-	updateBrowserSourceToCurrentResources();
-	refreshTemplateCombo(true);
-	broadcastCurrentState();
+		QString value = line.mid(pos + 1).trimmed();
+		if ((value.startsWith(QLatin1Char('"')) && value.endsWith(QLatin1Char('"'))) ||
+		    (value.startsWith(QLatin1Char('\'')) && value.endsWith(QLatin1Char('\''))))
+			value = value.mid(1, value.size() - 2).trimmed();
 
-	LOGI("Resources folder set to: %s", dataDir_.toUtf8().constData());
+		fly_apply_manifest_value(out, fly_normalize_manifest_key(line.left(pos), section), value);
+	}
+}
+
+static bool fly_read_theme_manifest(const QString &themePath, FlyThemeManifest &out)
+{
+	const QString manifestPath = fly_theme_manifest_path(themePath);
+	if (!QFileInfo::exists(manifestPath))
+		return false;
+
+	QSettings manifest(manifestPath, QSettings::IniFormat);
+	out.title = manifest.value(QStringLiteral("title")).toString().trimmed();
+	out.author = manifest.value(QStringLiteral("author")).toString().trimmed();
+	out.authorUrl = manifest.value(QStringLiteral("author_url")).toString().trimmed();
+	out.description = manifest.value(QStringLiteral("description")).toString().trimmed();
+	out.version = manifest.value(QStringLiteral("version")).toString().trimmed();
+
+	if (out.title.isEmpty())
+		out.title = manifest.value(QStringLiteral("theme/title")).toString().trimmed();
+	if (out.author.isEmpty())
+		out.author = manifest.value(QStringLiteral("theme/author")).toString().trimmed();
+	if (out.authorUrl.isEmpty())
+		out.authorUrl = manifest.value(QStringLiteral("theme/author_url")).toString().trimmed();
+	if (out.description.isEmpty())
+		out.description = manifest.value(QStringLiteral("theme/description")).toString().trimmed();
+	if (out.version.isEmpty())
+		out.version = manifest.value(QStringLiteral("theme/version")).toString().trimmed();
+	if (out.title.isEmpty())
+		out.title = manifest.value(QStringLiteral("Theme/title")).toString().trimmed();
+	if (out.author.isEmpty())
+		out.author = manifest.value(QStringLiteral("Theme/author")).toString().trimmed();
+	if (out.authorUrl.isEmpty())
+		out.authorUrl = manifest.value(QStringLiteral("Theme/author_url")).toString().trimmed();
+	if (out.description.isEmpty())
+		out.description = manifest.value(QStringLiteral("Theme/description")).toString().trimmed();
+	if (out.version.isEmpty())
+		out.version = manifest.value(QStringLiteral("Theme/version")).toString().trimmed();
+
+	fly_read_theme_manifest_text(manifestPath, out);
+
+	return !out.title.isEmpty() && !out.author.isEmpty() && !out.authorUrl.isEmpty() &&
+	       !out.description.isEmpty() && !out.version.isEmpty();
+}
+
+static FlyThemeInfo fly_read_theme_info(const QString &themePath)
+{
+	FlyThemeInfo info;
+	const QFileInfo themeDirInfo(themePath);
+	info.path = QDir(themePath).absolutePath();
+	info.folderName = themeDirInfo.fileName();
+	info.hasIndex = QFileInfo::exists(QDir(themePath).filePath(QStringLiteral("index.html")));
+	info.hasManifest = QFileInfo::exists(fly_theme_manifest_path(themePath));
+
+	const bool manifestOk = fly_read_theme_manifest(themePath, info.manifest);
+	info.valid = info.hasIndex && manifestOk;
+
+	if (!info.hasIndex)
+		info.error = fly_i18n("Dock.TemplateMissingIndex");
+	else if (!info.hasManifest)
+		info.error = fly_i18n("Dock.TemplateMissingManifest");
+	else if (!manifestOk)
+		info.error = fly_i18n("Dock.TemplateInvalidManifest");
+
+	if (info.manifest.title.isEmpty())
+		info.manifest.title = info.folderName.isEmpty() ? info.path : info.folderName;
+
+	return info;
+}
+
+static bool fly_is_valid_theme_folder(const QString &themePath, FlyThemeManifest *manifest = nullptr)
+{
+	FlyThemeInfo info = fly_read_theme_info(themePath);
+	if (!info.valid)
+		return false;
+
+	if (manifest)
+		*manifest = info.manifest;
+	return true;
+}
+
+static QString fly_theme_tooltip(const FlyThemeManifest &manifest)
+{
+	return QStringLiteral("%1\n%2: %3\n%4\n%5")
+		.arg(manifest.description, fly_i18n("Theme.Author"), manifest.author, manifest.authorUrl,
+		     fly_i18n("Theme.Version").arg(manifest.version));
+}
+
+static bool fly_same_path(const QString &a, const QString &b)
+{
+	if (a.isEmpty() || b.isEmpty())
+		return false;
+	return QDir(a).absolutePath() == QDir(b).absolutePath();
+}
+
+static bool fly_list_has_same_path(const QStringList &paths, const QString &path)
+{
+	for (const QString &existing : paths) {
+		if (fly_same_path(existing, path))
+			return true;
+	}
+	return false;
+}
 }
 
 void FlyScoreDock::onSetTemplatesRoot()
@@ -668,13 +824,13 @@ void FlyScoreDock::onSetTemplatesRoot()
 
 	fly_save_templates_root(picked);
 	refreshTemplateCombo(false);
-}
 
-void FlyScoreDock::onOpenResourcesFolder()
-{
-	const QString dir = fly_get_data_root_no_ui();
-	if (!dir.isEmpty())
-		QDesktopServices::openUrl(QUrl::fromLocalFile(dir));
+	if (!templateCombo_ || templateCombo_->currentIndex() < 0)
+		return;
+
+	const QString path = templateCombo_->currentData().toString();
+	if (!path.isEmpty() && fly_is_valid_theme_folder(path))
+		loadTemplateByPath(path);
 }
 
 QString FlyScoreDock::selectedTemplateName() const
@@ -697,33 +853,75 @@ void FlyScoreDock::refreshTemplateCombo(bool preserveSelection)
 	if (!templateCombo_)
 		return;
 
-	const QString previousPath = preserveSelection ? selectedTemplatePath() : fly_get_data_root_no_ui();
+	const QString previousPath = preserveSelection ? selectedTemplatePath() : QString();
+	const QString current = fly_get_data_root_no_ui();
 
 	QSignalBlocker block(templateCombo_);
 	templateCombo_->clear();
 
-	const QString current = fly_get_data_root_no_ui();
-	if (!current.isEmpty())
-		templateCombo_->addItem(fly_i18n("Dock.CurrentResources"), current);
+	bool currentListed = false;
+	int firstThemeIndex = -1;
+	QStringList listedPaths;
+	auto addTheme = [&](const QString &themePath) {
+		if (themePath.isEmpty() || fly_list_has_same_path(listedPaths, themePath))
+			return;
 
-	const QString root = fly_load_templates_root();
-	if (!root.isEmpty()) {
+		const QString absolutePath = QDir(themePath).absolutePath();
+		FlyThemeInfo info = fly_read_theme_info(absolutePath);
+		if (!info.hasIndex && !info.hasManifest)
+			return;
+
+		templateCombo_->addItem(info.manifest.title, absolutePath);
+		const int idx = templateCombo_->count() - 1;
+		if (firstThemeIndex < 0 && info.valid)
+			firstThemeIndex = idx;
+		templateCombo_->setItemData(idx, info.valid ? fly_theme_tooltip(info.manifest) : info.error,
+					    Qt::ToolTipRole);
+		listedPaths.push_back(absolutePath);
+
+		if (fly_same_path(absolutePath, current))
+			currentListed = true;
+	};
+	auto scanThemeRoot = [&](const QString &root) {
+		if (root.isEmpty())
+			return;
+
+		addTheme(root);
+
 		const QDir dir(root);
 		const auto entries = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-		for (const QFileInfo &entry : entries) {
-			const QString indexPath = QDir(entry.absoluteFilePath()).filePath(QStringLiteral("index.html"));
-			if (QFileInfo::exists(indexPath))
-				templateCombo_->addItem(entry.fileName(), entry.absoluteFilePath());
-		}
+		for (const QFileInfo &entry : entries)
+			addTheme(entry.absoluteFilePath());
+	};
+
+	const QString root = fly_load_templates_root();
+	scanThemeRoot(root);
+
+	if (!current.isEmpty()) {
+		scanThemeRoot(current);
+		scanThemeRoot(QFileInfo(current).absoluteDir().absolutePath());
+	}
+
+	if (!current.isEmpty() && !currentListed && (preserveSelection || templateCombo_->count() == 0)) {
+		FlyThemeManifest manifest;
+		const bool validTheme = fly_is_valid_theme_folder(current, &manifest);
+		templateCombo_->addItem(validTheme ? manifest.title : fly_i18n("Dock.CurrentResources"), current);
+		const int idx = templateCombo_->count() - 1;
+		if (validTheme)
+			templateCombo_->setItemData(idx, fly_theme_tooltip(manifest), Qt::ToolTipRole);
 	}
 
 	int idx = previousPath.isEmpty() ? -1 : templateCombo_->findData(previousPath);
-	if (idx < 0)
+	if (idx < 0 && preserveSelection)
 		idx = templateCombo_->findData(current);
+	if (idx < 0 && firstThemeIndex >= 0)
+		idx = firstThemeIndex;
 	if (idx < 0 && templateCombo_->count() > 0)
 		idx = 0;
 
 	templateCombo_->setCurrentIndex(idx);
+	LOGI("Theme selector scanned root='%s', current='%s', listed=%d",
+	     root.toUtf8().constData(), current.toUtf8().constData(), templateCombo_->count());
 }
 
 void FlyScoreDock::loadTemplateByPath(const QString &path)
@@ -731,10 +929,13 @@ void FlyScoreDock::loadTemplateByPath(const QString &path)
 	if (path.isEmpty())
 		return;
 
-	const QString indexPath = QDir(path).filePath(QStringLiteral("index.html"));
-	if (!QFileInfo::exists(indexPath)) {
-		QMessageBox::warning(this, fly_i18n("Dock.TemplateMissingTitle"),
-				     fly_i18n("Dock.TemplateMissingMessage"));
+	FlyThemeInfo info = fly_read_theme_info(path);
+	if (!info.valid) {
+		LOGW("Invalid theme selected: path='%s', hasIndex=%d, hasManifest=%d, reason='%s'",
+		     info.path.toUtf8().constData(), info.hasIndex ? 1 : 0, info.hasManifest ? 1 : 0,
+		     info.error.toUtf8().constData());
+		QMessageBox::warning(this, fly_i18n("Dock.TemplateInvalidTitle"),
+				     fly_i18n("Dock.TemplateInvalidMessage"));
 		refreshTemplateCombo(true);
 		return;
 	}
@@ -780,9 +981,69 @@ static int jsonInt(const QJsonObject &o, const QString &key, int fallback = 0)
 	return fallback;
 }
 
+static qint64 jsonInt64(const QJsonObject &o, const QString &key, qint64 fallback = 0)
+{
+	const QJsonValue v = o.value(key);
+	if (v.isDouble())
+		return static_cast<qint64>(v.toDouble(fallback));
+	if (v.isString()) {
+		bool ok = false;
+		const qint64 n = v.toString().toLongLong(&ok);
+		return ok ? n : fallback;
+	}
+	return fallback;
+}
+
+static bool jsonBool(const QJsonObject &o, const QString &key, bool fallback = false)
+{
+	const QJsonValue v = o.value(key);
+	if (v.isBool())
+		return v.toBool(fallback);
+	if (v.isDouble())
+		return v.toInt() != 0;
+	if (v.isString()) {
+		const QString s = v.toString().trimmed().toLower();
+		if (s == QLatin1String("true") || s == QLatin1String("1") || s == QLatin1String("yes"))
+			return true;
+		if (s == QLatin1String("false") || s == QLatin1String("0") || s == QLatin1String("no"))
+			return false;
+	}
+	return fallback;
+}
+
 static QString jsonString(const QJsonObject &o, const QString &key)
 {
 	return o.value(key).toString().trimmed();
+}
+
+static uint32_t jsonColor(const QJsonObject &o, const QString &key, uint32_t fallback)
+{
+	const QJsonValue v = o.value(key);
+	if (v.isDouble())
+		return static_cast<uint32_t>(v.toInt(static_cast<int>(fallback)));
+	if (v.isString()) {
+		QString s = v.toString().trimmed();
+		if (s.startsWith(QLatin1Char('#')))
+			s.remove(0, 1);
+		bool ok = false;
+		const uint n = s.startsWith(QStringLiteral("0x"), Qt::CaseInsensitive) ? s.mid(2).toUInt(&ok, 16)
+											: s.toUInt(&ok, 16);
+		if (ok)
+			return static_cast<uint32_t>(n);
+		const uint dec = s.toUInt(&ok, 10);
+		if (ok)
+			return static_cast<uint32_t>(dec);
+	}
+	return fallback;
+}
+
+static void setTimerStoppedAtInitial(FlyTimer &timer)
+{
+	timer.running = false;
+	timer.last_tick_ms = 0;
+	if (timer.initial_ms < 0)
+		timer.initial_ms = 0;
+	timer.remaining_ms = timer.initial_ms;
 }
 
 void FlyScoreDock::handleRemoteCommand(const QJsonObject &command)
@@ -834,7 +1095,77 @@ void FlyScoreDock::handleRemoteCommand(const QJsonObject &command)
 		return;
 	}
 
+	if (action == QLatin1String("set_team")) {
+		const QString side = jsonString(command, QStringLiteral("side"));
+		FlyTeam *team = nullptr;
+		if (side == QLatin1String("away") || side == QLatin1String("guest") || side == QLatin1String("guests"))
+			team = &st_.away;
+		else
+			team = &st_.home;
+
+		if (command.contains(QStringLiteral("title")))
+			team->title = jsonString(command, QStringLiteral("title"));
+		if (command.contains(QStringLiteral("subtitle")))
+			team->subtitle = jsonString(command, QStringLiteral("subtitle"));
+		if (command.contains(QStringLiteral("logo")))
+			team->logo = jsonString(command, QStringLiteral("logo"));
+		if (command.contains(QStringLiteral("color")))
+			team->color = jsonColor(command, QStringLiteral("color"), team->color);
+
+		saveState();
+		refreshUiFromState(false);
+		return;
+	}
+
 	const int index = jsonInt(command, QStringLiteral("index"));
+	if (action == QLatin1String("add_score") || action == QLatin1String("add_field")) {
+		FlyCustomField cf;
+		cf.label = jsonString(command, QStringLiteral("label"));
+		if (cf.label.isEmpty())
+			cf.label = QStringLiteral("Score");
+		cf.home = std::max(0, jsonInt(command, QStringLiteral("home")));
+		cf.away = std::max(0, jsonInt(command, QStringLiteral("away")));
+		cf.visible = jsonBool(command, QStringLiteral("visible"), true);
+		st_.custom_fields.push_back(cf);
+		saveState();
+		refreshUiFromState(false);
+		hotkeyBindings_ = buildMergedHotkeyBindings();
+		applyHotkeyBindings(hotkeyBindings_);
+		return;
+	}
+	if ((action == QLatin1String("remove_score") || action == QLatin1String("remove_field")) && index >= 0 &&
+	    index < st_.custom_fields.size()) {
+		if (st_.custom_fields.size() > 1) {
+			st_.custom_fields.removeAt(index);
+			saveState();
+			refreshUiFromState(false);
+			hotkeyBindings_ = buildMergedHotkeyBindings();
+			applyHotkeyBindings(hotkeyBindings_);
+		}
+		return;
+	}
+	if ((action == QLatin1String("set_field") || action == QLatin1String("set_score_field")) && index >= 0 &&
+	    index < st_.custom_fields.size()) {
+		FlyCustomField &cf = st_.custom_fields[index];
+		if (command.contains(QStringLiteral("label")))
+			cf.label = jsonString(command, QStringLiteral("label"));
+		if (command.contains(QStringLiteral("home")))
+			cf.home = std::max(0, jsonInt(command, QStringLiteral("home")));
+		if (command.contains(QStringLiteral("away")))
+			cf.away = std::max(0, jsonInt(command, QStringLiteral("away")));
+		if (command.contains(QStringLiteral("visible")))
+			cf.visible = jsonBool(command, QStringLiteral("visible"), cf.visible);
+		saveState();
+		refreshUiFromState(false);
+		return;
+	}
+	if ((action == QLatin1String("toggle_field") || action == QLatin1String("score_visibility")) && index >= 0 &&
+	    index < st_.custom_fields.size()) {
+		st_.custom_fields[index].visible = !st_.custom_fields[index].visible;
+		saveState();
+		refreshUiFromState(false);
+		return;
+	}
 	if (action == QLatin1String("bump_score")) {
 		const QString side = jsonString(command, QStringLiteral("side"));
 		const int delta = jsonInt(command, QStringLiteral("delta"), 1);
@@ -863,14 +1194,109 @@ void FlyScoreDock::handleRemoteCommand(const QJsonObject &command)
 		bumpSingleStat(index, jsonInt(command, QStringLiteral("delta"), 1));
 		return;
 	}
+	if (action == QLatin1String("toggle_single") && index >= 0 && index < st_.single_stats.size()) {
+		toggleSingleStatVisible(index);
+		return;
+	}
+	if (action == QLatin1String("add_single")) {
+		FlySingleStat ss;
+		ss.label = jsonString(command, QStringLiteral("label"));
+		if (ss.label.isEmpty())
+			ss.label = QStringLiteral("STAT");
+		ss.value = jsonInt(command, QStringLiteral("value"));
+		ss.visible = jsonBool(command, QStringLiteral("visible"), true);
+		st_.single_stats.push_back(ss);
+		saveState();
+		refreshUiFromState(false);
+		hotkeyBindings_ = buildMergedHotkeyBindings();
+		applyHotkeyBindings(hotkeyBindings_);
+		return;
+	}
+	if (action == QLatin1String("remove_single") && index >= 0 && index < st_.single_stats.size()) {
+		if (st_.single_stats.size() > 1) {
+			st_.single_stats.removeAt(index);
+			saveState();
+			refreshUiFromState(false);
+			hotkeyBindings_ = buildMergedHotkeyBindings();
+			applyHotkeyBindings(hotkeyBindings_);
+		}
+		return;
+	}
 	if (action == QLatin1String("set_single") && index >= 0 && index < st_.single_stats.size()) {
-		st_.single_stats[index].value = jsonInt(command, QStringLiteral("value"));
+		FlySingleStat &ss = st_.single_stats[index];
+		if (command.contains(QStringLiteral("label")))
+			ss.label = jsonString(command, QStringLiteral("label"));
+		if (command.contains(QStringLiteral("value")))
+			ss.value = jsonInt(command, QStringLiteral("value"));
+		if (command.contains(QStringLiteral("visible")))
+			ss.visible = jsonBool(command, QStringLiteral("visible"), ss.visible);
+		saveState();
+		refreshUiFromState(false);
+		return;
+	}
+	if (action == QLatin1String("add_timer")) {
+		FlyTimer timer;
+		timer.label = jsonString(command, QStringLiteral("label"));
+		if (timer.label.isEmpty())
+			timer.label = QStringLiteral("Timer");
+		timer.mode = jsonString(command, QStringLiteral("mode"));
+		if (timer.mode != QLatin1String("countup"))
+			timer.mode = QStringLiteral("countdown");
+		timer.initial_ms = std::max<qint64>(0, jsonInt64(command, QStringLiteral("initial_ms")));
+		timer.visible = jsonBool(command, QStringLiteral("visible"), true);
+		setTimerStoppedAtInitial(timer);
+		st_.timers.push_back(timer);
+		saveState();
+		refreshUiFromState(false);
+		hotkeyBindings_ = buildMergedHotkeyBindings();
+		applyHotkeyBindings(hotkeyBindings_);
+		return;
+	}
+	if (action == QLatin1String("remove_timer") && index >= 0 && index < st_.timers.size()) {
+		if (st_.timers.size() > 1) {
+			st_.timers.removeAt(index);
+			saveState();
+			refreshUiFromState(false);
+			hotkeyBindings_ = buildMergedHotkeyBindings();
+			applyHotkeyBindings(hotkeyBindings_);
+		}
+		return;
+	}
+	if (action == QLatin1String("set_timer") && index >= 0 && index < st_.timers.size()) {
+		FlyTimer &timer = st_.timers[index];
+		const bool wasRunning = timer.running;
+		if (wasRunning)
+			toggleTimerRunning(index);
+
+		if (command.contains(QStringLiteral("label")))
+			timer.label = jsonString(command, QStringLiteral("label"));
+		if (command.contains(QStringLiteral("mode"))) {
+			const QString mode = jsonString(command, QStringLiteral("mode"));
+			timer.mode = mode == QLatin1String("countup") ? QStringLiteral("countup") : QStringLiteral("countdown");
+		}
+		if (command.contains(QStringLiteral("initial_ms")))
+			timer.initial_ms = std::max<qint64>(0, jsonInt64(command, QStringLiteral("initial_ms")));
+		if (command.contains(QStringLiteral("remaining_ms")))
+			timer.remaining_ms = std::max<qint64>(0, jsonInt64(command, QStringLiteral("remaining_ms")));
+		else if (command.contains(QStringLiteral("initial_ms")))
+			timer.remaining_ms = timer.initial_ms;
+		if (command.contains(QStringLiteral("visible")))
+			timer.visible = jsonBool(command, QStringLiteral("visible"), timer.visible);
+
+		timer.running = false;
+		timer.last_tick_ms = 0;
 		saveState();
 		refreshUiFromState(false);
 		return;
 	}
 	if (action == QLatin1String("timer_toggle")) {
 		toggleTimerRunning(index);
+		return;
+	}
+	if (action == QLatin1String("timer_visibility") && index >= 0 && index < st_.timers.size()) {
+		st_.timers[index].visible = !st_.timers[index].visible;
+		saveState();
+		refreshUiFromState(false);
 		return;
 	}
 	if ((action == QLatin1String("timer_start") || action == QLatin1String("timer_pause")) && index >= 0 &&
@@ -1623,6 +2049,7 @@ void FlyScoreDock::ensureResourcesDefaults()
 	};
 
 	writeDefaultText(QDir(resDir).filePath(QStringLiteral("index.html")), fly_score_embedded::index_html);
+	writeDefaultText(QDir(resDir).filePath(QStringLiteral("manifest.ini")), fly_score_embedded::manifest_ini);
 	writeDefaultText(QDir(resDir).filePath(QStringLiteral("style.css")), fly_score_embedded::style_css);
 	writeDefaultText(QDir(resDir).filePath(QStringLiteral("script.js")), fly_score_embedded::script_js);
 #endif
@@ -1649,7 +2076,9 @@ QString FlyScoreDock::selectedBrowserSourceName() const
 		return QString();
 
 	const QString kSelectPlaceholder = QStringLiteral("→ Select Browser Source ←");
-	const QString name = browserSourceCombo_->currentText().trimmed();
+	QString name = browserSourceCombo_->currentData().toString().trimmed();
+	if (name.isEmpty())
+		name = browserSourceCombo_->currentText().trimmed();
 	if (name.isEmpty() || name == kSelectPlaceholder)
 		return QString();
 
@@ -1661,10 +2090,12 @@ void FlyScoreDock::refreshBrowserSourceCombo(bool preserveSelection)
 	if (!browserSourceCombo_)
 		return;
 
-	QString prev = preserveSelection ? browserSourceCombo_->currentText() : QString();
-
-	if (preserveSelection && prev.trimmed().isEmpty())
-		prev = fly_load_saved_browser_source_name();
+	QString prev;
+	if (preserveSelection) {
+		prev = selectedBrowserSourceName();
+		if (prev.trimmed().isEmpty())
+			prev = fly_load_saved_browser_source_name();
+	}
 
 	QSignalBlocker block(browserSourceCombo_);
 	browserSourceCombo_->clear();
@@ -1674,22 +2105,28 @@ void FlyScoreDock::refreshBrowserSourceCombo(bool preserveSelection)
 	const QStringList names = fly_list_browser_sources();
 	if (names.isEmpty()) {
 		browserSourceCombo_->clear();
-		browserSourceCombo_->addItem(fly_i18n("Dock.NoBrowserSources"));
+		browserSourceCombo_->addItem(fly_i18n("Dock.NoBrowserSources"), QVariant(QString()));
 		browserSourceCombo_->setEnabled(false);
 		return;
 	}
 
 	browserSourceCombo_->setEnabled(true);
 	for (const auto &n : names)
-		browserSourceCombo_->addItem(n);
+		browserSourceCombo_->addItem(n, n);
 
-	int idx = preserveSelection ? browserSourceCombo_->findText(prev) : -1;
+	int idx = preserveSelection ? browserSourceCombo_->findData(prev) : -1;
+	if (idx < 0 && preserveSelection)
+		idx = browserSourceCombo_->findText(prev);
+	if (idx < 0)
+		idx = browserSourceCombo_->findData(QString::fromUtf8(kBrowserSourceName));
 	if (idx < 0)
 		idx = browserSourceCombo_->findText(QString::fromUtf8(kBrowserSourceName));
 	if (idx < 0)
 		idx = 0;
 
 	browserSourceCombo_->setCurrentIndex(idx);
+	LOGI("Browser source selector restored='%s', selected='%s', listed=%d",
+	     prev.toUtf8().constData(), selectedBrowserSourceName().toUtf8().constData(), names.size());
 }
 
 void fly_create_dock()

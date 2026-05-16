@@ -22,6 +22,10 @@ jobs:
           chmod +x run-clang-format || true
           chmod +x run-gersemi || true
           chmod +x run-swift-format || true
+          chmod +x build-aux/.run-format.zsh || true
+          chmod +x build-aux/run-clang-format || true
+          chmod +x build-aux/run-gersemi || true
+          chmod +x build-aux/run-swift-format || true
 
       - name: clang-format check 🐉
         id: clang-format
@@ -48,6 +52,10 @@ jobs:
           chmod +x run-clang-format || true
           chmod +x run-gersemi || true
           chmod +x run-swift-format || true
+          chmod +x build-aux/.run-format.zsh || true
+          chmod +x build-aux/run-clang-format || true
+          chmod +x build-aux/run-gersemi || true
+          chmod +x build-aux/run-swift-format || true
 
       - name: gersemi Check 🎛️
         id: gersemi

@@ -27,11 +27,23 @@ Use the dock <strong>Template</strong> row to select a parent folder that contai
 </p>
 <pre><code>My Templates/
   Soccer Lower Third/
+    manifest.ini
     index.html
     style.css
     script.js</code></pre>
 <p>
 After choosing the parent folder, select a template from the dropdown. The plugin points the selected Browser Source at that template's <code>index.html</code> and creates <code>plugin.json</code> there if it is missing.
+</p>
+<p>
+Each theme folder must include <code>manifest.ini</code>. The template dropdown reads the theme title and metadata from that file:
+</p>
+<pre><code>title=Soccer Lower Third
+author=Your Name
+author_url=https://example.com
+description=Compact lower-third scoreboard for soccer streams.
+version=1.0.0</code></pre>
+<p>
+The selected template folder is the active resources path. Team logos, state updates, and Browser Source syncing all use that active template folder.
 </p>
 
 <h2>Folder placement rule</h2>
