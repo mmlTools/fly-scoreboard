@@ -44,7 +44,7 @@ fly-score/
       fly-scoreboard.dll
   data/
     obs-plugins/
-      fly-score/
+      fly-scoreboard/
         locale/
           en-US.ini
           ro-RO.ini

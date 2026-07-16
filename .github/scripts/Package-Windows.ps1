@@ -49,7 +49,7 @@ function Package {
 
     $OutputName = "${ProductName}-${ProductVersion}-windows-${Target}"
     $ArchiveRootName = 'fly-score'
-    $ArchivePluginDataName = 'fly-score'
+    $ArchivePluginDataName = $ProductName
     $PackageStage = "${ProjectRoot}/release/.windows-package-${Target}"
     $ArchiveRoot = "${PackageStage}/${ArchiveRootName}"
     $ArchiveDataRoot = "${ArchiveRoot}/data/obs-plugins/${ArchivePluginDataName}"
