@@ -15,6 +15,7 @@
 !buildspec.json
 !CMakeLists.txt
 !CMakePresets.json
+!CHANGELOG.md
 !LICENSE
 !README.md
 

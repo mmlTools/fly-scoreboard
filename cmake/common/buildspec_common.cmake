@@ -109,7 +109,8 @@ function(_setup_obs_studio)
   message(STATUS "Install ${label} (${arch})")
   execute_process(
     COMMAND
-      "${CMAKE_COMMAND}" --install "${_obs_build_dir}" --component Development --config Debug --prefix "${dependencies_dir}"
+      "${CMAKE_COMMAND}" --install "${_obs_build_dir}" --component Development --config Debug --prefix
+      "${dependencies_dir}"
     WORKING_DIRECTORY "${dependencies_dir}/${_obs_destination}"
     RESULT_VARIABLE _process_result
     COMMAND_ERROR_IS_FATAL ANY
@@ -117,7 +118,8 @@ function(_setup_obs_studio)
   )
   execute_process(
     COMMAND
-      "${CMAKE_COMMAND}" --install "${_obs_build_dir}" --component Development --config Release --prefix "${dependencies_dir}"
+      "${CMAKE_COMMAND}" --install "${_obs_build_dir}" --component Development --config Release --prefix
+      "${dependencies_dir}"
     WORKING_DIRECTORY "${dependencies_dir}/${_obs_destination}"
     RESULT_VARIABLE _process_result
     COMMAND_ERROR_IS_FATAL ANY
@@ -158,8 +160,7 @@ function(_check_dependencies)
 
     if(EXISTS "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256")
       file(
-        READ
-        "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256"
+        READ "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256"
         OBS_DEPENDENCY_${dependency}_${arch}_HASH
       )
     endif()

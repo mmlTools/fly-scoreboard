@@ -8,8 +8,8 @@ project(${_name} VERSION ${_version} LANGUAGES C CXX)
 # Options (these are mainly here so your CI flags are "used")
 # ---------------------------------------------------------------------------
 option(ENABLE_FRONTEND_API "Use obs-frontend-api for the dock, hotkeys, and stream events" ON)
-option(ENABLE_QT           "Use Qt for dock UI and dialogs"                             ON)
-option(EMBED_DEFAULT_ASSETS "Embed data/overlay + locale into binary"                   ON)
+option(ENABLE_QT "Use Qt for dock UI and dialogs" ON)
+option(EMBED_DEFAULT_ASSETS "Embed data/overlay + locale into binary" ON)
 
 # This plugin *requires* Qt and frontend API; don't allow disabling them.
 if(NOT ENABLE_QT)
@@ -46,22 +46,18 @@ endif()
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-set(FS_INC_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/src/include")
-set(FS_3P_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty")
-set(FS_SRC_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(FS_DATA_DIR    "${CMAKE_CURRENT_SOURCE_DIR}/data")
+set(FS_INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/include")
+set(FS_3P_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty")
+set(FS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(FS_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
 set(FS_OVERLAY_DIR "${FS_DATA_DIR}/overlay")
-set(FS_LOCALE_DIR  "${FS_DATA_DIR}/locale")
-set(FS_GEN_DIR     "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(FS_LOCALE_DIR "${FS_DATA_DIR}/locale")
+set(FS_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 file(MAKE_DIRECTORY "${FS_GEN_DIR}")
 
 # config.hpp (PLUGIN_NAME / PLUGIN_VERSION)
-configure_file(
-  "${FS_INC_DIR}/config.hpp.in"
-  "${FS_INC_DIR}/config.hpp"
-  @ONLY
-)
+configure_file("${FS_INC_DIR}/config.hpp.in" "${FS_INC_DIR}/config.hpp" @ONLY)
 
 # ---------------------------------------------------------------------------
 # Target
@@ -91,10 +87,9 @@ else()
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets Qt5::Network)
 endif()
 
-set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
-  AUTOMOC ON
-  AUTOUIC ON
-  AUTORCC ON
+set_target_properties(
+  ${CMAKE_PROJECT_NAME}
+  PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON
 )
 
 # Define macro for your #ifdefs (even if you don't currently use it)
@@ -103,17 +98,13 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_QT=1)
 # ---------------------------------------------------------------------------
 # Includes
 # ---------------------------------------------------------------------------
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-  ${FS_INC_DIR}
-  ${FS_SRC_DIR}
-  ${FS_GEN_DIR}
-  ${FS_3P_DIR}
-)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${FS_INC_DIR} ${FS_SRC_DIR} ${FS_GEN_DIR} ${FS_3P_DIR})
 
 # ---------------------------------------------------------------------------
 # Sources
 # ---------------------------------------------------------------------------
-set(OBS_FLY_SCORE_SRC
+set(
+  OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_plugin.cpp
   ${FS_SRC_DIR}/fly_score_state.cpp
   ${FS_SRC_DIR}/fly_score_qt_helpers.cpp
@@ -126,7 +117,8 @@ set(OBS_FLY_SCORE_SRC
   ${FS_INC_DIR}/fly_score_event_log.hpp
 )
 
-list(APPEND OBS_FLY_SCORE_SRC
+list(
+  APPEND OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_dock.cpp
   ${FS_INC_DIR}/fly_score_dock.hpp
   ${FS_SRC_DIR}/widget.cpp
@@ -143,21 +135,16 @@ list(APPEND OBS_FLY_SCORE_SRC
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${OBS_FLY_SCORE_SRC})
 
-target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
-  PLUGIN_NAME_STR="${_name}"
-  PLUGIN_VERSION_STR="${_version}"
-)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE PLUGIN_NAME_STR="${_name}" PLUGIN_VERSION_STR="${_version}")
 
-set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
-  CXX_STANDARD 20
-  CXX_STANDARD_REQUIRED YES
-)
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES)
 
 # ---------------------------------------------------------------------------
 # Embedded overlay/locale assets
 # ---------------------------------------------------------------------------
 if(EMBED_DEFAULT_ASSETS)
-  set(EMBED_TEXT_FILES
+  set(
+    EMBED_TEXT_FILES
     "${FS_OVERLAY_DIR}/index.html"
     "${FS_OVERLAY_DIR}/fouls.html"
     "${FS_OVERLAY_DIR}/cards.html"
@@ -179,17 +166,21 @@ if(EMBED_DEFAULT_ASSETS)
       if(NOT _contents MATCHES "\n$")
         set(_contents "${_contents}\n")
       endif()
-      string(APPEND _asset_entries
-"#define HAVE_${_id} 1
-inline constexpr const char* ${_id} = R\"obsplg(${_contents})obsplg\";\n")
+      string(
+        APPEND _asset_entries
+        "#define HAVE_${_id} 1
+inline constexpr const char* ${_id} = R\"obsplg(${_contents})obsplg\";\n"
+      )
     else()
       message(WARNING "Embedded asset missing: ${_f}")
     endif()
   endforeach()
 
   set(_embedded_header "${FS_GEN_DIR}/embedded_assets.hpp")
-  file(WRITE "${_embedded_header}"
-"/* Auto-generated: do not edit. */\n#pragma once\nnamespace fly_score_embedded {\n${_asset_entries}}\n")
+  file(
+    WRITE "${_embedded_header}"
+    "/* Auto-generated: do not edit. */\n#pragma once\nnamespace fly_score_embedded {\n${_asset_entries}}\n"
+  )
 
   target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_EMBEDDED_DEFAULTS=1)
 endif()

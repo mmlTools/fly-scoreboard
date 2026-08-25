@@ -109,8 +109,8 @@ static void fly_on_frontend_event(enum obs_frontend_event event, void *data)
 	auto *self = static_cast<FlyScoreDock *>(data);
 	if (!self)
 		return;
-	QMetaObject::invokeMethod(self, [self, event]() { self->handleFrontendEvent(static_cast<int>(event)); },
-				  Qt::QueuedConnection);
+	QMetaObject::invokeMethod(
+		self, [self, event]() { self->handleFrontendEvent(static_cast<int>(event)); }, Qt::QueuedConnection);
 }
 #endif
 
@@ -422,8 +422,9 @@ bool FlyScoreDock::init()
 		eventTimestampMode_->addItem(fly_i18n("Events.RelativeTime"), QStringLiteral("relative"));
 		eventTimestampMode_->addItem(fly_i18n("Events.WallClock"), QStringLiteral("clock"));
 		QSettings eventSettings(fly_settings_org_name(), fly_settings_app_name());
-		const QString savedMode = eventSettings.value(fly_settings_key_event_timestamp_mode(),
-							 QStringLiteral("relative")).toString();
+		const QString savedMode =
+			eventSettings.value(fly_settings_key_event_timestamp_mode(), QStringLiteral("relative"))
+				.toString();
 		eventTimestampMode_->setCurrentIndex(savedMode == QLatin1String("clock") ? 1 : 0);
 		eventLog_.setTimestampMode(savedMode == QLatin1String("clock")
 						   ? FlyScoreEventLog::TimestampMode::WallClock
@@ -558,7 +559,7 @@ bool FlyScoreDock::init()
 	connect(eventTimestampMode_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
 		const bool wallClock = index == 1;
 		eventLog_.setTimestampMode(wallClock ? FlyScoreEventLog::TimestampMode::WallClock
-							  : FlyScoreEventLog::TimestampMode::Relative);
+						     : FlyScoreEventLog::TimestampMode::Relative);
 		QSettings settings(fly_settings_org_name(), fly_settings_app_name());
 		settings.setValue(fly_settings_key_event_timestamp_mode(),
 				  wallClock ? QStringLiteral("clock") : QStringLiteral("relative"));
@@ -763,13 +764,12 @@ static bool fly_is_valid_theme_folder(const QString &themePath, FlyThemeManifest
 	return true;
 }
 
-}
+} // namespace
 
 void FlyScoreDock::onSelectTemplateFolder()
 {
 	const QString cur = dataDir_.isEmpty() ? fly_get_data_root_no_ui() : dataDir_;
-	const QString picked = QFileDialog::getExistingDirectory(
-		this, fly_i18n("Dock.SelectTemplateFolderTitle"), cur);
+	const QString picked = QFileDialog::getExistingDirectory(this, fly_i18n("Dock.SelectTemplateFolderTitle"), cur);
 	if (picked.isEmpty())
 		return;
 
@@ -838,9 +838,10 @@ void FlyScoreDock::updateWebSocketStatus()
 	if (!webSocketStatus_ || !webSocketServer_)
 		return;
 
-	const QString text = webSocketServer_->isListening()
-				     ? fly_i18n("Dock.WSOnline").arg(webSocketServer_->url()).arg(webSocketServer_->clientCount())
-				     : fly_i18n("Dock.WSOffline");
+	const QString text =
+		webSocketServer_->isListening()
+			? fly_i18n("Dock.WSOnline").arg(webSocketServer_->url()).arg(webSocketServer_->clientCount())
+			: fly_i18n("Dock.WSOffline");
 	webSocketStatus_->setText(text);
 }
 
@@ -949,14 +950,17 @@ void FlyScoreDock::logStateChanges(const FlyState &before, const FlyState &after
 	};
 
 	if (before.home.title != after.home.title)
-		eventLog_.appendEvent(QStringLiteral("Home team: %1").arg(teamName(after.home, QStringLiteral("Home"))));
+		eventLog_.appendEvent(
+			QStringLiteral("Home team: %1").arg(teamName(after.home, QStringLiteral("Home"))));
 	if (before.away.title != after.away.title)
-		eventLog_.appendEvent(QStringLiteral("Guests team: %1").arg(teamName(after.away, QStringLiteral("Guests"))));
+		eventLog_.appendEvent(
+			QStringLiteral("Guests team: %1").arg(teamName(after.away, QStringLiteral("Guests"))));
 	if (before.swap_sides != after.swap_sides)
-		eventLog_.appendEvent(after.swap_sides ? QStringLiteral("Sides swapped") : QStringLiteral("Sides restored"));
+		eventLog_.appendEvent(after.swap_sides ? QStringLiteral("Sides swapped")
+						       : QStringLiteral("Sides restored"));
 	if (before.show_scoreboard != after.show_scoreboard)
 		eventLog_.appendEvent(after.show_scoreboard ? QStringLiteral("Scoreboard shown")
-							       : QStringLiteral("Scoreboard hidden"));
+							    : QStringLiteral("Scoreboard hidden"));
 
 	const int commonFields = static_cast<int>(std::min(before.custom_fields.size(), after.custom_fields.size()));
 	for (int i = 0; i < commonFields; ++i) {
@@ -976,8 +980,8 @@ void FlyScoreDock::logStateChanges(const FlyState &before, const FlyState &after
 						      .arg(field.away));
 		}
 		if (oldField.visible != field.visible)
-			eventLog_.appendEvent(QStringLiteral("%1 %2").arg(label, field.visible ? QStringLiteral("shown")
-											 : QStringLiteral("hidden")));
+			eventLog_.appendEvent(QStringLiteral("%1 %2").arg(
+				label, field.visible ? QStringLiteral("shown") : QStringLiteral("hidden")));
 	}
 	if (after.custom_fields.size() != before.custom_fields.size())
 		eventLog_.appendEvent(QStringLiteral("Team stat configuration changed"));
@@ -1000,13 +1004,14 @@ void FlyScoreDock::logStateChanges(const FlyState &before, const FlyState &after
 		const auto &timer = after.timers[i];
 		const QString label = labelOr(timer.label, QStringLiteral("Timer %1").arg(i + 1));
 		if (oldTimer.running != timer.running)
-			eventLog_.appendEvent(QStringLiteral("%1 %2").arg(label, timer.running ? QStringLiteral("Start")
-											: QStringLiteral("Pause")));
+			eventLog_.appendEvent(QStringLiteral("%1 %2").arg(
+				label, timer.running ? QStringLiteral("Start") : QStringLiteral("Pause")));
 		else if (!timer.running && oldTimer.remaining_ms != timer.remaining_ms)
-			eventLog_.appendEvent(QStringLiteral("%1 set to %2 seconds").arg(label).arg(timer.remaining_ms / 1000));
+			eventLog_.appendEvent(
+				QStringLiteral("%1 set to %2 seconds").arg(label).arg(timer.remaining_ms / 1000));
 		if (oldTimer.visible != timer.visible)
-			eventLog_.appendEvent(QStringLiteral("%1 %2").arg(label, timer.visible ? QStringLiteral("shown")
-											 : QStringLiteral("hidden")));
+			eventLog_.appendEvent(QStringLiteral("%1 %2").arg(
+				label, timer.visible ? QStringLiteral("shown") : QStringLiteral("hidden")));
 	}
 	if (after.timers.size() != before.timers.size())
 		eventLog_.appendEvent(QStringLiteral("Timer configuration changed"));
@@ -1071,7 +1076,7 @@ static uint32_t jsonColor(const QJsonObject &o, const QString &key, uint32_t fal
 			s.remove(0, 1);
 		bool ok = false;
 		const uint n = s.startsWith(QStringLiteral("0x"), Qt::CaseInsensitive) ? s.mid(2).toUInt(&ok, 16)
-											: s.toUInt(&ok, 16);
+										       : s.toUInt(&ok, 16);
 		if (ok)
 			return static_cast<uint32_t>(n);
 		const uint dec = s.toUInt(&ok, 10);
@@ -1317,7 +1322,8 @@ void FlyScoreDock::handleRemoteCommand(const QJsonObject &command)
 			timer.label = jsonString(command, QStringLiteral("label"));
 		if (command.contains(QStringLiteral("mode"))) {
 			const QString mode = jsonString(command, QStringLiteral("mode"));
-			timer.mode = mode == QLatin1String("countup") ? QStringLiteral("countup") : QStringLiteral("countdown");
+			timer.mode = mode == QLatin1String("countup") ? QStringLiteral("countup")
+								      : QStringLiteral("countdown");
 		}
 		if (command.contains(QStringLiteral("initial_ms")))
 			timer.initial_ms = std::max<qint64>(0, jsonInt64(command, QStringLiteral("initial_ms")));
@@ -1408,9 +1414,7 @@ void FlyScoreDock::refreshUiFromState(bool onlyTimeIfRunning)
 
 void FlyScoreDock::onClearTeamsAndReset()
 {
-	auto rc = QMessageBox::question(
-		this, fly_i18n("Dock.ResetValuesTitle"),
-		fly_i18n("Dock.ResetValuesMessage"));
+	auto rc = QMessageBox::question(this, fly_i18n("Dock.ResetValuesTitle"), fly_i18n("Dock.ResetValuesMessage"));
 	if (rc != QMessageBox::Yes)
 		return;
 
@@ -1696,7 +1700,8 @@ void FlyScoreDock::loadSingleStatControlsFromState()
 		auto *visibleCheck = new QCheckBox(row);
 		visibleCheck->setChecked(ss.visible);
 
-		auto *labelLbl = new QLabel(ss.label.isEmpty() ? fly_i18n("Hotkey.SingleStatN").arg(i + 1) : ss.label, row);
+		auto *labelLbl =
+			new QLabel(ss.label.isEmpty() ? fly_i18n("Hotkey.SingleStatN").arg(i + 1) : ss.label, row);
 		labelLbl->setMinimumWidth(120);
 
 		auto *valueSpin = new QSpinBox(row);

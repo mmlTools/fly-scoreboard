@@ -68,10 +68,8 @@ static void ensureDefaultCustomFields(FlyState &st)
 {
 	if (st.custom_fields.isEmpty()) {
 		const QStringList labels = {
-			fly_i18n("Default.Field.Score"),
-			fly_i18n("Default.Field.Fouls"),
-			fly_i18n("Default.Field.YellowCards"),
-			fly_i18n("Default.Field.RedCards"),
+			fly_i18n("Default.Field.Score"),       fly_i18n("Default.Field.Fouls"),
+			fly_i18n("Default.Field.YellowCards"), fly_i18n("Default.Field.RedCards"),
 			fly_i18n("Default.Field.Corners"),
 		};
 		for (const QString &label : labels) {
@@ -130,61 +128,61 @@ static FlyTimer timerFromJson(const QJsonObject &o)
 
 QJsonObject fly_state_to_json_object(const FlyState &stIn)
 {
-    FlyState st = stIn;
+	FlyState st = stIn;
 
-    ensureDefaultCustomFields(st);
-    ensureDefaultSingleStats(st);
+	ensureDefaultCustomFields(st);
+	ensureDefaultSingleStats(st);
 
-    QJsonObject j;
-    j["version"] = 4;
+	QJsonObject j;
+	j["version"] = 4;
 
-    auto teamToJson = [](const FlyTeam &tm) {
-        QJsonObject o;
-        o["title"] = tm.title;
-        o["subtitle"] = tm.subtitle;
-	o["logo"] = tm.logo;
-	o["color"]    = QString::number(tm.color);
+	auto teamToJson = [](const FlyTeam &tm) {
+		QJsonObject o;
+		o["title"] = tm.title;
+		o["subtitle"] = tm.subtitle;
+		o["logo"] = tm.logo;
+		o["color"] = QString::number(tm.color);
 
-        return o;
-    };
+		return o;
+	};
 
-    j["home"] = teamToJson(st.home);
-    j["away"] = teamToJson(st.away);
-    j["swap_sides"]      = st.swap_sides;
-    j["show_scoreboard"] = st.show_scoreboard;
+	j["home"] = teamToJson(st.home);
+	j["away"] = teamToJson(st.away);
+	j["swap_sides"] = st.swap_sides;
+	j["show_scoreboard"] = st.show_scoreboard;
 
-    QJsonArray cfArr;
-    for (const auto &cf : st.custom_fields) {
-        QJsonObject o;
-        o["label"]   = cf.label;
-        o["home"]    = cf.home;
-        o["away"]    = cf.away;
-        o["visible"] = cf.visible;
-        cfArr.append(o);
-    }
-    j["custom_fields"] = cfArr;
+	QJsonArray cfArr;
+	for (const auto &cf : st.custom_fields) {
+		QJsonObject o;
+		o["label"] = cf.label;
+		o["home"] = cf.home;
+		o["away"] = cf.away;
+		o["visible"] = cf.visible;
+		cfArr.append(o);
+	}
+	j["custom_fields"] = cfArr;
 
-    QJsonArray ssArr;
-    for (const auto &ss : st.single_stats) {
-        QJsonObject o;
-        o["label"] = ss.label;
-        o["value"] = ss.value;
-        o["visible"] = ss.visible;
-        ssArr.append(o);
-    }
-    j["single_stats"] = ssArr;
+	QJsonArray ssArr;
+	for (const auto &ss : st.single_stats) {
+		QJsonObject o;
+		o["label"] = ss.label;
+		o["value"] = ss.value;
+		o["visible"] = ss.visible;
+		ssArr.append(o);
+	}
+	j["single_stats"] = ssArr;
 
-    QJsonArray timersArr;
-    if (st.timers.isEmpty()) {
-        timersArr.append(timerToJson(makeDefaultMainTimer()));
-    } else {
-        for (const auto &tm : st.timers) {
-            timersArr.append(timerToJson(tm));
-        }
-    }
-    j["timers"] = timersArr;
+	QJsonArray timersArr;
+	if (st.timers.isEmpty()) {
+		timersArr.append(timerToJson(makeDefaultMainTimer()));
+	} else {
+		for (const auto &tm : st.timers) {
+			timersArr.append(timerToJson(tm));
+		}
+	}
+	j["timers"] = timersArr;
 
-    return j;
+	return j;
 }
 
 bool fly_state_from_json_object(const QJsonObject &j, FlyState &st)
