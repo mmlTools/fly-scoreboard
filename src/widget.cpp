@@ -383,7 +383,7 @@ void show_troubleshooting_dialog(QWidget *parent)
 		cl->addWidget(secTitle);
 
 		cl->addWidget(make_link_card(content, QString::fromUtf8("▶"), QObject::tr("Guide 1"),
-					     QObject::tr("Setup, browser source, and basic workflow."),
+					     QObject::tr("Setup, templates, and basic workflow."),
 					     QObject::tr("Watch on YouTube"),
 					     QUrl(QStringLiteral("https://www.youtube.com/watch?v=AunKJCyrSmM"))));
 

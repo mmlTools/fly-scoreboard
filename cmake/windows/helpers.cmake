@@ -75,7 +75,17 @@ function(target_install_resources target)
       source_group("Resources/${relative_path}" FILES "${data_file}")
     endforeach()
 
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/" DESTINATION "${target}/data" USE_SOURCE_PERMISSIONS)
+    install(
+      DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/"
+      DESTINATION "${target}/data"
+      USE_SOURCE_PERMISSIONS
+      PATTERN "overlay" EXCLUDE
+    )
+    install(
+      DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/overlay/"
+      DESTINATION "${target}/data/templates/Modular Football"
+      USE_SOURCE_PERMISSIONS
+    )
 
     add_custom_command(
       TARGET ${target}

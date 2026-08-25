@@ -1,0 +1,58 @@
+<h1>Feed the scoreboard from a live data source</h1>
+<p class="lead">Any local program can connect to <code>ws://127.0.0.1:4457</code> and send the same commands used by the dock. This keeps the integration vendor-neutral and leaves the operator free to use manual controls and hotkeys.</p>
+
+<h2>Recommended architecture</h2>
+<pre><code>sports API → your small feeder → Fly local WebSocket → dock state → overlay</code></pre>
+<p>Poll or subscribe to the provider in your feeder, translate provider fields into Fly commands, and send only changed values. Keep API keys in the feeder environment; never put secrets in an OBS Browser Source.</p>
+<div class="note">Create the required score/stat/timer rows in the dock first, or request the current state and send the matching <code>add_*</code> command when an index does not exist.</div>
+
+<h2>Minimal JavaScript feeder</h2>
+<pre><code>import WebSocket from "ws";
+
+const fly = new WebSocket("ws://127.0.0.1:4457");
+const send = command =&gt; fly.send(JSON.stringify(command));
+
+fly.on("open", async () =&gt; {
+  const match = await getMatchFromYourProvider();
+
+  send({ action: "set_team", side: "home", title: match.home.name });
+  send({ action: "set_team", side: "away", title: match.away.name });
+  send({ action: "set_field", index: 0, label: "Score",
+         home: match.home.score, away: match.away.score, visible: true });
+  send({ action: "set_single", index: 0, label: "SET",
+         value: match.currentSet, visible: true });
+});</code></pre>
+
+<h2>Tennis mapping example</h2>
+<table>
+  <thead><tr><th>Provider value</th><th>Fly destination</th></tr></thead>
+  <tbody>
+    <tr><td>Player names</td><td><code>set_team</code> home/away <code>title</code></td></tr>
+    <tr><td>Current game points</td><td><code>set_field</code> index 0</td></tr>
+    <tr><td>Sets won</td><td><code>set_field</code> index 1</td></tr>
+    <tr><td>Current set number</td><td><code>set_single</code> index 0</td></tr>
+    <tr><td>Match clock</td><td><code>set_timer</code> index 0, then <code>timer_start</code></td></tr>
+  </tbody>
+</table>
+
+<h2>Command reference</h2>
+<ul>
+  <li>State: <code>get_state</code>, <code>set_state</code></li>
+  <li>Teams: <code>set_team</code></li>
+  <li>Paired scores: <code>add_score</code>/<code>add_field</code>, <code>set_field</code>, <code>set_score</code>, <code>bump_score</code>, <code>toggle_field</code>, <code>remove_score</code></li>
+  <li>Single stats: <code>add_single</code>, <code>set_single</code>, <code>bump_single</code>, <code>toggle_single</code>, <code>remove_single</code></li>
+  <li>Timers: <code>add_timer</code>, <code>set_timer</code>, <code>timer_start</code>, <code>timer_pause</code>, <code>timer_toggle</code>, <code>timer_reset</code>, <code>timer_visibility</code>, <code>remove_timer</code></li>
+  <li>Display: <code>swap</code>, <code>show_scoreboard</code>, <code>toggle_scoreboard</code></li>
+  <li>Events: <code>start_event_log</code>, <code>log_event</code>, <code>stop_event_log</code></li>
+</ul>
+
+<h2>Reliable feeder checklist</h2>
+<ul>
+  <li>Connect only to loopback unless you deliberately add your own authenticated gateway.</li>
+  <li>Request <code>{"type":"get_state"}</code> after connecting and merge with the current state instead of blindly replacing operator choices.</li>
+  <li>Prefer narrow commands such as <code>set_field</code> over <code>set_state</code>; a full state replacement can overwrite manual changes.</li>
+  <li>Reconnect with backoff when OBS restarts, deduplicate provider updates, and respect the provider's rate limits.</li>
+  <li>Keep a manual override plan. The dock and hotkeys remain active while a feeder is connected.</li>
+</ul>
+
+<div class="warn"><strong>Security:</strong> the Fly server is intentionally local and has no authentication. Do not expose port 4457 directly to the internet.</div>

@@ -540,16 +540,12 @@
         </section>
 
         <section class="panel">
-          <h2>Board / Theme</h2>
+          <h2>Board</h2>
           <div class="form-grid grid-4">
             <button id="swapBtn">Swap</button>
             <button id="toggleScoreboardBtn" class="warn">Toggle</button>
             <button id="showScoreboardBtn" class="primary">Show</button>
             <button id="hideScoreboardBtn" class="danger">Hide</button>
-          </div>
-          <div class="form-grid grid-2" style="margin-top:10px;">
-            <label>Theme name<input id="templateName" type="text" placeholder="Modern Broadcast Scoreboard" /></label>
-            <button id="loadTemplateBtn" class="blue">Load Theme</button>
           </div>
         </section>
       </div>
@@ -902,11 +898,6 @@
     $("toggleScoreboardBtn").addEventListener("click", () => send({ action: "toggle_scoreboard" }));
     $("showScoreboardBtn").addEventListener("click", () => send({ action: "show_scoreboard", value: true }));
     $("hideScoreboardBtn").addEventListener("click", () => send({ action: "show_scoreboard", value: false }));
-    $("loadTemplateBtn").addEventListener("click", () => {
-      const name = $("templateName").value.trim();
-      if (name) send({ action: "load_template", name });
-    });
-
     $("sendCustomBtn").addEventListener("click", () => {
       try { send(JSON.parse($("customCommand").value)); }
       catch (error) { log("Invalid JSON: " + error.message); }

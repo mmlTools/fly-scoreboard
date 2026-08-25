@@ -2,10 +2,18 @@
 // Helpers
 // -----------------------------------------------------------------------------
 function mmss(ms) {
-  ms = Math.max(0, ms | 0);
+  ms = Math.max(0, Math.floor(Number(ms) || 0));
   const m = Math.floor(ms / 60000);
   const s = Math.floor((ms % 60000) / 1000);
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function hhmmss(ms) {
+  ms = Math.max(0, Math.floor(Number(ms) || 0));
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 async function fetchState() {
@@ -91,6 +99,17 @@ function intToHex(colorInt) {
   if (colorInt === undefined || colorInt === null) return "#555555";
   const hex = Number(colorInt).toString(16).padStart(6, "0");
   return "#" + hex;
+}
+
+function fieldKey(label, index) {
+  const canonical = ["score", "fouls", "yellow_cards", "red_cards", "corners"];
+  if (canonical[index]) return canonical[index];
+  const normalized = String(label || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return normalized || `field_${index}`;
 }
 
 /**
@@ -408,6 +427,11 @@ function renderFrame() {
     const ms = liveTimerMs(t);
     t.live_ms = ms;
     t.mmss = mmss(ms);
+    t.hhmmss = hhmmss(ms);
+    t.total_seconds = Math.floor(ms / 1000);
+    t.hours = Math.floor(ms / 3600000);
+    t.minutes = Math.floor((ms % 3600000) / 60000);
+    t.seconds = Math.floor((ms % 60000) / 1000);
     st.timers[i] = t;
   }
 
@@ -427,22 +451,29 @@ function renderFrame() {
   if (team_y.color) team_y.color = intToHex(team_y.color);
 
   const fields_xy = Array.isArray(st.custom_fields)
-    ? st.custom_fields.map((cf) => {
+    ? st.custom_fields.map((cf, index) => {
       const leftVal = swap ? cf.away : cf.home;
       const rightVal = swap ? cf.home : cf.away;
       return {
         ...cf,
+        key: fieldKey(cf.label, index),
         x: leftVal,
         y: rightVal,
       };
     })
     : [];
 
+  const fields_by_key = {};
+  fields_xy.forEach((field) => {
+    fields_by_key[field.key] = field;
+  });
+
   const view = {
     ...st,
     team_x,
     team_y,
     fields_xy,
+    fields_by_key,
   };
 
   // First apply fs-if (visibility), then template bindings (text/attrs)

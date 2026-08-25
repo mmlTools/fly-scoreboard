@@ -104,6 +104,34 @@ package() {
     return 2
   }
 
+  local plugin_root=${project_root}/release/${config}/${product_name}.plugin
+  local resource_root=${plugin_root}/Contents/Resources
+  local -a required_paths=(
+    ${plugin_root}/Contents/MacOS/${product_name}
+    ${resource_root}/locale/en-US.ini
+    ${resource_root}/locale/ro-RO.ini
+    ${resource_root}/templates/README.md
+    "${resource_root}/templates/Modular Football/index.html"
+    "${resource_root}/templates/Modular Football/fouls.html"
+    "${resource_root}/templates/Modular Football/cards.html"
+    "${resource_root}/templates/Modular Football/corners.html"
+    "${resource_root}/templates/Modular Football/manifest.ini"
+    "${resource_root}/templates/Modular Football/style.css"
+    "${resource_root}/templates/Modular Football/script.js"
+    "${resource_root}/templates/Modular Football/plugin.json"
+  )
+  local required_path
+  for required_path in ${required_paths}; do
+    if [[ ! -f ${required_path} ]]; then
+      log_error "Required package file is missing or misplaced: ${required_path}"
+      return 2
+    fi
+  done
+  if [[ -e ${resource_root}/overlay ]]; then
+    log_error "Legacy overlay directory must not be published; templates belong in ${resource_root}/templates"
+    return 2
+  fi
+
   if (( package )) {
     if [[ ! -f ${project_root}/release/${config}/${product_name}.pkg ]] {
       log_error 'Installer Package not found. Run the build script or the CMake build and install procedures first.'

@@ -81,9 +81,32 @@ function Package {
     New-Item -ItemType Directory -Path $ArchiveDataRoot, $ArchiveBinaryRoot -Force | Out-Null
 
     Copy-Item -LiteralPath "${InstallDataRoot}/locale" -Destination "${ArchiveDataRoot}/locale" -Recurse -Force
-    Copy-Item -LiteralPath "${InstallDataRoot}/overlay" -Destination "${ArchiveDataRoot}/overlay" -Recurse -Force
+    Copy-Item -LiteralPath "${InstallDataRoot}/templates" -Destination "${ArchiveDataRoot}/templates" -Recurse -Force
     Copy-Item -LiteralPath "${ProjectRoot}/data/websocket-sample.html" -Destination "${ArchiveDataRoot}/websocket-sample.html" -Force
     Copy-Item -LiteralPath $BuildBinary -Destination "${ArchiveBinaryRoot}/${ProductName}.dll" -Force
+
+    $RequiredPackagePaths = @(
+        "${ArchiveBinaryRoot}/${ProductName}.dll",
+        "${ArchiveDataRoot}/locale/en-US.ini",
+        "${ArchiveDataRoot}/locale/ro-RO.ini",
+        "${ArchiveDataRoot}/templates/README.md",
+        "${ArchiveDataRoot}/templates/Modular Football/index.html",
+        "${ArchiveDataRoot}/templates/Modular Football/fouls.html",
+        "${ArchiveDataRoot}/templates/Modular Football/cards.html",
+        "${ArchiveDataRoot}/templates/Modular Football/corners.html",
+        "${ArchiveDataRoot}/templates/Modular Football/manifest.ini",
+        "${ArchiveDataRoot}/templates/Modular Football/style.css",
+        "${ArchiveDataRoot}/templates/Modular Football/script.js",
+        "${ArchiveDataRoot}/templates/Modular Football/plugin.json"
+    )
+    foreach ( $RequiredPath in $RequiredPackagePaths ) {
+        if ( ! ( Test-Path -LiteralPath $RequiredPath -PathType Leaf ) ) {
+            throw "Required package file is missing or misplaced: ${RequiredPath}"
+        }
+    }
+    if ( Test-Path -LiteralPath "${ArchiveDataRoot}/overlay" ) {
+        throw "Legacy overlay directory must not be published; templates belong in ${ArchiveDataRoot}/templates"
+    }
 
     $CompressArgs = @{
         Path = $ArchiveRoot

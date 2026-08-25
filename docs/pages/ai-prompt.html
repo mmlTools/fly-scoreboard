@@ -8,7 +8,7 @@ Use this prompt with ChatGPT (or any LLM) to generate a custom scoreboard overla
 </div>
 
 <h2>Copy/paste prompt</h2>
-<pre><code>ROLE: You are a senior frontend engineer building an OBS Browser Source scoreboard overlay.
+<pre><code>ROLE: You are a senior frontend engineer building a modular OBS Browser Source sports package.
 
 TARGET SYSTEM: Fly Scoreboard plugin overlay runtime.
 - Data comes from plugin.json (same folder as index.html).
@@ -18,16 +18,17 @@ TARGET SYSTEM: Fly Scoreboard plugin overlay runtime.
 - Prefer swap-safe helpers provided by the runtime:
   - team_x / team_y (left/right teams based on swap_sides)
   - fields_xy[i].x / fields_xy[i].y (left/right values for custom_fields)
+  - fields_by_key.score/fouls/yellow_cards/red_cards/corners
   - timers[i].mmss and timers[i].label (timer display)
 
 OUTPUT REQUIREMENTS:
-1) Output ONLY the scoreboard layout markup (no &lt;html&gt;, no &lt;head&gt;), unless explicitly asked.
+1) Output separate complete HTML entry points for independently managed panels. Never combine unrelated panels in one HTML file.
 2) Do NOT include external libraries, frameworks, or CDN scripts.
 3) Use semantic, class-based HTML that can be styled with plain CSS.
 4) Include placeholders for:
    - team_x.title, team_x.subtitle, team_x.logo
    - team_y.title, team_y.subtitle, team_y.logo
-   - at least 3 custom field rows using fields_xy[0..2]
+   - named football fields through fields_by_key where applicable
    - at least 2 timers using timers[0..1]
    - at least 2 single stats using single_stats[0..1]
 5) Add fs-if guards for every optional index:
@@ -42,7 +43,7 @@ CONTEXT (Data shape examples):
 - timers[i].label (string), timers[i].mmss (string), timers[i].visible (bool)
 - single_stats[i].label (string), single_stats[i].value (string/number), single_stats[i].visible (bool)
 
-NOW: Generate the layout for a compact lower-third scoreboard aligned top-left, with a clean hierarchy and good readability.</code></pre>
+NOW: Generate separate index.html (scoreboard), fouls.html, cards.html, and corners.html entry points plus one shared CSS file. Each HTML file must render only its named panel.</code></pre>
 
 <h2>Example placeholders you can reference</h2>
 <ul>

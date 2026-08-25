@@ -3,12 +3,13 @@
 
 <h2>Typical live workflow</h2>
 <ol>
-  <li>Select your Browser Source in the dock (the overlay target).</li>
+  <li>Choose the setup's writable directory with <strong>Template Folder…</strong>. Browser Sources remain fully user-managed in OBS.</li>
   <li>Set team names, subtitles, and logos.</li>
   <li>Update scores via custom fields.</li>
   <li>Start/stop timers and switch labels as needed.</li>
   <li>Use hotkeys (if configured) to control common actions quickly.</li>
   <li>Use a WebSocket remote controller for stream decks, phones, or automation tools.</li>
+  <li>Use the Events tab for chapter-ready automatic timestamps and manual match notes.</li>
 </ol>
 
 <h2>Understanding the main data groups</h2>
@@ -61,9 +62,8 @@ Connect to <code>ws://127.0.0.1:4457</code> and send JSON commands. The plugin b
 {"action":"timer_pause","index":0}
 {"action":"timer_reset","index":0}
 {"action":"swap"}
-{"action":"show_scoreboard","value":true}
-{"action":"load_template","name":"Soccer Lower Third"}</code></pre>
+{"action":"show_scoreboard","value":true}</code></pre>
 
 <div class="note">
-  If you want a fully custom look, copy the overlay folder and edit <code>index.html</code> + <code>style.css</code>. Keep <code>script.js</code> unless you are intentionally changing the runtime.
+  If you want a fully custom look, copy the complete template folder and edit <code>index.html</code> and <code>style.css</code>. Keep <code>script.js</code> unless you are intentionally changing the runtime.
 </div>

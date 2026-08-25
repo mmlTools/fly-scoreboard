@@ -15,13 +15,7 @@
     {
       "away": 0,
       "home": 0,
-      "label": "Round",
-      "visible": true
-    },
-    {
-      "away": 0,
-      "home": 0,
-      "label": "2-Min Susp.",
+      "label": "Fouls",
       "visible": true
     },
     {
@@ -34,6 +28,12 @@
       "away": 0,
       "home": 0,
       "label": "Red Cards",
+      "visible": true
+    },
+    {
+      "away": 0,
+      "home": 0,
+      "label": "Corners",
       "visible": true
     },
     {

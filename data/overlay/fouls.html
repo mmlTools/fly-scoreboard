@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Football Fouls Panel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="module-stage">
+    <section class="football-panel" fs-if="show_scoreboard && fields_by_key.fouls && fields_by_key.fouls.visible">
+      <header class="football-panel__title">{{fields_by_key.fouls.label}}</header>
+      <div class="football-panel__teams">
+        <div class="football-panel__team">
+          <img class="football-panel__logo" fs-if="team_x.logo" src="{{team_x.logo}}" alt="" />
+          <span>{{team_x.title}}</span>
+          <strong>{{fields_by_key.fouls.x}}</strong>
+        </div>
+        <div class="football-panel__team football-panel__team--right">
+          <strong>{{fields_by_key.fouls.y}}</strong>
+          <span>{{team_y.title}}</span>
+          <img class="football-panel__logo" fs-if="team_y.logo" src="{{team_y.logo}}" alt="" />
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="script.js" defer></script>
+</body>
+</html>

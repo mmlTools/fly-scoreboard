@@ -7,6 +7,7 @@
 #include <QToolButton>
 
 #include "fly_score_state.hpp"
+#include "fly_score_event_log.hpp"
 
 class QPushButton;
 class QSpinBox;
@@ -58,9 +59,7 @@ public:
 	~FlyScoreDock() override;
 	bool init();
 
-	void refreshBrowserSourceCombo(bool preserveSelection = true);
-	QString selectedBrowserSourceName() const;
-	void updateBrowserSourceToCurrentResources();
+	void handleFrontendEvent(int event);
 
 public slots:
 	void bumpCustomFieldHome(int index, int delta);
@@ -81,7 +80,7 @@ private slots:
 	void onOpenTimersDialog();
 	void onOpenTeamsDialog();
 
-	void onSetTemplatesRoot();
+	void onSelectTemplateFolder();
 
 private:
 	void loadState();
@@ -99,13 +98,19 @@ private:
 	QList<FlyHotkeyBinding> buildMergedHotkeyBindings() const;
 	void applyHotkeyBindings(const QList<FlyHotkeyBinding> &bindings);
 	void clearAllShortcuts();
-	void refreshTemplateCombo(bool preserveSelection = true);
+	void refreshActiveTemplateLabel();
 	QString selectedTemplateName() const;
 	QString selectedTemplatePath() const;
-	void loadTemplateByPath(const QString &path);
+	void activateTemplateFolder(const QString &path);
 	void broadcastCurrentState();
 	void updateWebSocketStatus();
 	void handleRemoteCommand(const QJsonObject &command);
+	void startEventLog(const QString &firstEvent = QStringLiteral("Stream Start"));
+	void stopEventLog(const QString &lastEvent = QStringLiteral("Stream End"));
+	void appendEvent(const QString &event);
+	void logStateChanges(const FlyState &before, const FlyState &after);
+	void refreshEventLogUi();
+	QString eventLogsDirectory() const;
 	QWidget *widgetCarousel_ = nullptr;
 	QPushButton *toggleCarouselBtn_ = nullptr;
 	void toggleWidgetCarouselVisible();
@@ -125,15 +130,20 @@ private:
 	QList<FlySingleStatUi> singleStats_;
 	QVBoxLayout *timersLayout_ = nullptr;
 	QList<FlyTimerUi> timers_;
-	void *obsSignalHandler_ = nullptr;
-	bool obsSignalsConnected_ = false;
-	QComboBox *browserSourceCombo_ = nullptr;
-	QComboBox *templateCombo_ = nullptr;
+	QLabel *activeTemplateLabel_ = nullptr;
 	QLabel *webSocketStatus_ = nullptr;
-	QPushButton *setTemplatesRootBtn_ = nullptr;
+	QPushButton *selectTemplateFolderBtn_ = nullptr;
 	FlyScoreWebSocketServer *webSocketServer_ = nullptr;
 	QList<FlyHotkeyBinding> hotkeyBindings_;
 	QList<QShortcut *> shortcuts_;
+	FlyScoreEventLog eventLog_;
+	FlyState lastLoggedState_;
+	QLabel *eventLogStatus_ = nullptr;
+	QComboBox *eventTimestampMode_ = nullptr;
+	QLineEdit *eventText_ = nullptr;
+	QPushButton *eventLogToggle_ = nullptr;
+	QPushButton *eventAdd_ = nullptr;
+	bool frontendEventCallbackConnected_ = false;
 };
 
 void fly_create_dock();

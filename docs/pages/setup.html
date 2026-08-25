@@ -1,73 +1,71 @@
 <h1>How to Setup</h1>
-<p class="lead">Connect Fly Scoreboard to a Browser Source and point that source to the included overlay or one of your template folders.</p>
+<p class="lead">Fly manages one shared scoreboard state. You create and arrange the modular Browser Sources yourself in OBS.</p>
 
-<h2>Step-by-step in OBS</h2>
+<h2>Choose the writable template folder</h2>
 <ol>
-  <li><strong>Create a Browser Source</strong> in your scene (Sources → + → Browser).</li>
-  <li>Enable <strong>Local file</strong> and select the overlay <code>index.html</code>.</li>
-  <li>Set a sensible width/height (example: 1920×1080, or match your canvas).</li>
-  <li>Disable “Shutdown source when not visible” if you want timers to continue updating off-screen.</li>
-  <li>Open the Fly Scoreboard dock and <strong>select the Browser Source</strong> used for the overlay.</li>
+  <li>Open the Fly Scoreboard dock.</li>
+  <li>Click <strong>Template Folder…</strong>.</li>
+  <li>Choose the writable <strong>Modular Football</strong> folder itself, or the root directory of your custom setup. Do not choose its parent directory.</li>
+  <li>The active template name appears as plain text. There is no source or template dropdown.</li>
+  <li>Click <strong>Open</strong> whenever you need to inspect the active files.</li>
 </ol>
+<p>The chosen folder is the setup's state hub. Fly writes <code>plugin.json</code> there and broadcasts the same state over <code>ws://127.0.0.1:4457</code>. The plugin contains no OBS source selector and never creates, selects, renames, resizes, or edits an OBS Browser Source.</p>
+
+<h2>Add the football modules to OBS</h2>
+<p>Create a separate local-file Browser Source for every panel you want:</p>
+<table>
+  <thead><tr><th>Suggested source name</th><th>Local file</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td>Football – Scoreboard</td><td><code>index.html</code></td><td>Teams, score, main timer, period</td></tr>
+    <tr><td>Football – Fouls</td><td><code>fouls.html</code></td><td>Home/guest foul totals</td></tr>
+    <tr><td>Football – Cards</td><td><code>cards.html</code></td><td>Yellow and red card totals</td></tr>
+    <tr><td>Football – Corners</td><td><code>corners.html</code></td><td>Home/guest corner totals</td></tr>
+  </tbody>
+</table>
+<ol>
+  <li>In OBS Sources, choose <strong>+ → Browser</strong>.</li>
+  <li>Enable <strong>Local file</strong> and select one HTML file from the active template folder.</li>
+  <li>Set the source to the same width and height as the OBS base canvas.</li>
+  <li>Resize and position that panel in the OBS preview.</li>
+  <li>Repeat for each additional module. You can show, hide, crop, animate, and reuse each source independently.</li>
+</ol>
+
+<div class="note">All four pages use the same <code>script.js</code>, <code>style.css</code>, WebSocket, and <code>plugin.json</code>. A score or team update in the dock reaches every open module.</div>
+
+<h2>Required football field order</h2>
+<p>The default football package creates these Team Stats. Keep the first five slots in this order:</p>
+<ol>
+  <li><code>score</code> – Score</li>
+  <li><code>fouls</code> – Fouls</li>
+  <li><code>yellow_cards</code> – Yellow Cards</li>
+  <li><code>red_cards</code> – Red Cards</li>
+  <li><code>corners</code> – Corners</li>
+</ol>
+<p>The runtime exposes these stable aliases through <code>fields_by_key</code>, so the bundled pages use bindings such as <code>{{fields_by_key.fouls.x}}</code>.</p>
 
 <h2>Recommended Browser Source settings</h2>
 <ul>
-  <li><strong>Custom CSS</strong>: leave empty (use your overlay <code>style.css</code> instead).</li>
-  <li><strong>Refresh cache of current page</strong>: useful after editing files.</li>
-  <li><strong>FPS</strong>: 30 is usually enough; 60 if you animate heavily.</li>
+  <li><strong>Custom CSS</strong>: leave empty; use the package's <code>style.css</code>.</li>
+  <li><strong>Shutdown source when not visible</strong>: disable it if hidden timers must keep rendering continuously.</li>
+  <li><strong>FPS</strong>: 30 is sufficient for most panels; use 60 for animation-heavy themes.</li>
+  <li><strong>Refresh cache</strong>: use after editing HTML, CSS, or JavaScript.</li>
 </ul>
 
-<div class="note">
-  The overlay runtime connects to <code>ws://127.0.0.1:4457</code> for instant updates. If the socket is unavailable, it fetches <code>plugin.json</code> with <code>cache: "no-store"</code> once per second.
-</div>
+<h2>Package structure</h2>
+<pre><code>Modular Football/
+  manifest.ini
+  index.html       # scoreboard only
+  fouls.html       # fouls only
+  cards.html       # cards only
+  corners.html     # corners only
+  style.css        # shared presentation
+  script.js        # shared Fly runtime
+  plugin.json      # shared state written by Fly</code></pre>
 
-<h2>Template folders</h2>
-<p>
-Use the dock <strong>Template</strong> row to select a parent folder that contains scoreboard templates. Each template is a subfolder with at least:
-</p>
-<pre><code>My Templates/
-  Soccer Lower Third/
-    manifest.ini
-    index.html
-    style.css
-    script.js</code></pre>
-<p>
-After choosing the parent folder, select a template from the dropdown. The plugin points the selected Browser Source at that template's <code>index.html</code> and creates <code>plugin.json</code> there if it is missing.
-</p>
-<p>
-Each theme folder must include <code>manifest.ini</code>. The template dropdown reads the theme title and metadata from that file:
-</p>
-<pre><code>title=Soccer Lower Third
-author=Your Name
-author_url=https://example.com
-description=Compact lower-third scoreboard for soccer streams.
-version=1.0.0</code></pre>
-<p>
-The selected template folder is the active resources path. Team logos, state updates, and Browser Source syncing all use that active template folder.
-</p>
-
-<h2>Folder placement rule</h2>
-<p>
-In the default overlay runtime (<code>script.js</code>), fallback state is loaded as:
-</p>
-<pre><code>fetch("plugin.json", { cache: "no-store" })</code></pre>
-<p>
-That means <code>plugin.json</code> must be reachable at the same relative path as <code>index.html</code>.
-</p>
-
-<h2>WebSocket endpoint</h2>
-<p>
-The dock starts a local-only WebSocket server at:
-</p>
-<pre><code>ws://127.0.0.1:4457</code></pre>
-<p>
-To use another endpoint in a custom Browser Source URL, pass it as a query parameter:
-</p>
-<pre><code>index.html?ws=ws://127.0.0.1:4457</code></pre>
-
-<h2>Common troubleshooting</h2>
+<h2>Troubleshooting</h2>
 <ul>
-  <li><strong>Blank overlay</strong>: confirm the Browser Source is pointing to the correct <code>index.html</code>.</li>
-  <li><strong>No updates</strong>: check the dock WebSocket status, ensure <code>plugin.json</code> is in the same folder, and refresh the Browser Source.</li>
-  <li><strong>Wrong teams left/right</strong>: check the <code>swap_sides</code> toggle (template uses <code>team_x</code>/<code>team_y</code>).</li>
+  <li><strong>No updates</strong>: confirm the dock WebSocket status and that every HTML file comes from the active template folder.</li>
+  <li><strong>A module is empty</strong>: confirm its required Team Stat exists and is visible.</li>
+  <li><strong>Fallback does not work</strong>: keep <code>plugin.json</code> beside all module HTML files.</li>
+  <li><strong>Wrong team side</strong>: use <code>team_x</code>/<code>team_y</code> and <code>fields_by_key.*.x/y</code>, which honor side swapping.</li>
 </ul>

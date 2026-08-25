@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Modern Broadcast Scoreboard</title>
+  <title>Football Scoreboard</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
             <div class="hs-name">{{team_x.subtitle}}</div>
           </div>
 
-          <div class="hs-score" id="hsScoreX">{{fields_xy[0].x}}</div>
+          <div class="hs-score" id="hsScoreX">{{fields_by_key.score.x}}</div>
         </div>
 
         <div class="hs-center">
@@ -42,7 +42,7 @@
         </div>
 
         <div class="hs-team hs-team-y" style="--team-accent: {{team_y.color}}">
-          <div class="hs-score" id="hsScoreY">{{fields_xy[0].y}}</div>
+          <div class="hs-score" id="hsScoreY">{{fields_by_key.score.y}}</div>
 
           <div class="hs-meta text-right">
             <div class="hs-abbr">{{team_y.title}}</div>
@@ -56,19 +56,6 @@
         </div>
       </div>
 
-      <div class="hs-details {{show_scoreboard && (fields_xy[2] && fields_xy[2].visible) ? '' : 'is-hidden'}}">
-        <div class="hs-chip">
-          <span class="hs-chip-label">{{fields_xy[2].label}}</span>
-          <span class="hs-chip-val">{{fields_xy[2].x}} - {{fields_xy[2].y}}</span>
-        </div>
-
-        <div class="hs-penalty-wrap" fs-if="timers[1] && timers[1].visible">
-          <div class="hs-mini-chip">
-            <span class="hs-mini-label">{{timers[1].label}}</span>
-            <span class="hs-mini-val">{{timers[1].mmss}}</span>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 

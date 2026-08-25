@@ -2,22 +2,28 @@
   const routes = {
     "overview": { title: "Overview", file: "pages/overview.html", subtitle: "What Fly Scoreboard is and how the overlay workflow works." },
     "download-install": { title: "Download & Install", file: "pages/download-install.html", subtitle: "Get the plugin + install it into OBS Studio." },
-    "setup": { title: "How to Setup", file: "pages/setup.html", subtitle: "Create a Browser Source and connect it to the Fly Scoreboard dock." },
+    "setup": { title: "Setup", file: "pages/setup.html", subtitle: "Choose one writable template folder, then load each panel manually in OBS." },
     "usage": { title: "How to Use", file: "pages/usage.html", subtitle: "Operate teams, scores, timers, and stats during a live show." },
     "add-scores": { title: "Add New Scores", file: "pages/add-scores.html", subtitle: "Use Custom Fields to add score rows like fouls, shots, and penalties." },
     "add-timers": { title: "Add New Timers", file: "pages/add-timers.html", subtitle: "Configure multiple timers and render them safely in your overlay." },
+    "developer-reference": { title: "Tags & Developer Reference", file: "pages/developer-reference.html", subtitle: "Every binding, state path, template file, and practical pattern for building scoreboards." },
     "templating": { title: "Templating System", file: "pages/templating.html", subtitle: "How {{…}} placeholders and fs-if conditions are evaluated." },
+    "live-data": { title: "External Live Data", file: "pages/live-data.html", subtitle: "Feed a scoreboard from any live API through the local WebSocket." },
+    "event-logging": { title: "Event Logs & Timestamps", file: "pages/event-logging.html", subtitle: "Capture chapter-ready score, timer, and manual event timestamps." },
     "ai-prompt": { title: "AI Prompt", file: "pages/ai-prompt.html", subtitle: "Copy/paste prompt to generate Fly Scoreboard compatible overlays." },
   };
 
   const pillMap = {
     "overview": ["OBS", "Browser Source", "plugin.json", "Templates"],
-    "download-install": ["Download", "Install", "OBS", "Overlay"],
-    "setup": ["Setup", "Browser Source", "Paths", "Troubleshooting"],
+    "download-install": ["Download", "Install", "OBS", "Templates"],
+    "setup": ["Template folder", "Manual sources", "Paths", "Troubleshooting"],
     "usage": ["Live workflow", "Teams", "Scores", "Timers"],
     "add-scores": ["Custom fields", "Home/Away", "fields_xy", "Visibility"],
     "add-timers": ["Timers", "countup/down", "mm:ss", "Smooth display"],
+    "developer-reference": ["All tags", "State schema", "HTML bindings", "Tips"],
     "templating": ["{{…}}", "fs-if", "team_x/y", "Swap sides"],
+    "live-data": ["WebSocket", "Live API", "set_state", "Manual override"],
+    "event-logging": ["Timestamps", "Chapters", "Automation", "log_event"],
     "ai-prompt": ["Prompt", "Overlay authoring", "Compatibility", "No loops"],
   };
 

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Football Corners Panel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="module-stage">
+    <section class="football-panel" fs-if="show_scoreboard && fields_by_key.corners && fields_by_key.corners.visible">
+      <header class="football-panel__title">{{fields_by_key.corners.label}}</header>
+      <div class="football-panel__teams">
+        <div class="football-panel__team">
+          <span class="corner-mark" aria-hidden="true"></span>
+          <span>{{team_x.title}}</span>
+          <strong>{{fields_by_key.corners.x}}</strong>
+        </div>
+        <div class="football-panel__team football-panel__team--right">
+          <strong>{{fields_by_key.corners.y}}</strong>
+          <span>{{team_y.title}}</span>
+          <span class="corner-mark corner-mark--right" aria-hidden="true"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="script.js" defer></script>
+</body>
+</html>

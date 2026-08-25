@@ -7,7 +7,7 @@ project(${_name} VERSION ${_version} LANGUAGES C CXX)
 # ---------------------------------------------------------------------------
 # Options (these are mainly here so your CI flags are "used")
 # ---------------------------------------------------------------------------
-option(ENABLE_FRONTEND_API "Use obs-frontend-api for dock, hotkeys, browser auto-setup" ON)
+option(ENABLE_FRONTEND_API "Use obs-frontend-api for the dock, hotkeys, and stream events" ON)
 option(ENABLE_QT           "Use Qt for dock UI and dialogs"                             ON)
 option(EMBED_DEFAULT_ASSETS "Embed data/overlay + locale into binary"                   ON)
 
@@ -117,12 +117,13 @@ set(OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_plugin.cpp
   ${FS_SRC_DIR}/fly_score_state.cpp
   ${FS_SRC_DIR}/fly_score_qt_helpers.cpp
-  ${FS_SRC_DIR}/fly_score_obs_helpers.cpp
   ${FS_SRC_DIR}/fly_score_logo_helpers.cpp
   ${FS_INC_DIR}/fly_score_i18n.hpp
   ${FS_SRC_DIR}/fly_score_paths.cpp
   ${FS_SRC_DIR}/fly_score_websocket_server.cpp
   ${FS_INC_DIR}/fly_score_websocket_server.hpp
+  ${FS_SRC_DIR}/fly_score_event_log.cpp
+  ${FS_INC_DIR}/fly_score_event_log.hpp
 )
 
 list(APPEND OBS_FLY_SCORE_SRC
@@ -158,6 +159,9 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 if(EMBED_DEFAULT_ASSETS)
   set(EMBED_TEXT_FILES
     "${FS_OVERLAY_DIR}/index.html"
+    "${FS_OVERLAY_DIR}/fouls.html"
+    "${FS_OVERLAY_DIR}/cards.html"
+    "${FS_OVERLAY_DIR}/corners.html"
     "${FS_OVERLAY_DIR}/manifest.ini"
     "${FS_OVERLAY_DIR}/style.css"
     "${FS_OVERLAY_DIR}/script.js"

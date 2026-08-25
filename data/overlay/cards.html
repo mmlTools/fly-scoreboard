@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Football Cards Panel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="module-stage">
+    <section class="football-panel football-panel--cards" fs-if="show_scoreboard && fields_by_key.yellow_cards && fields_by_key.red_cards && (fields_by_key.yellow_cards.visible || fields_by_key.red_cards.visible)">
+      <header class="football-panel__title">Cards</header>
+      <div class="cards-grid">
+        <div class="cards-grid__heading">{{team_x.title}}</div>
+        <div class="cards-grid__heading">{{team_y.title}}</div>
+        <div class="cards-grid__value" fs-if="fields_by_key.yellow_cards.visible">
+          <i class="card-mark card-mark--yellow"></i><strong>{{fields_by_key.yellow_cards.x}}</strong>
+        </div>
+        <div class="cards-grid__value cards-grid__value--right" fs-if="fields_by_key.yellow_cards.visible">
+          <strong>{{fields_by_key.yellow_cards.y}}</strong><i class="card-mark card-mark--yellow"></i>
+        </div>
+        <div class="cards-grid__value" fs-if="fields_by_key.red_cards.visible">
+          <i class="card-mark card-mark--red"></i><strong>{{fields_by_key.red_cards.x}}</strong>
+        </div>
+        <div class="cards-grid__value cards-grid__value--right" fs-if="fields_by_key.red_cards.visible">
+          <strong>{{fields_by_key.red_cards.y}}</strong><i class="card-mark card-mark--red"></i>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="script.js" defer></script>
+</body>
+</html>

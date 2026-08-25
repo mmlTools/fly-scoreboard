@@ -1,0 +1,109 @@
+<h1>Tags &amp; Developer Reference</h1>
+<p class="lead">Build a complete Fly Scoreboard theme from ordinary HTML and CSS. This page lists every template binding, data path, derived value, and the practical workflow for adding scores, stats, and timers.</p>
+
+<h2>Smallest valid theme</h2>
+<p>Put each theme in its own folder. The folder must contain these files:</p>
+<pre><code>my-scoreboard/
+  index.html       # layout and Fly tags
+  panel-a.html     # optional independent Browser Source panel
+  panel-b.html     # another independently managed panel
+  manifest.ini     # title, author, author_url, description, version
+  script.js        # copy from the bundled overlay runtime
+  style.css        # your design
+  plugin.json      # created when this folder is activated in the dock</code></pre>
+
+<pre><code>title=My Scoreboard
+author=Your Name
+author_url=https://example.com
+description=A responsive match scorebug
+version=1.0.0</code></pre>
+
+<h2>All Fly HTML tags and bindings</h2>
+<table>
+  <thead><tr><th>Syntax</th><th>Use</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr><td><code>{{path}}</code></td><td>Insert a live value into text.</td><td><code>{{team_x.title}}</code></td></tr>
+    <tr><td><code>{{path}}</code> in an attribute</td><td>Bind an image, CSS variable, ARIA label, class, or other attribute.</td><td><code>src="{{team_x.logo}}"</code></td></tr>
+    <tr><td><code>{{condition ? 'a' : 'b'}}</code></td><td>Choose one of two literal strings.</td><td><code>class="{{show_scoreboard ? 'board' : 'board hidden'}}"</code></td></tr>
+    <tr><td><code>fs-if="condition"</code></td><td>Show an element only when the condition is true.</td><td><code>fs-if="timers[1] &amp;&amp; timers[1].visible"</code></td></tr>
+  </tbody>
+</table>
+<p><code>fs-if</code> supports paths, <code>!</code>, <code>&amp;&amp;</code>, <code>||</code>, and parentheses. Array indexes are zero-based. There are deliberately no loops or arbitrary JavaScript expressions.</p>
+
+<h2>Complete binding map</h2>
+<table>
+  <thead><tr><th>Path</th><th>Type</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>home.title</code>, <code>away.title</code></td><td>text</td><td>Team display names</td></tr>
+    <tr><td><code>home.subtitle</code>, <code>away.subtitle</code></td><td>text</td><td>Long names or secondary labels</td></tr>
+    <tr><td><code>home.logo</code>, <code>away.logo</code></td><td>text</td><td>Logo path relative to the theme</td></tr>
+    <tr><td><code>home.color</code>, <code>away.color</code></td><td>number</td><td>Raw stored color</td></tr>
+    <tr><td><code>team_x.*</code>, <code>team_y.*</code></td><td>derived</td><td>Left and right team; color is converted to CSS hex</td></tr>
+    <tr><td><code>swap_sides</code></td><td>boolean</td><td>Whether home and guests are swapped</td></tr>
+    <tr><td><code>show_scoreboard</code></td><td>boolean</td><td>Global overlay visibility</td></tr>
+    <tr><td><code>custom_fields[i].label/home/away/visible</code></td><td>mixed</td><td>Stored paired team score/stat</td></tr>
+    <tr><td><code>fields_xy[i].label/x/y/visible</code></td><td>derived</td><td>Swap-safe left/right version of a paired field</td></tr>
+    <tr><td><code>fields_by_key.score/fouls/yellow_cards/red_cards/corners</code></td><td>derived</td><td>Named aliases for the first five football Team Stats</td></tr>
+    <tr><td><code>single_stats[i].label/value/visible</code></td><td>mixed</td><td>One-value stat such as period or round</td></tr>
+    <tr><td><code>timers[i].label/mode/running/visible</code></td><td>mixed</td><td>Timer configuration and status</td></tr>
+    <tr><td><code>timers[i].initial_ms/remaining_ms/last_tick_ms</code></td><td>number</td><td>Raw timer values, stored as milliseconds</td></tr>
+    <tr><td><code>timers[i].live_ms</code></td><td>derived</td><td>Smooth current milliseconds</td></tr>
+    <tr><td><code>timers[i].mmss</code>, <code>timers[i].hhmmss</code></td><td>derived text</td><td>Ready-to-render clock strings</td></tr>
+    <tr><td><code>timers[i].total_seconds</code></td><td>derived number</td><td>Total whole seconds</td></tr>
+    <tr><td><code>timers[i].hours/minutes/seconds</code></td><td>derived number</td><td>Separate clock components</td></tr>
+  </tbody>
+</table>
+
+<h2>Add a score and bind it to HTML</h2>
+<ol>
+  <li>Open <strong>Stats…</strong> in the dock and add a Team stat named <em>Score</em>.</li>
+  <li>Note its position. The first row is index <code>0</code>, the second is <code>1</code>.</li>
+  <li>Bind the swap-safe <code>x</code>/<code>y</code> values in the theme.</li>
+</ol>
+<pre><code>&lt;section class="score" fs-if="fields_xy[0] &amp;&amp; fields_xy[0].visible"&gt;
+  &lt;span&gt;{{team_x.title}}&lt;/span&gt;
+  &lt;strong&gt;{{fields_xy[0].x}} – {{fields_xy[0].y}}&lt;/strong&gt;
+  &lt;span&gt;{{team_y.title}}&lt;/span&gt;
+&lt;/section&gt;</code></pre>
+<p>You can also create it remotely:</p>
+<pre><code>{"action":"add_score","label":"Score","home":0,"away":0,"visible":true}
+{"action":"bump_score","index":0,"side":"home","delta":1}
+{"action":"set_score","index":0,"side":"away","value":3}</code></pre>
+
+<h2>Add a single stat and bind it</h2>
+<pre><code>&lt;div fs-if="single_stats[0] &amp;&amp; single_stats[0].visible"&gt;
+  {{single_stats[0].label}} {{single_stats[0].value}}
+&lt;/div&gt;</code></pre>
+<pre><code>{"action":"add_single","label":"PERIOD","value":1,"visible":true}
+{"action":"bump_single","index":0,"delta":1}</code></pre>
+
+<h2>Add a timer and bind it</h2>
+<ol>
+  <li>Open <strong>Timers…</strong>, add a timer, choose count up/down, and set its initial time.</li>
+  <li>Render <code>mmss</code> for sports clocks or <code>hhmmss</code> for long sessions.</li>
+  <li>Guard every optional timer with <code>fs-if</code>.</li>
+</ol>
+<pre><code>&lt;div class="clock" fs-if="timers[0] &amp;&amp; timers[0].visible"&gt;
+  &lt;span&gt;{{timers[0].label}}&lt;/span&gt;
+  &lt;time&gt;{{timers[0].mmss}}&lt;/time&gt;
+&lt;/div&gt;</code></pre>
+<pre><code>{"action":"add_timer","label":"Period 1","mode":"countdown","initial_ms":1200000,"visible":true}
+{"action":"timer_start","index":0}
+{"action":"timer_pause","index":0}
+{"action":"timer_reset","index":0}</code></pre>
+
+<h2>Developer tips and tricks</h2>
+<ul>
+  <li>Design on the full OBS base canvas. Place a compact scorebug with CSS; resize or reposition its Browser Source using the red handles in the OBS preview.</li>
+  <li>Prefer <code>team_x</code>, <code>team_y</code>, <code>fields_xy</code>, and <code>fields_by_key</code>. They make side swapping work without custom JavaScript.</li>
+  <li>Give each independently positioned panel its own HTML entry point. Share the runtime and stylesheet instead of combining every component into one page.</li>
+  <li>Guard every optional array entry before binding it: <code>fs-if="fields_xy[3] &amp;&amp; fields_xy[3].visible"</code>.</li>
+  <li>Keep the bundled <code>script.js</code> unchanged when possible. Put theme-specific behavior in a second script so runtime upgrades are easy to merge.</li>
+  <li>Use CSS custom properties in bound style attributes: <code>style="--team-color: {{team_x.color}}"</code>.</li>
+  <li>Use <code>font-variant-numeric: tabular-nums</code> on scores and clocks to prevent layout jitter.</li>
+  <li>Make the theme transparent: <code>html, body { margin: 0; background: transparent; overflow: hidden; }</code>.</li>
+  <li>The WebSocket is the fast path; <code>plugin.json</code> polling is the automatic fallback.</li>
+  <li>Test missing logos, long names, double-digit scores, side swapping, hidden rows, and disconnected WebSocket before going live.</li>
+</ul>
+
+<div class="note">Fly has no OBS source selector or source-management API. Choose only the writable template folder in the dock. Load, position, crop, and show each HTML entry point yourself in OBS; their shared state keeps them synchronized.</div>

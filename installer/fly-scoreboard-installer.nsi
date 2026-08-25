@@ -87,9 +87,10 @@ Section "Core OBS Plugin" SEC_CORE
   File /nonfatal "${PROJECT_ROOT}\data\websocket-sample.html"
 SectionEnd
 
-Section "Base Overlay & Web Server Assets" SEC_OVERLAY
+Section "Modular Football Template" SEC_OVERLAY
   SetOutPath "$OverlayDir"
-  File /nonfatal /r "${BUILD_ROOT}\data\overlay\*.*"
+  File /nonfatal /r "${BUILD_ROOT}\data\templates\Modular Football\*.*"
+  File /nonfatal "${BUILD_ROOT}\data\templates\README.md"
 
   ; If you ever add helper scripts, copy them here as well:
   ; File "${BUILD_ROOT}\data\start-server.bat"
@@ -151,9 +152,9 @@ Function overlayDirPre
   IntOp $0 $0 & ${SF_SELECTED}
   StrCmp $0 0 no_overlay
 
-  ; If no overlay dir chosen yet, default to Documents\fly-scoreboard-overlay
+  ; Templates must be copied to a user-writable directory.
   StrCmp $OverlayDir "" 0 +2
-    StrCpy $OverlayDir "$DOCUMENTS\fly-scoreboard-overlay"
+    StrCpy $OverlayDir "$DOCUMENTS\Fly Scoreboard\Templates\Modular Football"
 
   Return
 

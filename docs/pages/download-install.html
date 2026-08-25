@@ -1,124 +1,68 @@
-<h1>Download & Install</h1>
-<p class="lead">Install the plugin into OBS Studio, then use the included overlay files as your starting point.
-<h2>Video Guides</h2>
+<h1>Download and install</h1>
+<p class="lead">Install the native plugin files for your operating system, then copy the supplied template to a writable user directory.</p>
+
+<h2>Download</h2>
+<p><a class="btn btn--primary" href="https://streamrsc.com/fly-scoreboard" target="_blank" rel="noopener">Download Fly Scoreboard</a></p>
+<p>Close OBS Studio before replacing an existing plugin. Choose the build matching your operating system and OBS architecture.</p>
+
+<h2>Plugin locations</h2>
 <div class="card-grid">
   <section class="card">
-    <h3>Installation Walkthrough</h3>
-    <div class="video-embed">
-      <iframe src="https://www.youtube.com/embed/KUtw0wyafqk" title="Fly Scoreboard - Download & Install"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-    </div>
+    <h3>Windows</h3>
+    <pre><code>%ProgramFiles%\obs-studio\obs-plugins\64bit\fly-scoreboard.dll
+%ProgramFiles%\obs-studio\data\obs-plugins\fly-scoreboard\locale\
+%ProgramFiles%\obs-studio\data\obs-plugins\fly-scoreboard\templates\</code></pre>
+    <p>For portable OBS, use the equivalent paths below the portable OBS root.</p>
   </section>
 
   <section class="card">
-    <h3>First Setup & Overlay</h3>
-    <div class="video-embed">
-      <iframe src="https://www.youtube.com/embed/GtM2ytRJVEg" title="Fly Scoreboard - First Setup" frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-    </div>
-  </section>
-</div>
-
-<h2>Official Download</h2>
-<p>
-  Get the latest stable release from:
-</p>
-<p>
-  <a class="btn btn--primary" href="https://streamrsc.com/obs-studio-tools/fly-scoreboard" target="_blank"
-    rel="noopener">
-    Download Fly Scoreboard from streamrsc
-  </a>
-</p>
-
-</p>
-
-<h2>1) Download</h2>
-<div class="note">
-  <strong>Official download:</strong>
-  <a href="https://streamrsc.com/obs-studio-tools/fly-scoreboard" target="_blank"
-    rel="noopener">https://streamrsc.com/obs-studio-tools/fly-scoreboard</a>
-</div>
-
-<div class="card-grid">
-  <section class="card">
-    <h3>Video guide: Download</h3>
-    <p class="muted">Walkthrough of getting the package and preparing it for OBS.</p>
-    <div class="video" role="group" aria-label="YouTube video: Download guide">
-      <iframe src="https://www.youtube-nocookie.com/embed/KUtw0wyafqk" title="Fly Scoreboard — Download Guide"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-    </div>
+    <h3>macOS</h3>
+    <pre><code>~/Library/Application Support/obs-studio/plugins/fly-scoreboard.plugin</code></pre>
+    <p>The executable, locales, and supplied templates are contained in the plugin bundle's standard <code>Contents</code> directories.</p>
   </section>
 
   <section class="card">
-    <h3>Video guide: Install</h3>
-    <p class="muted">Step-by-step installation and verification inside OBS Studio.</p>
-    <div class="video" role="group" aria-label="YouTube video: Install guide">
-      <iframe src="https://www.youtube-nocookie.com/embed/GtM2ytRJVEg" title="Fly Scoreboard — Install Guide"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-    </div>
+    <h3>Linux</h3>
+    <pre><code>/usr/lib/obs-plugins/fly-scoreboard.so
+/usr/share/obs/obs-plugins/fly-scoreboard/locale/
+/usr/share/obs/obs-plugins/fly-scoreboard/templates/</code></pre>
+    <p>The library prefix may be <code>/usr/lib64</code> or a distribution-specific multiarch directory.</p>
   </section>
 </div>
 
-<ul>
-  <li>Download the latest release ZIP from the official page above.</li>
-  <li>Verify you downloaded the correct build for your OBS version and OS.</li>
-</ul>
-
-<h2>2) Install (manual)</h2>
+<h2>Copy the template before use</h2>
+<div class="warn"><strong>Required:</strong> Do not activate a template inside Program Files, an application bundle, or <code>/usr</code>. Fly writes <code>plugin.json</code> and may copy logo files into the active template directory.</div>
+<table>
+  <thead><tr><th>Platform</th><th>Recommended writable location</th></tr></thead>
+  <tbody>
+    <tr><td>Windows</td><td><code>%USERPROFILE%\Documents\Fly Scoreboard\Templates\Modular Football</code></td></tr>
+    <tr><td>macOS</td><td><code>~/Library/Application Support/Fly Scoreboard/Templates/Modular Football</code></td></tr>
+    <tr><td>Linux</td><td><code>${XDG_DATA_HOME:-$HOME/.local/share}/fly-scoreboard/templates/Modular Football</code></td></tr>
+    <tr><td>OBS Flatpak</td><td><code>~/.var/app/com.obsproject.Studio/data/fly-scoreboard/templates/Modular Football</code></td></tr>
+  </tbody>
+</table>
 <ol>
-  <li>Close OBS Studio completely.</li>
-  <li>Extract the ZIP.</li>
-  <li>Copy the plugin files into your OBS installation folders.</li>
+  <li>Locate the supplied <code>templates/Modular Football</code> directory.</li>
+  <li>Copy the complete directory to the appropriate writable location above.</li>
+  <li>Start OBS and open the Fly Scoreboard dock.</li>
+  <li>Click <strong>Template Folder...</strong> and select the copied <code>Modular Football</code> directory itself.</li>
 </ol>
 
-<div class="card-grid">
-  <section class="card">
-    <h3>Windows (typical)</h3>
-    <p class="muted">Copy plugin DLLs into:</p>
-    <pre><code>%ProgramFiles%\obs-studio\obs-plugins\64bit\</code></pre>
-    <p class="muted">Copy the plugin data folder into:</p>
-    <pre><code>%ProgramFiles%\obs-studio\data\obs-plugins\fly-scoreboard\</code></pre>
-  </section>
-
-  <section class="card">
-    <h3>Portable OBS / custom paths</h3>
-    <p class="muted">If you run OBS as portable or installed elsewhere, copy into the equivalent:</p>
-    <pre><code>&lt;OBS_ROOT&gt;\obs-plugins\64bit\
-&lt;OBS_ROOT&gt;\data\obs-plugins\fly-scoreboard\</code></pre>
-  </section>
-</div>
-
-<div class="warn">
-  <strong>Conflicts:</strong> If you previously used older builds with different plugin names, remove/rename the old DLL
-  to avoid double-loading or hotkey collisions.
-</div>
-
-<h2>3) Verify in OBS</h2>
+<h2>Verify the plugin</h2>
 <ol>
   <li>Start OBS Studio.</li>
-  <li>Open <span class="kbd">Tools</span> → <span class="kbd">Fly Scoreboard</span> (or the dock menu entry).</li>
-  <li>If the dock loads, the plugin is installed.</li>
+  <li>Open <span class="kbd">Tools</span> and enable the Fly Scoreboard dock.</li>
+  <li>Confirm that the dock shows the active template name and an online local WebSocket status.</li>
 </ol>
 
-<h2>Included overlay files</h2>
-<p>
-  The plugin ships an overlay folder containing:
-</p>
-<ul>
-  <li><code>index.html</code> - markup with template placeholders</li>
-  <li><code>style.css</code> - visual styling</li>
-  <li><code>script.js</code> - the runtime (fetch + templating + timer render loop)</li>
-  <li><code>plugin.json</code> - sample data shape (the plugin overwrites this at runtime)</li>
-</ul>
-
-<div class="note">
-  You can copy the overlay folder anywhere (for theming/versioning). The only strict requirement is that your overlay
-  runtime can access the live <code>plugin.json</code>.
-</div>
+<h2>Supplied modular panels</h2>
+<table>
+  <thead><tr><th>File</th><th>Panel</th></tr></thead>
+  <tbody>
+    <tr><td><code>index.html</code></td><td>Football scoreboard</td></tr>
+    <tr><td><code>fouls.html</code></td><td>Fouls</td></tr>
+    <tr><td><code>cards.html</code></td><td>Yellow and red cards</td></tr>
+    <tr><td><code>corners.html</code></td><td>Corners</td></tr>
+  </tbody>
+</table>
+<p>Each panel is added manually as a separate local-file Browser Source. The plugin does not enumerate or modify OBS sources.</p>

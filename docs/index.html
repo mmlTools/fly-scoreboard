@@ -40,11 +40,6 @@
         </button>
       </div>
 
-      <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle navigation"
-        aria-expanded="false">
-        <span aria-hidden="true">☰</span>
-      </button>
-
       <div class="sidebar-search">
         <label class="sr-only" for="navSearch">Search documentation navigation</label>
         <input id="navSearch" class="sidebar-search__input" type="search" placeholder="Search docs…"
@@ -55,13 +50,16 @@
         <a class="nav__link" href="#overview" data-nav="overview">Overview</a>
         <div class="nav__section">Getting Started</div>
         <a class="nav__link" href="#download-install" data-nav="download-install">Download &amp; Install</a>
-        <a class="nav__link" href="#setup" data-nav="setup">How to Setup</a>
+        <a class="nav__link" href="#setup" data-nav="setup">Setup</a>
         <div class="nav__section">Using Fly Scoreboard</div>
         <a class="nav__link" href="#usage" data-nav="usage">How to Use</a>
         <a class="nav__link" href="#add-scores" data-nav="add-scores">Add New Scores</a>
         <a class="nav__link" href="#add-timers" data-nav="add-timers">Add New Timers</a>
-        <div class="nav__section">Overlay Development</div>
+        <div class="nav__section">Template Development</div>
+        <a class="nav__link" href="#developer-reference" data-nav="developer-reference">Tags &amp; Developer Reference</a>
         <a class="nav__link" href="#templating" data-nav="templating">Templating System</a>
+        <a class="nav__link" href="#live-data" data-nav="live-data">External Live Data</a>
+        <a class="nav__link" href="#event-logging" data-nav="event-logging">Event Logs &amp; Timestamps</a>
         <a class="nav__link" href="#ai-prompt" data-nav="ai-prompt">AI Prompt</a>
       </nav>
 
@@ -69,17 +67,15 @@
         <div class="sidebar-footer__section">
           <div class="sidebar-footer__title">Community</div>
           <ul class="sidebar-links">
-            <li><a href="https://discord.gg/2yD6B2PTuQ" target="_blank" rel="noopener">💬 Discord</a></li>
-            <li><a href="https://www.facebook.com/groups/freestreamerspromotion" target="_blank" rel="noopener">📘
-                Facebook Group</a></li>
-            <li><a href="https://mastodon.social/@streamrsc" target="_blank" rel="me noopener">🐘 Mastodon</a></li>
-            <li><a href="https://x.com/mmltechYT" target="_blank" rel="noopener">🐦 X (Twitter)</a></li>
+            <li><a href="https://discord.gg/2yD6B2PTuQ" target="_blank" rel="noopener">Discord</a></li>
+            <li><a href="https://mastodon.social/@streamrsc" target="_blank" rel="me noopener">Mastodon</a></li>
+            <li><a href="https://x.com/mmltechYT" target="_blank" rel="noopener">X</a></li>
           </ul>
         </div>
         <div class="sidebar-footer__section">
           <div class="sidebar-footer__title">Support</div>
           <ul class="sidebar-links">
-            <li><a href="https://ko-fi.com/mmltech" target="_blank" rel="noopener">☕ Ko‑fi (MMLTech)</a></li>
+            <li><a href="https://ko-fi.com/mmltech" target="_blank" rel="noopener">Ko-fi</a></li>
           </ul>
         </div>
         <div class="sidebar-footer__meta">
@@ -96,21 +92,12 @@
         </div>
         <div class="content-header__actions">
           <a class="btn btn--ghost" href="#ai-prompt">AI Prompt</a>
-          <a class="btn btn--primary" href="https://streamrsc.com/obs-studio-tools/fly-scoreboard" target="_blank"
+          <a class="btn btn--primary" href="https://streamrsc.com/fly-scoreboard" target="_blank"
             rel="noopener">Download</a>
         </div>
       </header>
 
       <div class="pillRow" id="docPills" aria-label="Topic tags"></div>
-
-      <div class="ad ad--responsive" aria-label="Advertisement">
-        <!-- OBS_W_HORIZONTAL_RESPONSIVE -->
-        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8021810602774098"
-          data-ad-slot="7434839058" data-ad-format="auto" data-full-width-responsive="true"></ins>
-        <script>
-          try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { }
-        </script>
-      </div>
 
       <article id="docContent" class="doc" aria-live="polite"></article>
 

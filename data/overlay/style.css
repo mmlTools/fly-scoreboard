@@ -12,6 +12,7 @@
 body {
     margin: 0;
     padding: 0;
+    overflow: hidden;
     background: transparent; /* Allows for OBS/Broadcasting overlay */
     font-family: var(--font-primary);
     -webkit-font-smoothing: antialiased;
@@ -45,7 +46,7 @@ body {
     display: flex;
     height: 72px;
     background: var(--bg-main);
-    border-radius: 6px 6px 0 0;
+    border-radius: 6px;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-bottom: 2px solid rgba(255, 255, 255, 0.05);
@@ -167,57 +168,6 @@ body {
     border-radius: 4px;
 }
 
-/* --- Bottom Stats Bar --- */
-.hs-details {
-    background: rgba(0, 0, 0, 0.85);
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0 0 6px 6px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-top: none;
-    gap: 25px;
-    padding: 0 20px;
-}
-
-.hs-chip {
-    display: flex;
-    align-items: center;
-    font-size: 0.75rem;
-}
-
-.hs-chip-label {
-    color: var(--text-dim);
-    font-weight: 700;
-    margin-right: 8px;
-    text-transform: uppercase;
-}
-
-.hs-chip-val {
-    font-weight: 800;
-    color: var(--text-white);
-}
-
-/* Mini Penalty Timers */
-.hs-mini-timers {
-    display: flex;
-    gap: 10px;
-}
-
-.hs-mini-chip {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    padding: 2px 6px;
-    font-size: 0.7rem;
-    display: flex;
-    gap: 6px;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
-.hs-mini-label { font-weight: 700; color: var(--clock-amber); }
-.hs-mini-val { font-weight: 800; font-variant-numeric: tabular-nums; }
-
 /* --- Utility --- */
 .text-right { text-align: right; }
 .is-hidden { display: none !important; }
@@ -229,3 +179,141 @@ body {
     100% { transform: scale(1); color: #fff; }
 }
 .score-flash { animation: score-pop 0.5s ease-out; }
+
+/* --- Independent football module pages --- */
+.module-stage {
+    min-height: 100vh;
+    padding: 30px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.football-panel {
+    width: min(620px, calc(100vw - 60px));
+    color: var(--text-white);
+    background: var(--bg-main);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 7px;
+    overflow: hidden;
+    filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.55));
+}
+
+.football-panel__title {
+    padding: 8px 14px;
+    color: var(--clock-amber);
+    background: var(--bg-center);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.football-panel__teams {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.football-panel__team {
+    min-width: 0;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.football-panel__team--right {
+    border-right: 0;
+    text-align: right;
+}
+
+.football-panel__team span:not(.corner-mark) {
+    overflow: hidden;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.football-panel__team strong {
+    min-width: 30px;
+    font-size: 1.8rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.football-panel__logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cards-grid__heading {
+    padding: 12px 18px 8px;
+    overflow: hidden;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-align: center;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.cards-grid__value {
+    min-height: 42px;
+    padding: 5px 22px 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.cards-grid__value--right {
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-mark {
+    width: 14px;
+    height: 20px;
+    display: inline-block;
+    border-radius: 2px;
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.45);
+    transform: rotate(4deg);
+}
+
+.card-mark--yellow { background: #ffd60a; }
+.card-mark--red { background: #ef233c; }
+
+.corner-mark {
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    border-top: 3px solid var(--clock-amber);
+    border-left: 3px solid var(--clock-amber);
+    border-radius: 3px 0 0;
+}
+
+.corner-mark--right {
+    border-right: 3px solid var(--clock-amber);
+    border-left: 0;
+    border-radius: 0 3px 0 0;
+}
+
+@media (max-width: 620px) {
+    .module-stage { padding: 14px; }
+    .football-panel { width: calc(100vw - 28px); }
+    .football-panel__team { padding: 12px; gap: 8px; }
+    .football-panel__logo { width: 24px; height: 24px; }
+}

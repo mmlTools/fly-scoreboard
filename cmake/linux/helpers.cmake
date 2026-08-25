@@ -72,6 +72,12 @@ function(target_install_resources target)
       DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/"
       DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/obs/obs-plugins/${target}
       USE_SOURCE_PERMISSIONS
+      PATTERN "overlay" EXCLUDE
+    )
+    install(
+      DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/overlay/"
+      DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/obs/obs-plugins/${target}/templates/Modular Football"
+      USE_SOURCE_PERMISSIONS
     )
 
     add_custom_command(

@@ -15,7 +15,7 @@ The plugin broadcasts state to <code>ws://127.0.0.1:4457</code> and writes the s
   <li><code>swap_sides</code>, <code>show_scoreboard</code></li>
 </ul>
 
-<h2>Derived view model (team_x / team_y / fields_xy)</h2>
+<h2>Derived view model (team_x / team_y / fields_xy / fields_by_key)</h2>
 <p>
 Before applying templates, the runtime builds a “view model” so you can design for left/right without duplicating swap logic:
 </p>
@@ -23,6 +23,7 @@ Before applying templates, the runtime builds a “view model” so you can desi
   <li><code>team_x</code> - left team (home or away depending on <code>swap_sides</code>)</li>
   <li><code>team_y</code> - right team</li>
   <li><code>fields_xy[]</code> - each custom field mapped to left/right as <code>x</code>/<code>y</code></li>
+  <li><code>fields_by_key</code> - named football aliases: <code>score</code>, <code>fouls</code>, <code>yellow_cards</code>, <code>red_cards</code>, and <code>corners</code></li>
 </ul>
 
 <div class="note">
@@ -76,10 +77,12 @@ if (!running || !last_tick_ms) return remaining_ms;
 delta = now - last_tick_ms;
 return mode === "countup" ? remaining_ms + delta : max(0, remaining_ms - delta);</code></pre>
 
+<p>The runtime exposes <code>mmss</code> and <code>hhmmss</code> strings plus <code>live_ms</code>, <code>total_seconds</code>, <code>hours</code>, <code>minutes</code>, and <code>seconds</code> numeric values for custom clock layouts.</p>
+
 <h2>Overlay authoring checklist</h2>
 <ul>
   <li>Keep <code>index.html</code>, <code>script.js</code>, and <code>plugin.json</code> aligned (paths matter).</li>
-  <li>Put each reusable design in its own folder with an <code>index.html</code>; the dock template dropdown can load it directly.</li>
+  <li>Put each reusable design in its own folder with an <code>index.html</code>; activate it with the dock's <strong>Template Folder...</strong> button.</li>
   <li>Prefer <code>team_x</code>/<code>team_y</code> and <code>fields_xy</code> for swap-safe designs.</li>
   <li>Guard optional items with <code>fs-if</code> to avoid “undefined” placeholders.</li>
 </ul>

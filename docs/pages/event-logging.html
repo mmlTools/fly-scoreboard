@@ -1,0 +1,33 @@
+<h1>Event Logs &amp; Timestamps</h1>
+<p class="lead">Fly can write chapter-ready text logs for goals, score changes, stats, timers, and operator notes.</p>
+
+<h2>Use it from the dock</h2>
+<ol>
+  <li>Open the <strong>Events</strong> tab.</li>
+  <li>Choose <strong>Stream time</strong> for <code>0:12:34</code> timestamps or <strong>Real time</strong> for date-and-clock timestamps.</li>
+  <li>Start streaming/recording, or press <strong>Start log</strong>. OBS streaming and recording events start a log automatically.</li>
+  <li>Use the event box for notes such as <em>Penalty</em> or <em>Shot on Goal</em>. Score, stat, timer, visibility, and side changes are captured automatically.</li>
+  <li>Press <strong>Folder</strong> to open the log directory.</li>
+</ol>
+
+<pre><code>0:00:00 Stream Start
+0:12:34 First Half Start
+0:15:22 Score: Eagles (1-0)
+0:23:45 Penalty
+0:35:10 First Half Pause
+0:35:12 Stream End</code></pre>
+
+<h2>Use it from a controller or live-data feeder</h2>
+<pre><code>{"action":"start_event_log","label":"Stream Start"}
+{"action":"log_event","label":"Penalty: Eagles #12"}
+{"action":"stop_event_log","label":"Stream End"}</code></pre>
+
+<h2>How files behave</h2>
+<ul>
+  <li>Each session creates a unique <code>fly-scoreboard-YYYYMMDD-HHMMSS-milliseconds.txt</code> file.</li>
+  <li>Logs are stored in the plugin configuration directory under <code>event-logs</code>, not inside a theme, so changing themes does not move them.</li>
+  <li>Event labels are kept on one line so the file is safe to parse for chapters or clip automation.</li>
+  <li>The selected timestamp mode is remembered for the next OBS session.</li>
+</ul>
+
+<div class="note">For automatic clips, watch the log directory and react to a stable prefix such as <code>Score:</code> or send explicit <code>log_event</code> labels from your controller.</div>

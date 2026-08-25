@@ -15,6 +15,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QStringList>
 
 static QString moduleBaseDirFromConfigFile()
 {
@@ -54,7 +55,7 @@ static FlyTimer makeDefaultMainTimer()
 {
 	FlyTimer t;
 	t.label = fly_i18n("Default.Timer.FirstHalf");
-	t.mode = QStringLiteral("countdown");
+	t.mode = QStringLiteral("countup");
 	t.running = false;
 	t.initial_ms = 0;
 	t.remaining_ms = 0;
@@ -66,17 +67,24 @@ static FlyTimer makeDefaultMainTimer()
 static void ensureDefaultCustomFields(FlyState &st)
 {
 	if (st.custom_fields.isEmpty()) {
-		FlyCustomField cf;
-		cf.label = fly_i18n("Default.Field.Points");
-		cf.home = 0;
-		cf.away = 0;
-		cf.visible = true;
-		st.custom_fields.push_back(cf);
+		const QStringList labels = {
+			fly_i18n("Default.Field.Score"),
+			fly_i18n("Default.Field.Fouls"),
+			fly_i18n("Default.Field.YellowCards"),
+			fly_i18n("Default.Field.RedCards"),
+			fly_i18n("Default.Field.Corners"),
+		};
+		for (const QString &label : labels) {
+			FlyCustomField field;
+			field.label = label;
+			field.visible = true;
+			st.custom_fields.push_back(field);
+		}
 		return;
 	}
 
 	if (st.custom_fields[0].label.isEmpty())
-		st.custom_fields[0].label = fly_i18n("Default.Field.Points");
+		st.custom_fields[0].label = fly_i18n("Default.Field.Score");
 }
 
 static void ensureDefaultSingleStats(FlyState &st)
