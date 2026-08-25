@@ -118,7 +118,8 @@ set(
 )
 
 list(
-  APPEND OBS_FLY_SCORE_SRC
+  APPEND
+  OBS_FLY_SCORE_SRC
   ${FS_SRC_DIR}/fly_score_dock.cpp
   ${FS_INC_DIR}/fly_score_dock.hpp
   ${FS_SRC_DIR}/widget.cpp
@@ -167,7 +168,8 @@ if(EMBED_DEFAULT_ASSETS)
         set(_contents "${_contents}\n")
       endif()
       string(
-        APPEND _asset_entries
+        APPEND
+        _asset_entries
         "#define HAVE_${_id} 1
 inline constexpr const char* ${_id} = R\"obsplg(${_contents})obsplg\";\n"
       )
@@ -178,7 +180,8 @@ inline constexpr const char* ${_id} = R\"obsplg(${_contents})obsplg\";\n"
 
   set(_embedded_header "${FS_GEN_DIR}/embedded_assets.hpp")
   file(
-    WRITE "${_embedded_header}"
+    WRITE
+    "${_embedded_header}"
     "/* Auto-generated: do not edit. */\n#pragma once\nnamespace fly_score_embedded {\n${_asset_entries}}\n"
   )
 
