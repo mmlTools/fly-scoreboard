@@ -38,7 +38,7 @@ if (( ! (${skips[(Ie)all]} + ${skips[(Ie)deps]}) )) {
   sudo apt-get update
 
   sudo apt-get install ${apt_args} \
-    build-essential \
+    build-essential extra-cmake-modules \
     libgles-dev \
     libsimde-dev \
     libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libswscale-dev \
