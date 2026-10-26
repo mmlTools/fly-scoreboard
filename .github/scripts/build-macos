@@ -123,13 +123,13 @@ build() {
         renderer='terminal'
       }
       local build_log="${project_root}/build_macos/xcodebuild.log"
-      if xcodebuild ${@} 2>&1 | tee "${build_log}" | xcbeautify --renderer ${renderer} {
+      if xcodebuild ${@} 2>&1 | tee "${build_log}" | xcbeautify --renderer ${renderer}; then
         return 0
-      } else {
+      else
         # Preserve diagnostics from CMake/Qt script phases that xcbeautify omits.
         tail -n 100 "${build_log}"
         return 1
-      }
+      fi
     }
   }
 
