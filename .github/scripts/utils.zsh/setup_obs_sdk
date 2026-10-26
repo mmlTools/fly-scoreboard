@@ -1,0 +1,31 @@
+autoload -Uz log_group log_error
+
+# The Ubuntu archive/PPA may lag the OBS release. Build the exact SDK used on
+# Windows and macOS instead of silently compiling against an older libobs.
+local obs_version obs_hash
+read -r obs_version obs_hash <<< \
+  "$(jq -r '.dependencies["obs-studio"] | [.version, .hashes["ubuntu-x86_64"]] | join(" ")' ${buildspec_file})"
+
+local sdk_root=${project_root}/.deps/obs-sdk-${obs_version}
+local source_root=${project_root}/.deps/obs-studio-${obs_version}
+local archive=${project_root}/.deps/${obs_version}.tar.gz
+
+log_group "Building OBS ${obs_version} development SDK..."
+mkdir -p ${project_root}/.deps
+if [[ ! -f ${archive} ]] {
+  curl --fail --location --retry 3 \
+    "https://github.com/obsproject/obs-studio/archive/refs/tags/${obs_version}.tar.gz" -o ${archive}
+}
+print -r -- "${obs_hash}  ${archive}" | sha256sum --check
+if [[ ! -f ${source_root}/CMakeLists.txt ]] {
+  tar -xzf ${archive} -C ${project_root}/.deps
+}
+cmake -S ${source_root} -B ${source_root}/build_sdk -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${sdk_root} -DCMAKE_INSTALL_LIBDIR=lib \
+  -DOBS_VERSION_OVERRIDE=${obs_version} -DENABLE_CORE_MODULES=OFF -DENABLE_FRONTEND=OFF \
+  -DENABLE_SCRIPTING=OFF -DENABLE_WAYLAND=OFF -DENABLE_PULSEAUDIO=OFF
+cmake --build ${source_root}/build_sdk --target obs-frontend-api --parallel
+cmake --install ${source_root}/build_sdk --component Development
+typeset -gx CMAKE_PREFIX_PATH="${sdk_root}${CMAKE_PREFIX_PATH:+:${CMAKE_PREFIX_PATH}}"
+typeset -gx LD_LIBRARY_PATH="${sdk_root}/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+log_group

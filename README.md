@@ -37,7 +37,7 @@ https://github.com/mmlTools/fly-scoreboard/releases
 
 ### Requirements and plugin locations
 
-Fly Score 5.1 requires OBS Studio 33 or later and Qt 6.10 or later. The build uses the OBS 33.0.0 SDK and the matching OBS dependency packages. See the [OBS 33 release](https://github.com/obsproject/obs-studio/releases/tag/33.0.0) and [plugin loader source](https://github.com/obsproject/obs-studio/tree/33.0.0/frontend/plugin-manager) for the updated runtime requirements and installation paths.
+Fly Score 5.1 requires OBS Studio 33 or later and Qt 6.10 or later. The build uses the OBS 33.0.0 SDK and the matching OBS dependency packages. Linux CI builds the pinned OBS SDK from its verified source archive, so release builds do not depend on the distribution repository already providing OBS 33. macOS builds require Xcode 26.5 and its SDK. See the [OBS 33 release](https://github.com/obsproject/obs-studio/releases/tag/33.0.0) and [plugin loader source](https://github.com/obsproject/obs-studio/tree/33.0.0/frontend/plugin-manager) for the updated runtime requirements and installation paths.
 
 On Windows, extract the ZIP into `C:\ProgramData\obs-studio\plugins\`. It contains:
 

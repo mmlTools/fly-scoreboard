@@ -35,16 +35,19 @@ if (( ! (${skips[(Ie)all]} + ${skips[(Ie)deps]}) )) {
     sudo apt-get install ${apt_args} gcc-${${target##*-}//_/-}-linux-gnu g++-${${target##*-}//_/-}-linux-gnu
   }
 
-  sudo add-apt-repository --yes ppa:obsproject/obs-studio
-  sudo apt update
+  sudo apt-get update
 
   sudo apt-get install ${apt_args} \
     build-essential \
     libgles-dev \
     libsimde-dev \
-    obs-studio \
-    libobs-dev
+    libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libswscale-dev \
+    libjansson-dev libx11-dev libx11-xcb-dev libxcb1-dev libxcb-xinput-dev \
+    libdrm-dev libegl-dev libgl-dev libpulse-dev libwayland-dev libxkbcommon-dev \
+    uuid-dev uthash-dev zlib1g-dev
 
   sudo apt-get install ${apt_args} qt6-base-dev${suffix} libqt6svg6-dev${suffix}
   log_group
 }
+
+autoload -Uz setup_obs_sdk && setup_obs_sdk
