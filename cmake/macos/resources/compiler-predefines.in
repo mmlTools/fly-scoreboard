@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Xcode 26 exports other Apple platforms to Qt's compiler-predefines probe.
+unset IPHONEOS_DEPLOYMENT_TARGET TVOS_DEPLOYMENT_TARGET WATCHOS_DEPLOYMENT_TARGET
+unset DRIVERKIT_DEPLOYMENT_TARGET XROS_DEPLOYMENT_TARGET
+exec "${CMAKE_CXX_COMPILER}" "$@"

@@ -118,10 +118,17 @@ build() {
     if (( debug )) {
       xcodebuild ${@}
     } else {
+      local renderer='github-actions'
       if [[ ${GITHUB_EVENT_NAME} == push ]] {
-        xcodebuild ${@} 2>&1 | xcbeautify --renderer terminal
+        renderer='terminal'
+      }
+      local build_log="${project_root}/build_macos/xcodebuild.log"
+      if xcodebuild ${@} 2>&1 | tee "${build_log}" | xcbeautify --renderer ${renderer} {
+        return 0
       } else {
-        xcodebuild ${@} 2>&1 | xcbeautify --renderer github-actions
+        # Preserve diagnostics from CMake/Qt script phases that xcbeautify omits.
+        tail -n 100 "${build_log}"
+        return 1
       }
     }
   }

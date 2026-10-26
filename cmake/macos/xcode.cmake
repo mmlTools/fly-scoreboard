@@ -6,18 +6,18 @@ set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
 
 # Xcode 26 exports deployment targets for every Apple platform to script phases.
 # Qt's compiler-predefines probe must see only the macOS target.
-list(
-  PREPEND
-  CMAKE_CXX_COMPILER_PREDEFINES_COMMAND
-  "${CMAKE_COMMAND}"
-  -E
-  env
-  --unset=IPHONEOS_DEPLOYMENT_TARGET
-  --unset=TVOS_DEPLOYMENT_TARGET
-  --unset=WATCHOS_DEPLOYMENT_TARGET
-  --unset=DRIVERKIT_DEPLOYMENT_TARGET
-  --unset=XROS_DEPLOYMENT_TARGET
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos/resources/compiler-predefines.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/compiler-predefines"
 )
+file(
+  CHMOD
+  "${CMAKE_CURRENT_BINARY_DIR}/compiler-predefines"
+  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
+# Keep a single executable first: CMake inserts the C++ standard flag after it.
+list(REMOVE_AT CMAKE_CXX_COMPILER_PREDEFINES_COMMAND 0)
+list(PREPEND CMAKE_CXX_COMPILER_PREDEFINES_COMMAND "${CMAKE_CURRENT_BINARY_DIR}/compiler-predefines")
 
 # Use a compiler wrapper to enable ccache in Xcode projects
 if(ENABLE_CCACHE AND CCACHE_PROGRAM)
