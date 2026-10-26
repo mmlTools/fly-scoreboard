@@ -29,6 +29,19 @@ The default overlay is plain HTML/CSS/JavaScript. It receives live state from `w
   </picture>
 </p>
 
+## Video Tutorials
+
+Watch the tutorials on YouTube, listed from newest to oldest:
+
+1. [Don't Let OBS 33.0.0 Break Your Stream Scoreboards](https://youtu.be/heyZPL03ngA)
+2. [How to Code a Sports Scoreboard for Live Streaming](https://youtu.be/5AR-zBoHdOA)
+3. [Create Your Own Streaming Live Scoreboards using this Plugin](https://youtu.be/KUtw0wyafqk)
+4. [Broadcasting Like the Pros? Here's How to Build Custom Scoreboards Fast](https://youtu.be/vuWZqBWGh8Y)
+5. [Update Live Scores in OBS Studio Without Missing a Beat | Fly Scoreboard Plugin](https://youtu.be/GtM2ytRJVEg)
+6. [Sports Broadcasting Just Got Easier - OBS Scoreboard Tutorial](https://youtu.be/iVcTWORlmJk)
+
+Older tutorials may show an earlier dock or installation layout. Follow the current [installation](#install) and [quick start](#quick-start) instructions for Fly Score 5.1 and OBS Studio 33.
+
 ## Install
 
 Download the latest release from:
