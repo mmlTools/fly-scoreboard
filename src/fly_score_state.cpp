@@ -11,6 +11,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QSaveFile>
 #include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -313,21 +314,21 @@ bool fly_state_write_json(const std::string &base_dir_s, const std::string &json
 	const QString base_dir = QString::fromStdString(base_dir_s);
 	const QString path = overlay_plugin_json(base_dir);
 	QDir().mkpath(QFileInfo(path).absolutePath());
-	QFile f(path);
-	if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate))
+	QSaveFile f(path);
+	if (!f.open(QIODevice::WriteOnly))
 		return false;
-	f.write(QByteArray::fromStdString(json));
-	return true;
+	const auto data = QByteArray::fromStdString(json);
+	return f.write(data) == data.size() && f.commit();
 }
 
 static bool write_one_json(const QString &path, const QJsonDocument &doc)
 {
 	QDir().mkpath(QFileInfo(path).absolutePath());
-	QFile f(path);
-	if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate))
+	QSaveFile f(path);
+	if (!f.open(QIODevice::WriteOnly))
 		return false;
-	f.write(doc.toJson(QJsonDocument::Compact));
-	return true;
+	const auto data = doc.toJson(QJsonDocument::Compact);
+	return f.write(data) == data.size() && f.commit();
 }
 
 bool fly_state_load(const QString &base_dir, FlyState &out)

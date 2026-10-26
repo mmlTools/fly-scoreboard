@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.28...3.30)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/buildspec.json")
 
 project(${_name} VERSION ${_version} LANGUAGES C CXX)
 
@@ -31,7 +32,7 @@ if(MSVC)
   add_compile_options(/WX- /utf-8)
 endif()
 
-# OBS 32+: use dock-by-id API
+# OBS 33: use dock-by-id API
 add_compile_definitions(HAVE_OBS_DOCK_BY_ID=1)
 
 if(APPLE)
@@ -65,7 +66,7 @@ configure_file("${FS_INC_DIR}/config.hpp.in" "${FS_INC_DIR}/config.hpp" @ONLY)
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
 # libobs
-find_package(libobs REQUIRED)
+find_package(libobs 33 REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
 
 # ---------------------------------------------------------------------------
@@ -79,13 +80,8 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE ENABLE_FRONTEND_API=1)
 # ---------------------------------------------------------------------------
 # Qt (dock & dialogs) – REQUIRED
 # ---------------------------------------------------------------------------
-find_package(Qt6 COMPONENTS Core Widgets Network QUIET)
-if(Qt6_FOUND)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
-else()
-  find_package(Qt5 COMPONENTS Core Widgets Network REQUIRED)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets Qt5::Network)
-endif()
+find_package(Qt6 6.10 REQUIRED COMPONENTS Core Widgets Network)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
 
 set_target_properties(
   ${CMAKE_PROJECT_NAME}
@@ -108,6 +104,8 @@ set(
   ${FS_SRC_DIR}/fly_score_plugin.cpp
   ${FS_SRC_DIR}/fly_score_state.cpp
   ${FS_SRC_DIR}/fly_score_qt_helpers.cpp
+  ${FS_SRC_DIR}/fly_score_icons.cpp
+  ${FS_INC_DIR}/fly_score_icons.hpp
   ${FS_SRC_DIR}/fly_score_logo_helpers.cpp
   ${FS_INC_DIR}/fly_score_i18n.hpp
   ${FS_SRC_DIR}/fly_score_paths.cpp
@@ -159,6 +157,7 @@ if(EMBED_DEFAULT_ASSETS)
 
   set(_asset_entries "")
   foreach(_f IN LISTS EMBED_TEXT_FILES)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${_f}")
     if(EXISTS "${_f}")
       get_filename_component(_fname "${_f}" NAME)
       string(REPLACE "." "_" _id "${_fname}")

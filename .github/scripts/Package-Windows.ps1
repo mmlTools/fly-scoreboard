@@ -3,7 +3,8 @@ param(
     [ValidateSet('x64')]
     [string] $Target = 'x64',
     [ValidateSet('Debug', 'RelWithDebInfo', 'Release', 'MinSizeRel')]
-    [string] $Configuration = 'RelWithDebInfo'
+    [string] $Configuration = 'RelWithDebInfo',
+    [switch] $Package
 )
 
 $ErrorActionPreference = 'Stop'
@@ -48,26 +49,22 @@ function Package {
     $ProductVersion = $BuildSpec.version
 
     $OutputName = "${ProductName}-${ProductVersion}-windows-${Target}"
-    $ArchiveRootName = 'fly-score'
-    $ArchivePluginDataName = $ProductName
+    $ArchiveRootName = $ProductName
     $PackageStage = "${ProjectRoot}/release/.windows-package-${Target}"
     $ArchiveRoot = "${PackageStage}/${ArchiveRootName}"
-    $ArchiveDataRoot = "${ArchiveRoot}/data/obs-plugins/${ArchivePluginDataName}"
-    $ArchiveBinaryRoot = "${ArchiveRoot}/obs-plugins/64bit"
+    $ArchiveDataRoot = "${ArchiveRoot}/data"
+    $ArchiveBinaryRoot = $ArchiveRoot
     $InstallDataRoot = "${ProjectRoot}/release/${Configuration}/${ProductName}/data"
-    $BuildBinary = "${ProjectRoot}/build_${Target}/${Configuration}/${ProductName}.dll"
+    $BuildBinary = "${ProjectRoot}/release/${Configuration}/${ProductName}/${ProductName}.dll"
 
-    $RemoveArgs = @{
-        ErrorAction = 'SilentlyContinue'
-        Force = $true
-        Path = @(
-            "${ProjectRoot}/release/${ProductName}-*-windows-*.zip",
-            $PackageStage
-        )
-        Recurse = $true
+    $ResolvedStage = [IO.Path]::GetFullPath($PackageStage)
+    $ReleaseRoot = [IO.Path]::GetFullPath("${ProjectRoot}/release") + [IO.Path]::DirectorySeparatorChar
+    if ( ! $ResolvedStage.StartsWith($ReleaseRoot, [StringComparison]::OrdinalIgnoreCase) ) {
+        throw "Package staging directory must be inside release: ${ResolvedStage}"
     }
-
-    Remove-Item @RemoveArgs
+    if ( Test-Path -LiteralPath $ResolvedStage ) {
+        Remove-Item -LiteralPath $ResolvedStage -Recurse -Force
+    }
 
     if ( ! ( Test-Path -LiteralPath $InstallDataRoot -PathType Container ) ) {
         throw "Installed plugin data folder not found: ${InstallDataRoot}"
@@ -116,6 +113,13 @@ function Package {
     }
     Compress-Archive -Force @CompressArgs
     Remove-Item -LiteralPath $PackageStage -Recurse -Force
+    if ( $Package ) {
+        $Nsis = Join-Path ${env:ProgramFiles(x86)} 'NSIS/makensis.exe'
+        if ( ! ( Test-Path -LiteralPath $Nsis ) ) {
+            throw "NSIS compiler not found: ${Nsis}"
+        }
+        Invoke-External $Nsis /V2 "/DPRODUCT_NAME=${ProductName}" "/DPRODUCT_VERSION=${ProductVersion}" "/DPROJECT_ROOT=${ProjectRoot}" "/DCONFIGURATION=${Configuration}" "/DTARGET=${Target}" "/DOUTPUT_EXE=${ProjectRoot}/release/${OutputName}-setup.exe" "${ProjectRoot}/installer/fly-scoreboard-installer.nsi"
+    }
     Log-Group
 }
 

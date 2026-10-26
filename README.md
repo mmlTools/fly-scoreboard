@@ -4,7 +4,7 @@ Fly Scoreboard is an OBS Studio plugin for live scoreboard overlays. It provides
 
 The default overlay is plain HTML/CSS/JavaScript. It receives live state from `ws://127.0.0.1:4457` and falls back to `plugin.json` when the socket is unavailable.
 
-[Support on Ko-fi](https://ko-fi.com/mmltech)
+[Support development via PayPal](https://www.paypal.com/donate/?hosted_button_id=ZKTLLYY9ADWYQ)
 
 ## Highlights
 
@@ -35,40 +35,26 @@ Download the latest release from:
 
 https://github.com/mmlTools/fly-scoreboard/releases
 
-### Windows ZIP Layout
+### Requirements and plugin locations
 
-The Windows ZIP is packaged with this tree:
+Fly Score 5.1 requires OBS Studio 33 or later and Qt 6.10 or later. The build uses the OBS 33.0.0 SDK and the matching OBS dependency packages. See the [OBS 33 release](https://github.com/obsproject/obs-studio/releases/tag/33.0.0) and [plugin loader source](https://github.com/obsproject/obs-studio/tree/33.0.0/frontend/plugin-manager) for the updated runtime requirements and installation paths.
+
+On Windows, extract the ZIP into `C:\ProgramData\obs-studio\plugins\`. It contains:
 
 ```text
-fly-score/
-  obs-plugins/
-    64bit/
-      fly-scoreboard.dll
+fly-scoreboard/
+  fly-scoreboard.dll
   data/
-    obs-plugins/
-      fly-scoreboard/
-        locale/
-          en-US.ini
-          ro-RO.ini
-        templates/
-          README.md
-          Modular Football/
-            index.html
-            fouls.html
-            cards.html
-            corners.html
-            style.css
-            script.js
-            plugin.json
+    locale/
+    templates/
+      README.md
+      Modular Football/
+    websocket-sample.html
 ```
 
-To install manually, copy the contents of `fly-score/` into your OBS Studio install folder, usually:
+The Windows installer selects this location by default. For portable OBS, use `<OBS folder>\plugins\fly-scoreboard\` instead. When upgrading from 5.0, remove the old `fly-scoreboard.dll` from `<OBS folder>\obs-plugins\64bit\` after closing OBS, so only one copy loads. Keep your writable templates and match data.
 
-```text
-C:\Program Files\obs-studio\
-```
-
-On macOS, the plugin bundle belongs in `~/Library/Application Support/obs-studio/plugins/`. On Linux, packages use `lib/obs-plugins/` for `fly-scoreboard.so` and `share/obs/obs-plugins/fly-scoreboard/` for locales and templates.
+On macOS, install the plugin bundle in `~/Library/Application Support/obs-studio/plugins/`. Linux packages install the binary in `lib/<architecture>-linux-gnu/obs-modules/plugins/` and resources in `share/obs/obs-modules/plugins/fly-scoreboard/`.
 
 The installed templates are read-only starter copies. Follow `templates/README.md` and copy the complete `Modular Football` folder to a writable per-user location before selecting it in the Fly dock. The plugin writes `plugin.json` and team-logo files there.
 
@@ -84,6 +70,10 @@ The installed templates are read-only starter copies. Follow `templates/README.m
 All module pages expect `style.css`, `script.js`, and `plugin.json` to live in the same folder.
 
 ## Dock Features
+
+The header shows the active template, connection count, **Teams**, **Match stats...**, **Timers...**, and scoreboard visibility controls. Use the center tabs for live match controls; longer lists scroll inside the dock. The content follows the Sources dock surface. Stat rows use subtle borders, alternating shades, and grouped score controls. The footer is an icon-only toolbar: reset, hotkeys, information, choose template folder, and open template folder. Hover an icon for its action or the connection count for its WebSocket address. Reset asks for confirmation.
+
+The Information dialog contains community links, the carousel, and the 30,000-download milestone with a PayPal support link.
 
 ### Teams
 
@@ -348,14 +338,23 @@ cmake --build --preset windows-vs2026-x64
 cmake --install build_vs2026_x64 --prefix release/RelWithDebInfo --config RelWithDebInfo
 ```
 
-The VS 2026 preset uses `build_vs2026_x64/`. The `build_x64/` directory remains reserved for the VS 2022 preset used by GitHub Actions, preventing generator-cache conflicts.
+The VS 2026 preset uses `build_vs2026_x64/`. GitHub Actions uses the VS 2026 `windows-ci-x64` preset in `build_x64/`. The dedicated local preset keeps its cache separate.
+
+## Build once, release later
+
+1. Commit the version bump and all release changes, then push the commit.
+2. In Actions, manually run **Build release packages** on that branch or commit. This runs tests and builds Release packages for Windows x64, macOS Universal, and Ubuntu 26.04 x86_64. Signing and notarization are used when the relevant secrets are configured.
+3. Wait for the complete workflow to succeed. Download and test its artifacts if desired.
+4. Create and push a matching tag (for example, `5.1.0` or `v5.1.0`) on **that exact commit**.
+5. The tag workflow downloads the existing packages, adds SHA-256 checksums, and attaches them to a draft GitHub Release. Review and publish the draft when ready.
+
+Tags do not compile the plugin. Branch pushes and pull requests run formatting/tests only. Artifacts are retained for 90 days, subject to repository retention limits. If a tag is pushed before its build finishes, rerun the failed release job after the manual build succeeds. Missing, expired, mismatched, or incomplete packages fail the release with a clear message. If packages have expired, manually rebuild the same commit and rerun the release job.
 
 ## Support
 
 - Issues: https://github.com/mmlTools/fly-scoreboard/issues
 - Documentation: https://mmlTools.github.io/fly-scoreboard/
-- Ko-fi: https://ko-fi.com/mmltech
-- PayPal: https://paypal.me/mmlTools
+- PayPal: https://www.paypal.com/donate/?hosted_button_id=ZKTLLYY9ADWYQ
 
 ## License
 

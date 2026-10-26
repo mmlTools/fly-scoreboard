@@ -1,4 +1,16 @@
-# Unreleased
+# Fly Scoreboard 5.1.0
+
+- Target OBS Studio 33 with Qt 6.10+, refreshed dependency hashes, Visual Studio 2026 and Ubuntu 26.04 builds.
+- Adopt OBS 33 plugin locations in Windows ZIP/installers and native Linux packages.
+- Build release packages only on manual dispatch; tags attach packages from a successful build of the exact tagged commit without recompiling.
+- Add release artifact/version validation, checksums, and 90-day artifact retention.
+- Match the Sources dock surface and native footer toolbar; use icon-only reset, hotkeys, information and template-folder actions.
+- Add themed outline icons, subtly shaded stat rows, grouped score controls, and consistent spacing.
+- Move the community carousel into an Information dialog with the 30,000-download milestone and PayPal donation link.
+- Avoid duplicate state saves, make JSON state updates atomic, cache template metadata for broadcasts, and reuse one WebSocket frame per broadcast.
+- Keep existing controls during state refreshes to preserve focus, and show live timer values without repeatedly writing state.
+- Fix WebSocket client cleanup and dock teardown during shutdown, including stale dock references.
+- Clamp score increments safely at integer limits for buttons, shortcuts and remote commands.
 
 - Fixed overlay timers reverting to older file state after three seconds without a WebSocket update, and delayed file reads overwriting newer live updates.
 - For existing copied templates, replace their `script.js` with the updated `data/overlay/script.js` (or the script from the newly installed Modular Football template), then refresh the OBS Browser Sources using them.

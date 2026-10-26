@@ -66,9 +66,14 @@ bool FlyScoreWebSocketServer::start(quint16 port)
 
 void FlyScoreWebSocketServer::stop()
 {
-	for (auto *client : clients_) {
-		if (client)
+	// Disconnect signals before closing sockets: disconnected may fire synchronously.
+	const auto clients = clients_;
+	for (auto *client : clients) {
+		if (client) {
+			client->disconnect(this);
 			client->disconnectFromHost();
+			client->deleteLater();
+		}
 	}
 	clients_.clear();
 	buffers_.clear();
@@ -152,10 +157,9 @@ void FlyScoreWebSocketServer::processBuffer(QTcpSocket *client)
 			return;
 		}
 
-		const QByteArray accept = QCryptographicHash::hash(
-						  key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
-						  QCryptographicHash::Sha1)
-						  .toBase64();
+		const QByteArray accept =
+			QCryptographicHash::hash(key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", QCryptographicHash::Sha1)
+				.toBase64();
 		QByteArray response;
 		response += "HTTP/1.1 101 Switching Protocols\r\n";
 		response += "Upgrade: websocket\r\n";
@@ -268,9 +272,13 @@ void FlyScoreWebSocketServer::sendState(QTcpSocket *client, const FlyState &stat
 void FlyScoreWebSocketServer::broadcastState(const FlyState &state, const QString &templateName,
 					     const QString &templatePath)
 {
+	if (clients_.isEmpty())
+		return;
 	const QJsonDocument doc(makeStateEnvelope(state, templateName, templatePath));
-	const QString payload = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+	const auto frame = websocketFrame(doc.toJson(QJsonDocument::Compact));
 
-	for (auto *client : clients_)
-		sendText(client, payload);
+	for (auto *client : clients_) {
+		if (client && handshaken_.value(client, false))
+			client->write(frame);
+	}
 }

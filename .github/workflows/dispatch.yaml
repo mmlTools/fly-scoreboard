@@ -1,18 +1,13 @@
-name: Dispatch
-run-name: Dispatched Repository Actions - ${{ inputs.job }} ⌛️
+name: Build release packages
+run-name: Build release packages for ${{ github.ref_name }}
 on:
   workflow_dispatch:
-    inputs:
-      job:
-        description: Dispatch job to run
-        required: true
-        type: choice
-        options:
-          - build
 permissions:
-  contents: write
+  contents: read
 jobs:
-  check-and-build:
-    if: inputs.job == 'build'
+  test:
+    uses: ./.github/workflows/test-overlay.yaml
+  build:
+    needs: test
     uses: ./.github/workflows/build-project.yaml
     secrets: inherit

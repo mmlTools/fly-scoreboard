@@ -64,7 +64,7 @@ OutFile "${OUTPUT_EXE}"
 
 RequestExecutionLevel admin
 
-Var OBSDir
+Var PluginDir
 Var OverlayDir
 
 ; ------------------------------------------------------------------------
@@ -75,15 +75,15 @@ Section "Core OBS Plugin" SEC_CORE
   SectionIn RO
 
   ; --- Plugin DLL ---
-  SetOutPath "$OBSDir\obs-plugins\64bit"
-  File "/oname=fly-scoreboard.dll" "${BUILD_ROOT}\bin\64bit\fly-scoreboard.dll"
+  SetOutPath "$PluginDir"
+  File "/oname=fly-scoreboard.dll" "${BUILD_ROOT}\fly-scoreboard.dll"
 
   ; --- Locale files (future-proof) ---
-  SetOutPath "$OBSDir\data\obs-plugins\fly-scoreboard\locale"
+  SetOutPath "$PluginDir\data\locale"
   File /nonfatal /r "${BUILD_ROOT}\data\locale\*.*"
 
   ; --- Remote-control sample ---
-  SetOutPath "$OBSDir\data\obs-plugins\fly-scoreboard"
+  SetOutPath "$PluginDir\data"
   File /nonfatal "${PROJECT_ROOT}\data\websocket-sample.html"
 SectionEnd
 
@@ -110,10 +110,10 @@ SectionEnd
 
 ; OBS folder selection page
 PageEx directory
-  DirText "Select the folder where OBS Studio is installed." \
-          "The Fly Scoreboard plugin DLL will be installed into this OBS Studio folder." \
+  DirText "Select the Fly Scoreboard plugin folder for OBS Studio 33 or later." \
+          "The plugin DLL and data folder will be installed together here. For portable OBS, select its plugins\fly-scoreboard folder." \
           "Browse..."
-  DirVar $OBSDir
+  DirVar $PluginDir
 PageExEnd
 
 ; Components page (for overlay checkbox)
@@ -139,7 +139,9 @@ PageExEnd
 
 Function .onInit
   ; Default to standard 64-bit OBS install path; user can change it
-  StrCpy $OBSDir "$PROGRAMFILES64\obs-studio"
+  SetShellVarContext all
+  StrCpy $PluginDir "$APPDATA\obs-studio\plugins\fly-scoreboard"
+  SetShellVarContext current
 FunctionEnd
 
 ; ------------------------------------------------------------------------

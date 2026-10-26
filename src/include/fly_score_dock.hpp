@@ -83,6 +83,7 @@ private slots:
 	void onSelectTemplateFolder();
 
 private:
+	void applyDockTheme();
 	void loadState();
 	void saveState();
 	void refreshUiFromState(bool onlyTimeIfRunning = false);
@@ -111,13 +112,10 @@ private:
 	void logStateChanges(const FlyState &before, const FlyState &after);
 	void refreshEventLogUi();
 	QString eventLogsDirectory() const;
-	QWidget *widgetCarousel_ = nullptr;
-	QPushButton *toggleCarouselBtn_ = nullptr;
-	void toggleWidgetCarouselVisible();
-	void refreshWidgetCarouselToggleUi();
 
 private:
 	QString dataDir_;
+	QString activeTemplateName_;
 	FlyState st_;
 	QCheckBox *swapSides_ = nullptr;
 	QCheckBox *showScoreboard_ = nullptr;
@@ -132,7 +130,6 @@ private:
 	QList<FlyTimerUi> timers_;
 	QLabel *activeTemplateLabel_ = nullptr;
 	QLabel *webSocketStatus_ = nullptr;
-	QPushButton *selectTemplateFolderBtn_ = nullptr;
 	FlyScoreWebSocketServer *webSocketServer_ = nullptr;
 	QList<FlyHotkeyBinding> hotkeyBindings_;
 	QList<QShortcut *> shortcuts_;

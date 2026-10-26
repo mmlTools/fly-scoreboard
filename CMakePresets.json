@@ -17,7 +17,7 @@
     {
       "name": "macos",
       "displayName": "macOS Universal",
-      "description": "Build for macOS 12.0+ (Universal binary)",
+      "description": "Build for macOS 13.0+ (Universal binary)",
       "inherits": [
         "template"
       ],
@@ -33,7 +33,7 @@
         "deprecated": true
       },
       "cacheVariables": {
-        "CMAKE_OSX_DEPLOYMENT_TARGET": "12.0",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "13.0",
         "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
         "CODESIGN_IDENTITY": "$penv{CODESIGN_IDENT}",
         "CODESIGN_TEAM": "$penv{CODESIGN_TEAM}"
@@ -45,7 +45,7 @@
         "macos"
       ],
       "displayName": "macOS Universal CI build",
-      "description": "Build for macOS 12.0+ (Universal binary) for CI",
+      "description": "Build for macOS 13.0+ (Universal binary) for CI",
       "generator": "Xcode",
       "cacheVariables": {
         "CMAKE_COMPILE_WARNING_AS_ERROR": true,
@@ -65,8 +65,8 @@
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       },
-      "generator": "Visual Studio 17 2022",
-      "architecture": "x64",
+      "generator": "Visual Studio 18 2026",
+      "architecture": "x64,version=10.0.26100.0",
       "warnings": {
         "dev": true,
         "deprecated": true

@@ -156,8 +156,8 @@ ${_usage_host:-}"
   popd
 
   local install_root=${project_root}/release/${config}
-  local plugin_binary_root=${install_root}/lib/${target##*-}-linux-gnu/obs-plugins
-  local plugin_data_root=${install_root}/share/obs/obs-plugins/${product_name}
+  local plugin_binary_root=${install_root}/lib/${target##*-}-linux-gnu/obs-modules/plugins
+  local plugin_data_root=${install_root}/share/obs/obs-modules/plugins/${product_name}
   local -a required_paths=(
     ${plugin_binary_root}/${product_name}.so
     ${plugin_data_root}/locale/en-US.ini

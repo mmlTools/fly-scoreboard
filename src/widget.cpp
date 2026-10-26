@@ -1,4 +1,7 @@
 #include "widget.hpp"
+#include "config.hpp"
+#include "fly_score_i18n.hpp"
+#include "fly_score_icons.hpp"
 
 #include <QAbstractAnimation>
 #include <QDesktopServices>
@@ -7,68 +10,64 @@
 #include <QFrame>
 #include <QGraphicsOpacityEffect>
 #include <QHBoxLayout>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
 #include <QLabel>
-#include <QPointer>
 #include <QPropertyAnimation>
 #include <QPushButton>
-#include <QScrollArea>
 #include <QSequentialAnimationGroup>
 #include <QSizePolicy>
 #include <QStackedWidget>
 #include <QTimer>
 #include <QToolButton>
 #include <QUrl>
-#include <QUrlQuery>
 #include <QVector>
 
-QWidget *widget_create_kofi_card(QWidget *parent)
+QWidget *widget_create_support_card(QWidget *parent)
 {
-	auto *kofiCard = new QFrame(parent);
-	kofiCard->setObjectName(QStringLiteral("kofiCard"));
-	kofiCard->setFrameShape(QFrame::NoFrame);
-	kofiCard->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+	auto *supportCard = new QFrame(parent);
+	supportCard->setObjectName(QStringLiteral("supportCard"));
+	supportCard->setFrameShape(QFrame::NoFrame);
+	supportCard->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+	supportCard->setMinimumHeight(104);
 
-	auto *kofiLay = new QHBoxLayout(kofiCard);
-	kofiLay->setContentsMargins(12, 10, 12, 10);
-	kofiLay->setSpacing(10);
+	auto *supportLay = new QHBoxLayout(supportCard);
+	supportLay->setContentsMargins(12, 10, 12, 10);
+	supportLay->setSpacing(10);
 
-	auto *kofiIcon = new QLabel(kofiCard);
-	kofiIcon->setText(QString::fromUtf8("☕"));
-	kofiIcon->setStyleSheet(QStringLiteral("font-size:30px;"));
+	auto *supportIcon = new QLabel(supportCard);
+	supportIcon->setPixmap(fly_icon(FlyIcon::Heart, supportIcon).pixmap(30, 30));
+	supportIcon->setStyleSheet(QStringLiteral("font-size:30px;"));
 
-	auto *kofiText = new QLabel(kofiCard);
-	kofiText->setTextFormat(Qt::RichText);
-	kofiText->setOpenExternalLinks(true);
-	kofiText->setTextInteractionFlags(Qt::TextBrowserInteraction);
-	kofiText->setWordWrap(true);
-	kofiText->setText("<b>Enjoying this plugin?</b><br>"
-			  "You can support<br>development on Ko-fi.");
+	auto *supportText = new QLabel(supportCard);
+	supportText->setTextFormat(Qt::RichText);
+	supportText->setOpenExternalLinks(true);
+	supportText->setTextInteractionFlags(Qt::TextBrowserInteraction);
+	supportText->setWordWrap(true);
+	supportText->setText(fly_i18n("Information.SupportMessage"));
 
-	auto *kofiBtn = new QPushButton(QStringLiteral("☕ Buy me a Ko-fi"), kofiCard);
-	kofiBtn->setCursor(Qt::PointingHandCursor);
-	kofiBtn->setMinimumHeight(28);
-	kofiBtn->setStyleSheet("QPushButton { background: #29abe0; color:white; border:none; "
-			       "border-radius:6px; padding:6px 10px; font-weight:600; }"
-			       "QPushButton:hover { background: #1e97c6; }"
-			       "QPushButton:pressed { background: #1984ac; }");
+	auto *supportBtn = new QPushButton(fly_i18n("Information.SupportButton"), supportCard);
+	supportBtn->setCursor(Qt::PointingHandCursor);
+	supportBtn->setMinimumHeight(28);
+	supportBtn->setStyleSheet("QPushButton { background: #29abe0; color:white; border:none; "
+				  "border-radius:6px; padding:6px 10px; font-weight:600; }"
+				  "QPushButton:hover { background: #1e97c6; }"
+				  "QPushButton:pressed { background: #1984ac; }");
 
-	QObject::connect(kofiBtn, &QPushButton::clicked, kofiCard,
-			 [] { QDesktopServices::openUrl(QUrl(QStringLiteral("https://ko-fi.com/mmltech"))); });
+	QObject::connect(supportBtn, &QPushButton::clicked, supportCard, [] {
+		QDesktopServices::openUrl(
+			QUrl(QStringLiteral("https://www.paypal.com/donate/?hosted_button_id=ZKTLLYY9ADWYQ")));
+	});
 
-	kofiLay->addWidget(kofiIcon, 0, Qt::AlignVCenter);
-	kofiLay->addWidget(kofiText, 1);
-	kofiLay->addWidget(kofiBtn, 0, Qt::AlignVCenter);
+	supportLay->addWidget(supportIcon, 0, Qt::AlignVCenter);
+	supportLay->addWidget(supportText, 1);
+	supportLay->addWidget(supportBtn, 0, Qt::AlignVCenter);
 
-	kofiCard->setStyleSheet("#kofiCard {"
-				"  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-				"    stop:0 #2a2d30, stop:1 #1e2124);"
-				"  border:1px solid #3a3d40; border-radius:10px; padding:6px; }"
-				"#kofiCard QLabel { color:#ffffff; }");
+	supportCard->setStyleSheet("#supportCard {"
+				   "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
+				   "    stop:0 #2a2d30, stop:1 #1e2124);"
+				   "  border:1px solid #3a3d40; border-radius:10px; padding:6px; }"
+				   "#supportCard QLabel { color:#ffffff; }");
 
-	return kofiCard;
+	return supportCard;
 }
 
 QWidget *widget_create_discord_card(QWidget *parent)
@@ -77,23 +76,22 @@ QWidget *widget_create_discord_card(QWidget *parent)
 	discordCard->setObjectName(QStringLiteral("discordCard"));
 	discordCard->setFrameShape(QFrame::NoFrame);
 	discordCard->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+	discordCard->setMinimumHeight(104);
 
 	auto *lay = new QHBoxLayout(discordCard);
 	lay->setContentsMargins(12, 10, 12, 10);
 	lay->setSpacing(10);
 
 	auto *icon = new QLabel(discordCard);
-	icon->setText(QString::fromUtf8("💬"));
+	icon->setPixmap(fly_icon(FlyIcon::Chat, icon).pixmap(30, 30));
 	icon->setStyleSheet(QStringLiteral("font-size:30px;"));
 
 	auto *text = new QLabel(discordCard);
 	text->setTextFormat(Qt::RichText);
 	text->setWordWrap(true);
-	text->setText("<b>Join the Discord server</b><br>"
-		      "Get help, share ideas,<br>"
-		      "and chat with other users.");
+	text->setText(fly_i18n("Information.DiscordMessage"));
 
-	auto *btn = new QPushButton(QStringLiteral("💬 Join Discord"), discordCard);
+	auto *btn = new QPushButton(fly_i18n("Information.DiscordButton"), discordCard);
 	btn->setCursor(Qt::PointingHandCursor);
 	btn->setMinimumHeight(28);
 	btn->setStyleSheet("QPushButton { "
@@ -147,7 +145,7 @@ QWidget *create_widget_carousel(QWidget *parent)
 	stack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
 	stack->addWidget(widget_create_discord_card(stack));
-	stack->addWidget(widget_create_kofi_card(stack));
+	stack->addWidget(widget_create_support_card(stack));
 
 	root->addWidget(stack);
 
@@ -164,7 +162,7 @@ QWidget *create_widget_carousel(QWidget *parent)
 		dot->setCheckable(true);
 		dot->setAutoExclusive(true);
 		dot->setCursor(Qt::PointingHandCursor);
-		dot->setToolTip(QStringLiteral("Show card %1").arg(i + 1));
+		dot->setToolTip(fly_i18n("Information.ShowCard").arg(i + 1));
 		dot->setStyleSheet("QToolButton {"
 				   "  border: none;"
 				   "  background: transparent;"
@@ -201,8 +199,10 @@ QWidget *create_widget_carousel(QWidget *parent)
 	auto switchToIndex = [stack, effect, updateDots, wrapper](int targetIndex) {
 		if (targetIndex < 0 || targetIndex >= stack->count())
 			return;
-		if (targetIndex == stack->currentIndex())
+		if (effect->property("animating").toBool() || targetIndex == stack->currentIndex())
 			return;
+
+		effect->setProperty("animating", true);
 
 		auto *fadeOut = new QPropertyAnimation(effect, "opacity", wrapper);
 		fadeOut->setDuration(180);
@@ -223,6 +223,8 @@ QWidget *create_widget_carousel(QWidget *parent)
 			updateDots();
 		});
 
+		QObject::connect(group, &QSequentialAnimationGroup::finished, effect,
+				 [effect]() { effect->setProperty("animating", false); });
 		group->start(QAbstractAnimation::DeleteWhenStopped);
 	};
 
@@ -250,181 +252,39 @@ QWidget *create_widget_carousel(QWidget *parent)
 	return wrapper;
 }
 
-static QFrame *make_link_card(QWidget *parent, const QString &emoji, const QString &title, const QString &subtitle,
-			      const QString &buttonText, const QUrl &url)
+void show_information_dialog(QWidget *parent)
 {
-	auto *card = new QFrame(parent);
-	card->setObjectName(QStringLiteral("ocHelpCard"));
-	card->setFrameShape(QFrame::NoFrame);
-
-	auto *lay = new QHBoxLayout(card);
-	lay->setContentsMargins(12, 10, 12, 10);
-	lay->setSpacing(10);
-
-	auto *ico = new QLabel(card);
-	ico->setText(emoji);
-	ico->setMinimumWidth(34);
-	ico->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-	ico->setStyleSheet(QStringLiteral("font-size:22px;"));
-
-	auto *textCol = new QVBoxLayout();
-	textCol->setContentsMargins(0, 0, 0, 0);
-	textCol->setSpacing(2);
-
-	auto *t = new QLabel(card);
-	t->setText(QStringLiteral("<b>%1</b>").arg(title));
-	t->setTextFormat(Qt::RichText);
-
-	auto *sub = new QLabel(card);
-	sub->setText(subtitle);
-	sub->setWordWrap(true);
-	sub->setStyleSheet(QStringLiteral("color: rgba(255,255,255,0.75);"));
-
-	textCol->addWidget(t);
-	textCol->addWidget(sub);
-
-	auto *btn = new QPushButton(buttonText, card);
-	btn->setCursor(Qt::PointingHandCursor);
-	btn->setMinimumHeight(30);
-	btn->setObjectName(QStringLiteral("ocHelpCta"));
-	QObject::connect(btn, &QPushButton::clicked, card, [url]() { QDesktopServices::openUrl(url); });
-
-	lay->addWidget(ico, 0, Qt::AlignTop);
-	lay->addLayout(textCol, 1);
-	lay->addWidget(btn, 0, Qt::AlignVCenter);
-
-	return card;
-}
-
-void show_troubleshooting_dialog(QWidget *parent)
-{
-	auto *dlg = new QDialog(parent);
-	dlg->setAttribute(Qt::WA_DeleteOnClose, true);
-	dlg->setWindowTitle(QObject::tr("Smart Lower Thirds • Help & Links"));
-	dlg->setModal(true);
-	dlg->resize(720, 560);
-
-	auto *root = new QVBoxLayout(dlg);
-	root->setContentsMargins(14, 14, 14, 14);
-	root->setSpacing(10);
-
-	{
-		auto *hdr = new QFrame(dlg);
-		hdr->setObjectName(QStringLiteral("ocHelpHeader"));
-		hdr->setFrameShape(QFrame::NoFrame);
-		auto *hl = new QVBoxLayout(hdr);
-		hl->setContentsMargins(14, 12, 14, 12);
-		hl->setSpacing(6);
-
-		auto *title = new QLabel(QObject::tr("Troubleshooting & Official Links"), hdr);
-		title->setStyleSheet(QStringLiteral("font-size:16px; font-weight:700;"));
-
-		auto *desc = new QLabel(
-			QObject::tr(
-				"If changes do not apply, confirm your Resources path has read/write access (Documents is recommended). "
-				"Use the links below for guides, downloads, and community support."),
-			hdr);
-		desc->setWordWrap(true);
-		desc->setStyleSheet(QStringLiteral("color: rgba(255,255,255,0.78);"));
-
-		hl->addWidget(title);
-		hl->addWidget(desc);
-		root->addWidget(hdr);
+	// Reuse the open dialog; create the carousel only when requested.
+	if (auto *existing = parent->findChild<QDialog *>(QStringLiteral("flyScoreInformation"))) {
+		existing->show();
+		existing->raise();
+		existing->activateWindow();
+		return;
 	}
+	auto *dialog = new QDialog(parent);
+	dialog->setObjectName(QStringLiteral("flyScoreInformation"));
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
+	dialog->setWindowTitle(fly_i18n("Information.Title"));
+	dialog->resize(560, 360);
+	auto *layout = new QVBoxLayout(dialog);
+	layout->setContentsMargins(16, 16, 16, 16);
+	layout->setSpacing(12);
 
-	auto *scroll = new QScrollArea(dlg);
-	scroll->setWidgetResizable(true);
-	scroll->setFrameShape(QFrame::NoFrame);
-
-	auto *content = new QWidget(scroll);
-	auto *cl = new QVBoxLayout(content);
-	cl->setContentsMargins(0, 0, 0, 0);
-	cl->setSpacing(10);
-
-	{
-		auto *secTitle = new QLabel(QObject::tr("Quick Links"), content);
-		secTitle->setStyleSheet(QStringLiteral("font-weight:700;"));
-		cl->addWidget(secTitle);
-
-		cl->addWidget(make_link_card(content, QString::fromUtf8("🌐"), QObject::tr("Visit the Website"),
-					     QObject::tr("Downloads, updates, documentation, and templates."),
-					     QObject::tr("Open streamrsc.com"),
-					     QUrl(QStringLiteral("https://streamrsc.com/search?q=lower+third"))));
-
-		cl->addWidget(make_link_card(content, QString::fromUtf8("💬"), QObject::tr("Join Discord"),
-					     QObject::tr("Community support, feedback, and announcements."),
-					     QObject::tr("Join Discord"),
-					     QUrl(QStringLiteral("https://discord.gg/2yD6B2PTuQ"))));
-
-		cl->addWidget(make_link_card(content, QString::fromUtf8("𝕏"), QObject::tr("Follow on X (Twitter)"),
-					     QObject::tr("Release notes, feature previews, and tips."),
-					     QObject::tr("Open X"), QUrl(QStringLiteral("https://x.com/mmltechYT"))));
-
-		cl->addWidget(
-			make_link_card(content, QString::fromUtf8("👥"), QObject::tr("Facebook Group"),
-				       QObject::tr("Promotions, community posts, and livestreaming discussions."),
-				       QObject::tr("Open Facebook"),
-				       QUrl(QStringLiteral("https://www.facebook.com/groups/freestreamerspromotion"))));
-
-		cl->addWidget(make_link_card(content, QString::fromUtf8("🐘"), QObject::tr("Mastodon"),
-					     QObject::tr("Federated updates and community posts."),
-					     QObject::tr("Open Mastodon"),
-					     QUrl(QStringLiteral("https://mastodon.social/@streamrsc"))));
-
-		cl->addWidget(make_link_card(content, QString::fromUtf8("📸"), QObject::tr("Instagram"),
-					     QObject::tr("Design previews, templates, and behind-the-scenes."),
-					     QObject::tr("Open Instagram"),
-					     QUrl(QStringLiteral("https://www.instagram.com/streamrsc/"))));
-	}
-
-	{
-		auto *secTitle = new QLabel(QObject::tr("Video Guides"), content);
-		secTitle->setStyleSheet(QStringLiteral("font-weight:700;"));
-		cl->addWidget(secTitle);
-
-		cl->addWidget(make_link_card(content, QString::fromUtf8("▶"), QObject::tr("Guide 1"),
-					     QObject::tr("Setup, templates, and basic workflow."),
-					     QObject::tr("Watch on YouTube"),
-					     QUrl(QStringLiteral("https://www.youtube.com/watch?v=AunKJCyrSmM"))));
-
-		cl->addWidget(make_link_card(content, QString::fromUtf8("▶"), QObject::tr("Guide 2"),
-					     QObject::tr("Advanced configuration, templates, and automation."),
-					     QObject::tr("Watch on YouTube"),
-					     QUrl(QStringLiteral("https://www.youtube.com/watch?v=79Qh2hg9Z_o"))));
-	}
-
-	cl->addStretch(1);
-	scroll->setWidget(content);
-	root->addWidget(scroll, 1);
-
-	{
-		auto *bb = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
-		QObject::connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::close);
-		root->addWidget(bb);
-	}
-
-	dlg->setStyleSheet("#ocHelpHeader {"
-			   "  background: rgba(255,255,255,0.06);"
-			   "  border: 1px solid rgba(255,255,255,0.10);"
-			   "  border-radius: 12px;"
-			   "}"
-			   "QScrollArea { background: transparent; }"
-			   "QDialog { background: #141416; color: white; }"
-			   "#ocHelpCard {"
-			   "  background: rgba(255,255,255,0.05);"
-			   "  border: 1px solid rgba(255,255,255,0.10);"
-			   "  border-radius: 12px;"
-			   "}"
-			   "#ocHelpCard:hover { border-color: rgba(255,255,255,0.18); }"
-			   "#ocHelpCta {"
-			   "  background: rgba(255,255,255,0.10);"
-			   "  border: 1px solid rgba(255,255,255,0.12);"
-			   "  border-radius: 10px;"
-			   "  padding: 6px 12px;"
-			   "  font-weight: 700;"
-			   "}"
-			   "#ocHelpCta:hover { background: rgba(255,255,255,0.14); }"
-			   "#ocHelpCta:pressed { background: rgba(255,255,255,0.18); }");
-
-	dlg->show();
+	auto *title = new QLabel(QStringLiteral("<h2>Fly Score %1</h2>").arg(QStringLiteral(PLUGIN_VERSION)), dialog);
+	layout->addWidget(title);
+	auto *description = new QLabel(fly_i18n("Information.Description"), dialog);
+	description->setWordWrap(true);
+	layout->addWidget(description);
+	auto *milestone = new QLabel(fly_i18n("Information.Milestone"), dialog);
+	milestone->setWordWrap(true);
+	milestone->setTextFormat(Qt::RichText);
+	milestone->setTextInteractionFlags(Qt::TextBrowserInteraction);
+	milestone->setOpenExternalLinks(true);
+	layout->addWidget(milestone);
+	layout->addWidget(create_widget_carousel(dialog));
+	layout->addStretch();
+	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, dialog);
+	QObject::connect(buttons, &QDialogButtonBox::rejected, dialog, &QDialog::close);
+	layout->addWidget(buttons);
+	dialog->show();
 }

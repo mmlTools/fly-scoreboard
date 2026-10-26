@@ -35,6 +35,8 @@ set(
   \\.github/
   \\.gitignore
   \\.ccache/
+  \\.deps[^/]*/
+  \\.validation/
   build_.*
   cmake/\\.CMakeBuildNumber
   release/
