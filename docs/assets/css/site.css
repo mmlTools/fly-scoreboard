@@ -276,6 +276,50 @@ pre code { color: var(--code-text); }
 }
 .video-embed iframe, .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
 
+.doc .tutorial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 20px;
+  margin: 18px 0 28px;
+  padding: 0;
+  list-style: none;
+}
+.doc .tutorial-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgb(23 32 51 / 5%);
+}
+.doc .tutorial-card--latest { border-color: var(--accent); }
+.tutorial-card .video-embed {
+  aspect-ratio: 16 / 9;
+  min-height: 200px;
+  padding-top: 0;
+  border: 0;
+  border-radius: 0;
+}
+.tutorial-card iframe { border: 0; }
+.tutorial-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 18px;
+  border-top: 1px solid var(--border);
+}
+.tutorial-card__label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.tutorial-card--latest .tutorial-card__label { color: var(--accent); }
+.doc .tutorial-card h3 { margin: 0; line-height: 1.45; }
+.tutorial-card__link { display: inline-flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 4px; font-size: 13px; font-weight: 600; }
+.tutorial-card__link svg { width: 14px; height: 14px; flex: none; }
+.tutorial-card a:focus-visible, .tutorial-card iframe:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
 .footer { max-width: var(--max); margin: 18px auto 0; color: var(--muted-2); font-size: 12px; }
 .footer__inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
 .footer a { color: var(--muted); }
