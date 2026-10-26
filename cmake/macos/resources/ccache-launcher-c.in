@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Xcode 26 also exports deployment targets for unrelated Apple platforms.
+unset IPHONEOS_DEPLOYMENT_TARGET TVOS_DEPLOYMENT_TARGET WATCHOS_DEPLOYMENT_TARGET
+unset DRIVERKIT_DEPLOYMENT_TARGET XROS_DEPLOYMENT_TARGET
+
 if [[ "$1" == "${CMAKE_C_COMPILER}" ]] ; then
     shift
 fi

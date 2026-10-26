@@ -4,6 +4,21 @@ include_guard(GLOBAL)
 
 set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
 
+# Xcode 26 exports deployment targets for every Apple platform to script phases.
+# Qt's compiler-predefines probe must see only the macOS target.
+list(
+  PREPEND
+  CMAKE_CXX_COMPILER_PREDEFINES_COMMAND
+  "${CMAKE_COMMAND}"
+  -E
+  env
+  --unset=IPHONEOS_DEPLOYMENT_TARGET
+  --unset=TVOS_DEPLOYMENT_TARGET
+  --unset=WATCHOS_DEPLOYMENT_TARGET
+  --unset=DRIVERKIT_DEPLOYMENT_TARGET
+  --unset=XROS_DEPLOYMENT_TARGET
+)
+
 # Use a compiler wrapper to enable ccache in Xcode projects
 if(ENABLE_CCACHE AND CCACHE_PROGRAM)
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos/resources/ccache-launcher-c.in" ccache-launcher-c)
